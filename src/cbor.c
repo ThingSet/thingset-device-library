@@ -94,7 +94,12 @@ int cbor_serialize_float(uint8_t *data, float value, size_t max_len)
         return 0;
 
     data[0] = CBOR_FLOAT32;
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstrict-aliasing"          // remove compiler warning
     *((uint32_t*)&data[1]) = htonl(*((uint32_t*)&value));
+    #pragma GCC diagnostic pop
+    
     return 5;
 }
 
@@ -316,7 +321,12 @@ int cbor_deserialize_float(uint8_t *data, float *value)
         return 0;
     
     uint32_t bytes = ntohl(*((uint32_t*)&data[1]));
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstrict-aliasing"          // remove compiler warning
     *value = *((float*)&bytes);
+    #pragma GCC diagnostic pop
+    
     return 5;
 }
 
