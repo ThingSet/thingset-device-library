@@ -1,0 +1,21 @@
+{
+  "name": "ThingSet Protocol",
+  "keywords": "thingset, serial, communication, data object",
+  "description": "Library for the ThingSet protocol in C/C++",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/ThingSet/thingset-c"
+  },
+  "authors":
+  [
+    {
+      "name": "Martin Jäger",
+      "url": "http://libre.solar",
+      "maintainer": true
+    }
+  ],
+  "version": "0.1",
+  "frameworks": "*",
+  "platforms": "*"
+}
