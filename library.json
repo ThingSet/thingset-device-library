@@ -1,5 +1,5 @@
 {
-  "name": "ThingSet Protocol",
+  "name": "ThingSet",
   "keywords": "thingset, serial, communication, data object",
   "description": "Library for the ThingSet protocol in C/C++",
   "repository":
