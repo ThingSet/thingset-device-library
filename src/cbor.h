@@ -73,13 +73,9 @@ extern "C" {
 
 #ifdef TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len);
-#else
-int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
-#endif
-
-#ifdef TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
 #else
+int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);
 #endif
 
@@ -90,6 +86,10 @@ int cbor_serialize_float(uint8_t *data, float value, size_t max_len);
 int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
 
 int cbor_serialize_string(uint8_t *data, char *value, size_t max_len);
+
+int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len);
+
+int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len);
 
 /* Deserialization (CBOR data to C values)
  */
@@ -112,6 +112,10 @@ int cbor_deserialize_float(uint8_t *data, float *value);
 int cbor_deserialize_bool(uint8_t *data, bool *value);
 
 int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size);
+
+/* Determine the number of elements in a map or array and store it in num_elements
+ */
+int cbor_num_elements(uint8_t *data, uint16_t *num_elements);
 
 /* Determine the size of the cbor data item starting at given pointer
  */

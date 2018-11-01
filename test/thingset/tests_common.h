@@ -36,9 +36,10 @@ int _read_cbor(uint16_t id, char *value_read)
 {
     // generate read request
     req.data.str[0] = TS_FUNCTION_READ;
-    req.data.str[1] = id >> 8;
-    req.data.str[2] = (uint8_t)id;
-    req.pos = 3;
+    req.data.str[1] = 0x19;     // uint16 follows
+    req.data.str[2] = id >> 8;
+    req.data.str[3] = (uint8_t)id;
+    req.pos = 4;
     thingset_process(&req, &resp, &data);
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
     //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp.pos);
@@ -55,10 +56,12 @@ void _write_cbor(uint16_t id, char *value)
 
     // generate write request
     req.data.str[0] = TS_FUNCTION_WRITE;
-    req.data.str[1] = id >> 8;
-    req.data.str[2] = (uint8_t)id;
-    memcpy(req.data.str + 3, value, len);
-    req.pos = len + 3;
+    req.data.str[1] = 0xA1;     // map with 1 element
+    req.data.str[2] = 0x19;     // uint16 follows
+    req.data.str[3] = id >> 8;
+    req.data.str[4] = (uint8_t)id;
+    memcpy(req.data.str + 5, value, len);
+    req.pos = len + 5;
     thingset_process(&req, &resp, &data);
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
 }

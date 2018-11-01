@@ -1,76 +1,125 @@
 
 #include "thingset.h"
-#include "cbor.h"
 #include "test_data.h"
 #include "unity.h"
 
-void cbor_write_float()
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+extern ts_buffer_t req, resp;
+
+void cbor_write_array()
 {
-    ts_buffer_t req, resp;
+    char cbor_req_hex[] = "02 A9 "      // write map with 9 elements
+        "19 60 01 01 "                  // value 1
+        "19 60 02 02 "
+        "19 60 03 03 "
+        "19 60 04 04 "
+        "19 60 05 05 "
+        "19 60 06 06 "
+        "19 60 07 fa 40 e0 00 00 "      // float32 7.0
+        "19 60 08 f5 "                  // true
+        "19 60 09 64 74 65 73 74 ";        // string "test"
 
-    union float2bytes { float f; char b[4]; } f2b;
-    f2b.f = 54.0;
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
 
-    char req2[] = { TS_FUNCTION_WRITE, 101, 0, TS_T_FLOAT32,  // Obj ID 101
-        f2b.b[0], f2b.b[1], f2b.b[2], f2b.b[3] };
-
-    memcpy(req.data.str, req2, sizeof(req2));
-    req.pos = sizeof(req2);
+    memcpy(req.data.bin, cbor_req, pos);
+    req.pos = pos;
     thingset_process(&req, &resp, &data);
-
-    TEST_ASSERT_EQUAL(0x80 + TS_STATUS_SUCCESS, resp.data.str[0]);
-    TEST_ASSERT_EQUAL(1, resp.pos);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
 }
 
-// returns length of read value
-int _cbor_write_read_test(uint16_t id, char *value_write, char *value_read)
+void cbor_read_array()
 {
-    ts_buffer_t req, resp;
+    char cbor_req_hex[] = "01 89 "      // read array with 9 elements
+        "19 60 01 "
+        "19 60 02 "
+        "19 60 03 "
+        "19 60 04 "
+        "19 60 05 "
+        "19 60 06 "
+        "19 60 07 "
+        "19 60 08 "
+        "19 60 09 ";
 
-    int value_len = cbor_size((uint8_t*)value_write);
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
 
-    // generate write request
-    req.data.str[0] = TS_FUNCTION_WRITE;
-    req.data.str[1] = id >> 8;
-    req.data.str[2] = (uint8_t)id;
-    memcpy(req.data.str + 3, value_write, value_len);
-    req.pos = value_len + 3;
+    memcpy(req.data.bin, cbor_req, pos);
+    req.pos = pos;
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
-    //printf("TEST: Write request len: %d, response len: %d\n", req.pos, resp.pos);
 
-    // generate read request
-    req.data.str[0] = TS_FUNCTION_READ;
-    req.pos = 3; // data object ID same as above
-    thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
-    //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp.pos);
+    char cbor_resp_hex[] = "80 89 "     // successful response: array with 9 elements
+        "01 "                  // value 1
+        "02 "
+        "03 "
+        "04 "
+        "05 "
+        "06 "
+        "fa 40 e0 00 00 "      // float32 7.0
+        "f5 "                  // true
+        "64 74 65 73 74 ";        // string "test"
 
-    value_len = cbor_size((uint8_t*)resp.data.str + 1);
-    memcpy(value_read, resp.data.str + 1, value_len);
-    return value_len;
+    uint8_t cbor_resp[100];
+    len = strlen(cbor_resp_hex);
+    pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
+    }
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp.data.bin, pos);
+}
+
+void cbor_pub_msg()
+{
+    uint16_t list[] = { 
+        0x6001,
+        0x6002,
+        0x6003,
+        0x6004,
+        0x6005,
+        0x6006,
+        0x6007,
+        0x6008,
+        0x6009
+    };
+
+    int status = thingset_pub_msg_cbor(&resp, &data, list, sizeof(list)/sizeof(uint16_t));
+
+    TEST_ASSERT_EQUAL(0, status);
+
+    char cbor_resp_hex[] = "1f A9 "     // map with 9 elements
+        "19 60 01 01 "                  // value 1
+        "19 60 02 02 "
+        "19 60 03 03 "
+        "19 60 04 04 "
+        "19 60 05 05 "
+        "19 60 06 06 "
+        "19 60 07 fa 40 e0 00 00 "      // float32 7.0
+        "19 60 08 f5 "                  // true
+        "19 60 09 64 74 65 73 74 ";     // string "test"
+
+    uint8_t cbor_resp[100];
+    int len = strlen(cbor_resp_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
+    }
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp.data.bin, pos);
 }
 
 /*
-void cbor_read_int()
-{
-    char req[3] = { TS_READ, 102, 0 };       // Obj ID 102
-    char resp[100];
-    int len = thingset_request(req, 3, resp, 100);
-
-    TEST_ASSERT_EQUAL(TS_READ + 128, resp[0]);
-    TEST_ASSERT_EQUAL(TS_T_DECIMAL_FRAC, resp[1]);
-    TEST_ASSERT_EQUAL(0, resp[2]);              // exponent
-    TEST_ASSERT_EQUAL(7, len);
-
-    union { int32_t i; uint8_t b[4]; } i2b;
-    i2b.b[0] = resp[3];
-    i2b.b[1] = resp[4];
-    i2b.b[2] = resp[5];
-    i2b.b[3] = resp[6];
-    TEST_ASSERT_EQUAL_INT32(61, i2b.i);
-}
-
 void cbor_get_data_object_name()
 {
     char req[3] = { TS_OBJ_NAME, 0x01, 0x00 };   // Obj ID 1
@@ -82,8 +131,7 @@ void cbor_get_data_object_name()
     TEST_ASSERT_EQUAL(sizeof("vSolar")-1, len - 2);     // protocol without nullbyte
     TEST_ASSERT_EQUAL_STRING_LEN("vSolar", &(resp[2]), len - 2);
 }
-*/
-/*
+
 void test_list()
 {
     uint8_t req[2] = { TS_LIST, TS_C_CAL };        // category: calibration settings

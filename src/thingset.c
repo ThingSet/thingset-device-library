@@ -27,36 +27,14 @@ void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
     static ts_parser_t tsp;
 
-    if (req->pos < 1) {
-        thingset_status_message_json(resp, TS_STATUS_UNKNOWN_FUNCTION);
-        return;
-    }
-
-    jsmn_init(&(tsp.parser));
-
     if (req->data.bin[0] == TS_FUNCTION_READ) {
-        /*ts_buffer_t req_bin, resp_bin;
-        req_bin.data = (uint8_t*)req->data;
-        req_bin.pos = req->pos;
-        req_bin.size = req->size;
-        resp_bin.data = (uint8_t*)resp->data;
-        resp_bin.pos = 0;
-        resp_bin.size = resp->size;*/
         thingset_read_cbor(req, resp, data);
-        //resp->pos = resp_bin.pos;
     }
     else if (req->data.bin[0] == TS_FUNCTION_WRITE) {
-        /*ts_buffer_t req_bin, resp_bin;
-        req_bin.data = (uint8_t*)req->data;
-        req_bin.pos = req->pos;
-        req_bin.size = req->size;
-        resp_bin.data = (uint8_t*)resp->data;
-        resp_bin.pos = 0;
-        resp_bin.size = resp->size;*/
         thingset_write_cbor(req, resp, data);
-        //resp->pos = resp_bin.pos;
     }
     else if (req->data.str[0] == '!') {      // JSON request
+        jsmn_init(&(tsp.parser));
         if (req->pos > 4 && strncmp(req->data.str, "!read", 5) == 0) {
             tsp.str = req->data.str+6;
             tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-6, tsp.tokens, TS_NUM_JSON_TOKENS);

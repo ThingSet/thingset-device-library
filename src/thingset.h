@@ -32,8 +32,9 @@ extern "C" {
 #define TS_FUNCTION_WRITE    0x02
 #define TS_FUNCTION_LIST     0x03
 #define TS_FUNCTION_NAME     0x04
-#define TS_FUNCTION_PUB      0x05
+#define TS_FUNCTION_PUB      0x05   // publication request
 #define TS_FUNCTION_AUTH     0x06
+#define TS_FUNCTION_PUBMSG   0x1f   // actual publication message
 
 /* Status codes
  */
@@ -99,8 +100,6 @@ static const char* const ts_categories[] = {
 #define PUB_MULTIFRAME_EN (0x1U << 7)
 #define PUB_TIMESTAMP_EN (0x1U << 6)
 
-
-
 /* ThingSet data object struct
  * 
  * id = Data object ID
@@ -119,42 +118,28 @@ typedef struct data_object_t {
     const char *name;
 } data_object_t;
 
-/* buffer for string-type data encoded as char array (necessary to use string functions without casts)
- */
-/*typedef struct {
-    //char *data;             // array containing data
-    char data[TS_REQ_BUFFER_LEN];
-    size_t size;            // size of the array
-    size_t pos;             // index of the next free byte
-} ts_buffer_t;
-*/
-
-/* buffer for string-type data encoded as char array (necessary to use string functions without casts)
+/* Buffer for string-type and binary data
+ * 
+ * Remark: char type data union necessary to use string functions without casts
  */
 typedef struct {
     union {
-        char *str;
-        uint8_t *bin;
+        char *str;          // pointer to ASCII data
+        uint8_t *bin;       // pointer to binary data
     } data;
     size_t size;            // size of the array
     size_t pos;             // index of the next free byte
 } ts_buffer_t;
 
-
-/* buffer for binary data (unsigned on all platforms)
+/* ThingSet Data Object container including size
  */
-/*typedef struct {
-    uint8_t *data;          // array containing data
-    size_t size;            // size of the array
-    size_t pos;             // index of the next free byte
-} ts_buffer_t;
-*/
-
 typedef struct ts_data_t {
     const data_object_t *objects;
     size_t size;
 } ts_data_t;
 
+/* Parser container for JSON data
+ */
 typedef struct {
     char *str;
     jsmn_parser parser;
@@ -172,9 +157,9 @@ typedef struct {
  */
 void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
-/* ThingSet read function
- *   - appends requested data to resp buffer
- *   - returns ThingSet status code
+/* ThingSet JSON functions
+ *   - append requested data to resp buffer
+ *   - return ThingSet status code
  */
 int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
@@ -182,13 +167,21 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 
 int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
-int thingset_pub_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len);
+int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t num_elements);
 
 void thingset_status_message_json(ts_buffer_t *resp, int code);
 
+/* ThingSet CBOR functions
+ *   - append requested data to resp buffer
+ *   - return ThingSet status code
+ */
 int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+
 int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+
 int thingset_list_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+
+int thingset_pub_msg_cbor(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t num_elements);
 
 const data_object_t* thingset_data_object_by_id(ts_data_t *data, uint16_t id);
 

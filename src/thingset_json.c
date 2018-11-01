@@ -374,7 +374,7 @@ int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     return TS_STATUS_SUCCESS;
 }
 
-int thingset_pub_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
+int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
 {
     resp->pos = sprintf(resp->data.str, "# {");
  

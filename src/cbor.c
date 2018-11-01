@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-//#include "ts_config.h"
 #include "thingset.h"
 #include "cbor.h"
 
@@ -35,13 +34,13 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
     }
     else if (value < 24) {
         data[0] = CBOR_UINT | (uint8_t)value;
-        //printf("value = %.2X < 24, data: %.2X\n", (uint32_t)value, data[0]);
+        //printf("serialize: value = %.2X < 24, data: %.2X\n", (uint32_t)value, data[0]);
         return 1;
     } 
     else if (value <= 0xFF && max_len >= 2) {
         data[0] = CBOR_UINT | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)value;
-        //printf("value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
+        //printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
         return 2;
     } 
     else if (value <= 0xFFFF && max_len >= 3) {
@@ -140,6 +139,39 @@ int cbor_serialize_string(uint8_t *data, char *value, size_t max_len)
     }
 }
 
+int _serialize_num_elements(uint8_t *data, size_t num_elements, size_t max_len)
+{
+    if (num_elements < 24 && max_len > 0) {
+        data[0] |= (uint8_t)num_elements;
+        return 1;
+    }
+    else if (num_elements < 0xFF && max_len > 1) {
+        data[0] |= CBOR_UINT8_FOLLOWS;
+        data[1] = (uint8_t)num_elements;
+        return 2;
+    }
+    else if (num_elements < 0xFFFF && max_len > 1) {
+        data[0] |= CBOR_UINT16_FOLLOWS;
+        *((uint16_t*)&data[1]) = htons((uint16_t)num_elements);
+        return 3;
+    }
+    else {    // too many elements (more than 65535)
+        return 0;
+    }
+}
+
+int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len)
+{
+    data[0] = CBOR_MAP;
+    return _serialize_num_elements(data, num_elements, max_len);
+}
+
+int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len)
+{
+    data[0] = CBOR_ARRAY;
+    return _serialize_num_elements(data, num_elements, max_len);
+}
+
 #ifdef TS_64BIT_TYPES_SUPPORT
 int _cbor_uint_data(uint8_t *data, uint64_t *bytes)
 #else
@@ -210,7 +242,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT64_MAX) {
                 *value = (int64_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -220,7 +253,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT64_MAX) {
                 *value = -1 - (uint64_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -241,7 +275,8 @@ int cbor_deserialize_uint32(uint8_t *data, uint32_t *value)
     int size;
     uint8_t type = data[0] & CBOR_TYPE_MASK;
 
-    //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
+    //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+    //  (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
 
     if (!value || type != CBOR_UINT)
         return 0;
@@ -272,7 +307,8 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT32_MAX) {
                 *value = (int32_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //  (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -282,7 +318,8 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT32_MAX) {
                 *value = -1 - (uint32_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -392,7 +429,40 @@ int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
     return 0;   // longer string not supported
 }
 
-// determines the size of the cbor data item starting at given pointer
+// stores size of map or array in num_elements
+int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
+{
+    uint8_t type = data[0] & CBOR_TYPE_MASK;
+    uint8_t info = data[0] & CBOR_INFO_MASK;
+
+    //printf("type: %x, info: %x\n", type, info);
+
+    if (!num_elements)
+        return 0;
+
+    // normal type (single data element)
+    if (type != CBOR_MAP && type != CBOR_ARRAY) {
+        *num_elements = 1;
+        return 0;
+    }
+
+    if (info < 24) {
+        *num_elements = info;
+        return 1;
+    }
+    else if (info == CBOR_UINT8_FOLLOWS) {
+        *num_elements = data[1];
+        return 2;
+    }
+    else if (info == CBOR_UINT16_FOLLOWS) {
+        *num_elements = ntohs(*((uint16_t*)&data[1]));
+        return 3;
+    }
+    return 0;   // more map elements not supported
+}
+
+
+// determines the size of a cbor data item starting at given pointer
 int cbor_size(uint8_t *data)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;

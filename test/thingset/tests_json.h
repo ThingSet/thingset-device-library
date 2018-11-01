@@ -35,24 +35,6 @@ void json_write_wrong_data_structure()
     TEST_ASSERT_EQUAL_STRING(":33 Wrong format.", resp.data.str);
 }
 
-void json_write_float()
-{
-    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!write \"f32\" : 54.3");
-    thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp.data.str);
-    TEST_ASSERT_EQUAL_FLOAT(54.3, f32);
-}
-
-void json_write_int()
-{
-    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!write {\"i32\":61}");
-    thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp.data.str);
-    TEST_ASSERT_EQUAL(61, i32);
-}
-
 void json_write_array()
 {
     req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!write {    \"f32\" : 52,\"i32\":50.6}");
@@ -79,21 +61,13 @@ void json_write_unknown()
     TEST_ASSERT_EQUAL_STRING(":32 Data object not found.", resp.data.str);
 }
 
-void json_read_float()
-{
-    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!read \"f32\"");
-    thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. 54.30", resp.data.str);
-}
-
 void json_read_array()
 {
     //                                                      float        bool         int        
     req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!read [\"f32\", \"bool\", \"i32\"]");
     thingset_process(&req, &resp, &data);
     TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [54.30, false, 61]", resp.data.str);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.00, false, 50]", resp.data.str);
 }
 
 void json_list_input()
