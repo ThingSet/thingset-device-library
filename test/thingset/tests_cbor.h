@@ -6,7 +6,7 @@
 
 void cbor_write_float()
 {
-    str_buffer_t req, resp;
+    ts_buffer_t req, resp;
 
     union float2bytes { float f; char b[4]; } f2b;
     f2b.f = 54.0;
@@ -14,40 +14,40 @@ void cbor_write_float()
     char req2[] = { TS_FUNCTION_WRITE, 101, 0, TS_T_FLOAT32,  // Obj ID 101
         f2b.b[0], f2b.b[1], f2b.b[2], f2b.b[3] };
 
-    memcpy(req.data, req2, sizeof(req2));
+    memcpy(req.data.str, req2, sizeof(req2));
     req.pos = sizeof(req2);
     thingset_process(&req, &resp, &data);
 
-    TEST_ASSERT_EQUAL(0x80 + TS_STATUS_SUCCESS, resp.data[0]);
+    TEST_ASSERT_EQUAL(0x80 + TS_STATUS_SUCCESS, resp.data.str[0]);
     TEST_ASSERT_EQUAL(1, resp.pos);
 }
 
 // returns length of read value
 int _cbor_write_read_test(uint16_t id, char *value_write, char *value_read)
 {
-    str_buffer_t req, resp;
+    ts_buffer_t req, resp;
 
     int value_len = cbor_size((uint8_t*)value_write);
 
     // generate write request
-    req.data[0] = TS_FUNCTION_WRITE;
-    req.data[1] = id >> 8;
-    req.data[2] = (uint8_t)id;
-    memcpy(req.data + 3, value_write, value_len);
+    req.data.str[0] = TS_FUNCTION_WRITE;
+    req.data.str[1] = id >> 8;
+    req.data.str[2] = (uint8_t)id;
+    memcpy(req.data.str + 3, value_write, value_len);
     req.pos = value_len + 3;
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
     //printf("TEST: Write request len: %d, response len: %d\n", req.pos, resp.pos);
 
     // generate read request
-    req.data[0] = TS_FUNCTION_READ;
+    req.data.str[0] = TS_FUNCTION_READ;
     req.pos = 3; // data object ID same as above
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
     //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp.pos);
 
-    value_len = cbor_size((uint8_t*)resp.data + 1);
-    memcpy(value_read, resp.data + 1, value_len);
+    value_len = cbor_size((uint8_t*)resp.data.str + 1);
+    memcpy(value_read, resp.data.str + 1, value_len);
     return value_len;
 }
 
@@ -107,7 +107,7 @@ void test_list_small_buffer()
 {
     uint8_t req[2] = { TS_LIST, 0 };        // category 0
     uint8_t resp[10];
-    int len = req.data(req, 2, resp, 10);
+    int len = req.data.str(req, 2, resp, 10);
 
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL(TS_LIST + 128, resp[0]);

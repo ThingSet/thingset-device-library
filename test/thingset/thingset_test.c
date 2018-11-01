@@ -14,9 +14,19 @@ calibration_data_t cal;
 #include "tests_cbor.h"
 #include "tests_common.h"
 
+char buf_req[TS_REQ_BUFFER_LEN];
+char buf_resp[TS_RESP_BUFFER_LEN];
+ts_buffer_t req, resp;
+
 int main()
 {
     test_data_init();
+
+    req.data.str = buf_req;
+    req.size = sizeof(buf_req);
+
+    resp.data.str = buf_resp;
+    resp.size = sizeof(buf_resp);
 
     UNITY_BEGIN();
 

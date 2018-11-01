@@ -36,51 +36,51 @@ const data_object_t* thingset_data_object_by_name(ts_data_t *data, char *str, si
     return NULL;
 }
 
-void thingset_status_message_json(str_buffer_t *resp, int code)
+void thingset_status_message_json(ts_buffer_t *resp, int code)
 {
 #ifdef TS_VERBOSE_STATUS_MESSAGES
     switch(code) {
     case TS_STATUS_SUCCESS:
-        sprintf(resp->data, ":%d Success.", code);
+        sprintf(resp->data.str, ":%d Success.", code);
         break;
     case TS_STATUS_UNKNOWN_FUNCTION: // 31
-        sprintf(resp->data, ":%d Unknown function.", code);
+        sprintf(resp->data.str, ":%d Unknown function.", code);
         break;
     case TS_STATUS_UNKNOWN_DATA_OBJ: // 32
-        sprintf(resp->data, ":%d Data object not found.", code);
+        sprintf(resp->data.str, ":%d Data object not found.", code);
         break;
     case TS_STATUS_WRONG_FORMAT: // 33
-        sprintf(resp->data, ":%d Wrong format.", code);
+        sprintf(resp->data.str, ":%d Wrong format.", code);
         break;
     case TS_STATUS_WRONG_TYPE: // 34
-        sprintf(resp->data, ":%d Data type not supported.", code);
+        sprintf(resp->data.str, ":%d Data type not supported.", code);
         break;
     case TS_STATUS_DEVICE_BUSY:
-        sprintf(resp->data, ":%d Device busy.", code);
+        sprintf(resp->data.str, ":%d Device busy.", code);
         break;
     case TS_STATUS_UNAUTHORIZED:
-        sprintf(resp->data, ":%d Unauthorized.", code);
+        sprintf(resp->data.str, ":%d Unauthorized.", code);
         break;
     case TS_STATUS_REQUEST_TOO_LONG:
-        sprintf(resp->data, ":%d Request too long.", code);
+        sprintf(resp->data.str, ":%d Request too long.", code);
         break;
     case TS_STATUS_RESPONSE_TOO_LONG:
-        sprintf(resp->data, ":%d Response too long.", code);
+        sprintf(resp->data.str, ":%d Response too long.", code);
         break;
     case TS_STATUS_INVALID_VALUE:
-        sprintf(resp->data, ":%d Invalid or too large value.", code);
+        sprintf(resp->data.str, ":%d Invalid or too large value.", code);
         break;
     default:
-        sprintf(resp->data, ":%d Error.", code);
+        sprintf(resp->data.str, ":%d Error.", code);
         break;
     };
 #else
-    sprintf(resp->data, ":%d.", code);
+    sprintf(resp->data.str, ":%d.", code);
 #endif
-    resp->pos = strlen(resp->data);
+    resp->pos = strlen(resp->data.str);
 }
 
-int thingset_read_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
+int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 {
     int tok = 0;       // current token
 
@@ -90,10 +90,10 @@ int thingset_read_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
     thingset_status_message_json(resp, TS_STATUS_SUCCESS);
 
     if (parser->tokens[0].type == JSMN_ARRAY) {
-        resp->pos += sprintf(&resp->data[resp->pos], " [");
+        resp->pos += sprintf(&resp->data.str[resp->pos], " [");
         tok++;
     } else {
-        resp->pos += sprintf(&resp->data[resp->pos], " ");
+        resp->pos += sprintf(&resp->data.str[resp->pos], " ");
     }
 
     while (tok < parser->tok_count) {
@@ -119,30 +119,30 @@ int thingset_read_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
 
         switch (data_obj->type) {
         case TS_T_FLOAT32:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "%.*f, ", data_obj->detail, *((float*)data_obj->data));
             break;
         case TS_T_UINT64:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "%" PRIu64 ", ", *((uint64_t*)data_obj->data));
             break;
         case TS_T_INT64:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "%" PRIi64 ", ", *((int64_t*)data_obj->data));
             break;
         case TS_T_UINT32:
         case TS_T_INT32:
         case TS_T_UINT16:
         case TS_T_INT16:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "%d, ", *((int*)data_obj->data));
             break;
         case TS_T_BOOL:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "%s, ", (*((bool*)data_obj->data) == true ? "true" : "false"));
             break;
         case TS_T_STRING:
-            resp->pos += snprintf(&resp->data[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
                 "\"%s\", ", (char*)data_obj->data);
             break;
         }
@@ -156,15 +156,15 @@ int thingset_read_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
 
     resp->pos -= 2;  // remove trailing comma and blank
     if (parser->tokens[0].type == JSMN_ARRAY) {
-        resp->pos += sprintf(&resp->data[resp->pos], "]");
+        resp->pos += sprintf(&resp->data.str[resp->pos], "]");
     } else {
-        resp->data[resp->pos] = '\0';    // terminate string
+        resp->data.str[resp->pos] = '\0';    // terminate string
     }
 
     return TS_STATUS_SUCCESS;
 }
 
-int thingset_write_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
+int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 {
     int tok = 0;        // current token
     char buf[21];       // buffer for data object value (largest negative 64bit integer has 20 digits)
@@ -324,7 +324,7 @@ int thingset_write_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data
     return TS_STATUS_SUCCESS;
 }
 
-int thingset_list_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
+int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 {
     uint16_t mask = 0;
 
@@ -350,13 +350,13 @@ int thingset_list_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
         return TS_STATUS_WRONG_FORMAT;
     }
 
-    resp->pos += sprintf(&resp->data[resp->pos], " [");
+    resp->pos += sprintf(&resp->data.str[resp->pos], " [");
 
     for (unsigned int i = 0; i < data->size; i++) {
         if ((data->objects[i].access & TS_ACCESS_READ) &&
             ((data->objects[i].id & mask) == mask))
         {
-            resp->pos += snprintf(&resp->data[resp->pos],
+            resp->pos += snprintf(&resp->data.str[resp->pos],
                 TS_RESP_BUFFER_LEN - resp->pos,
                 "\"%s\", ", data->objects[i].name);
     
@@ -368,15 +368,15 @@ int thingset_list_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data)
     }
 
     // remove trailing comma and add closing bracket
-    sprintf(&resp->data[resp->pos-2], "]");
+    sprintf(&resp->data.str[resp->pos-2], "]");
     resp->pos--;
 
     return TS_STATUS_SUCCESS;
 }
 
-int thingset_pub_json(str_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
+int thingset_pub_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
 {
-    resp->pos = sprintf(resp->data, "# {");
+    resp->pos = sprintf(resp->data.str, "# {");
  
     for (unsigned int i = 0; i < list_len; ++i) {
 
@@ -384,19 +384,19 @@ int thingset_pub_json(str_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], 
 
         switch (data_obj->type) {
         case TS_T_FLOAT32:
-            resp->pos += snprintf(&resp->data[resp->pos], resp->size - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
                 "\"%s\":%.*f, ", data_obj->name, data_obj->detail, *((float*)data_obj->data));
             break;
         case TS_T_STRING:
-            resp->pos += snprintf(&resp->data[resp->pos], resp->size - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
                 "\"%s\":\"%s\", ", data_obj->name, (char*)data_obj->data);
             break;
         case TS_T_INT32:
-            resp->pos += snprintf(&resp->data[resp->pos], resp->size - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
                 "\"%s\":%d, ", data_obj->name, *((int*)data_obj->data));
             break;
         case TS_T_BOOL:
-            resp->pos += snprintf(&resp->data[resp->pos], resp->size - resp->pos, 
+            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
                 "\"%s\":%s, ", data_obj->name, (*((bool*)data_obj->data) == true ? "true" : "false"));
             break;
         }
@@ -404,7 +404,7 @@ int thingset_pub_json(str_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], 
             return TS_STATUS_RESPONSE_TOO_LONG;
         }
     }
-    sprintf(&resp->data[resp->pos-2], "}");    // overwrite comma + blank
+    sprintf(&resp->data.str[resp->pos-2], "}");    // overwrite comma + blank
 
     return TS_STATUS_SUCCESS;
 }

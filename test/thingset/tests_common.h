@@ -5,67 +5,62 @@
 #include "unity.h"
 #include <inttypes.h>
 
+extern ts_buffer_t req, resp;
 
 void _write_json(char const *name, char const *value)
 {
-    str_buffer_t req, resp;
-    req.pos = snprintf(req.data, TS_REQ_BUFFER_LEN, "!write \"%s\":%s", name, value);
+    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!write \"%s\":%s", name, value);
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL(strlen(resp.data), resp.pos);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp.data);
+    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp.data.str);
 }
 
 int _read_json(char const *name, char *value_read)
 {
-    str_buffer_t req, resp;
-    req.pos = snprintf(req.data, TS_REQ_BUFFER_LEN, "!read \"%s\"", name);
+    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!read \"%s\"", name);
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL(strlen(resp.data), resp.pos);
+    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
 
     char buf[100];
-    strncpy(buf, resp.data, 11);
+    strncpy(buf, resp.data.str, 11);
     buf[11] = '\0';
-    //printf("buf: %s, resp: %s\n", buf, resp.data);
+    //printf("buf: %s, resp: %s\n", buf, resp.data.str);
 
     TEST_ASSERT_EQUAL_STRING(":0 Success.", buf);
 
-    return snprintf(value_read, strlen(resp.data) - 11, "%s", resp.data + 12);
+    return snprintf(value_read, strlen(resp.data.str) - 11, "%s", resp.data.str + 12);
 }
 
 // returns length of read value
 int _read_cbor(uint16_t id, char *value_read)
 {
-    str_buffer_t req, resp;
-
     // generate read request
-    req.data[0] = TS_FUNCTION_READ;
-    req.data[1] = id >> 8;
-    req.data[2] = (uint8_t)id;
+    req.data.str[0] = TS_FUNCTION_READ;
+    req.data.str[1] = id >> 8;
+    req.data.str[2] = (uint8_t)id;
     req.pos = 3;
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
     //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp.pos);
 
-    int value_len = cbor_size((uint8_t*)resp.data + 1);
-    memcpy(value_read, resp.data + 1, value_len);
+    int value_len = cbor_size((uint8_t*)resp.data.str + 1);
+    memcpy(value_read, resp.data.str + 1, value_len);
     return value_len;
 }
 
 // returns length of read value
 void _write_cbor(uint16_t id, char *value)
 {
-    str_buffer_t req, resp;
-
     int len = cbor_size((uint8_t*)value);
 
     // generate write request
-    req.data[0] = TS_FUNCTION_WRITE;
-    req.data[1] = id >> 8;
-    req.data[2] = (uint8_t)id;
-    memcpy(req.data + 3, value, len);
+    req.data.str[0] = TS_FUNCTION_WRITE;
+    req.data.str[1] = id >> 8;
+    req.data.str[2] = (uint8_t)id;
+    memcpy(req.data.str + 3, value, len);
     req.pos = len + 3;
     thingset_process(&req, &resp, &data);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp.data.str[0] - 0x80);
 }
 
 void _json2cbor(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex)

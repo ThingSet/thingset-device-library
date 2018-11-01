@@ -51,24 +51,27 @@ extern "C" {
 
 /* Internal C data types (used to cast void* pointers)
  */
-#define TS_T_BOOL    0
-#define TS_T_UINT64  1
-#define TS_T_INT64   2
-#define TS_T_UINT32  3
-#define TS_T_INT32   4
-#define TS_T_UINT16  5
-#define TS_T_INT16   6
-#define TS_T_FLOAT32 7
-#define TS_T_STRING  8
+enum ts_type {
+    TS_T_BOOL,
+    TS_T_UINT64,
+    TS_T_INT64,
+    TS_T_UINT32,
+    TS_T_INT32,
+    TS_T_UINT16,
+    TS_T_INT16,
+    TS_T_FLOAT32,
+    TS_T_STRING,
+    TS_T_DECFRAC       // CBOR decimal fraction
+};
 
 /* Internal access rights to data objects
  */
-#define TS_ACCESS_READ (0x1U)
-#define TS_ACCESS_WRITE (0x1U << 1)
-#define TS_ACCESS_READ_AUTH (0x1U << 2)     // read after authentication
-#define TS_ACCESS_WRITE_AUTH (0x1U << 3)    // write after authentication
-#define TS_ACCESS_EXEC (0x1U << 4)          // execute (for RPC only)
-#define TS_ACCESS_EXEC_AUTH (0x1U << 5)     // execute after authentication
+#define TS_ACCESS_READ          (0x1U)
+#define TS_ACCESS_WRITE         (0x1U << 1)
+#define TS_ACCESS_READ_AUTH     (0x1U << 2)     // read after authentication
+#define TS_ACCESS_WRITE_AUTH    (0x1U << 3)     // write after authentication
+#define TS_ACCESS_EXEC          (0x1U << 4)     // execute (for RPC only)
+#define TS_ACCESS_EXEC_AUTH     (0x1U << 5)     // execute after authentication
 
 /* ThingSet data object categories
  */
@@ -118,20 +121,34 @@ typedef struct data_object_t {
 
 /* buffer for string-type data encoded as char array (necessary to use string functions without casts)
  */
-typedef struct {
+/*typedef struct {
     //char *data;             // array containing data
     char data[TS_REQ_BUFFER_LEN];
     size_t size;            // size of the array
     size_t pos;             // index of the next free byte
-} str_buffer_t;
+} ts_buffer_t;
+*/
+
+/* buffer for string-type data encoded as char array (necessary to use string functions without casts)
+ */
+typedef struct {
+    union {
+        char *str;
+        uint8_t *bin;
+    } data;
+    size_t size;            // size of the array
+    size_t pos;             // index of the next free byte
+} ts_buffer_t;
+
 
 /* buffer for binary data (unsigned on all platforms)
  */
-typedef struct {
+/*typedef struct {
     uint8_t *data;          // array containing data
     size_t size;            // size of the array
     size_t pos;             // index of the next free byte
-} bin_buffer_t;
+} ts_buffer_t;
+*/
 
 typedef struct ts_data_t {
     const data_object_t *objects;
@@ -153,25 +170,25 @@ typedef struct {
  * 
  * This function also detects if JSON or CBOR format is used
  */
-void thingset_process(str_buffer_t *req, str_buffer_t *resp, ts_data_t *data);
+void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
 /* ThingSet read function
  *   - appends requested data to resp buffer
  *   - returns ThingSet status code
  */
-int thingset_read_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data);
+int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
-int thingset_write_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data);
+int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
-int thingset_list_json(ts_parser_t *parser, str_buffer_t *resp, ts_data_t *data);
+int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
-int thingset_pub_json(str_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len);
+int thingset_pub_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len);
 
-void thingset_status_message_json(str_buffer_t *resp, int code);
+void thingset_status_message_json(ts_buffer_t *resp, int code);
 
-int thingset_read_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data);
-int thingset_write_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data);
-int thingset_list_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data);
+int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+int thingset_list_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
 const data_object_t* thingset_data_object_by_id(ts_data_t *data, uint16_t id);
 

@@ -23,7 +23,7 @@
 
 #define DEBUG 0
 
-void thingset_process(str_buffer_t *req, str_buffer_t *resp, ts_data_t *data)
+void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
     static ts_parser_t tsp;
 
@@ -34,43 +34,43 @@ void thingset_process(str_buffer_t *req, str_buffer_t *resp, ts_data_t *data)
 
     jsmn_init(&(tsp.parser));
 
-    if (req->data[0] == TS_FUNCTION_READ) {
-        bin_buffer_t req_bin, resp_bin;
+    if (req->data.bin[0] == TS_FUNCTION_READ) {
+        /*ts_buffer_t req_bin, resp_bin;
         req_bin.data = (uint8_t*)req->data;
         req_bin.pos = req->pos;
         req_bin.size = req->size;
         resp_bin.data = (uint8_t*)resp->data;
         resp_bin.pos = 0;
-        resp_bin.size = resp->size;
-        thingset_read_cbor(&req_bin, &resp_bin, data);
-        resp->pos = resp_bin.pos;
+        resp_bin.size = resp->size;*/
+        thingset_read_cbor(req, resp, data);
+        //resp->pos = resp_bin.pos;
     }
-    else if (req->data[0] == TS_FUNCTION_WRITE) {
-        bin_buffer_t req_bin, resp_bin;
+    else if (req->data.bin[0] == TS_FUNCTION_WRITE) {
+        /*ts_buffer_t req_bin, resp_bin;
         req_bin.data = (uint8_t*)req->data;
         req_bin.pos = req->pos;
         req_bin.size = req->size;
         resp_bin.data = (uint8_t*)resp->data;
         resp_bin.pos = 0;
-        resp_bin.size = resp->size;
-        thingset_write_cbor(&req_bin, &resp_bin, data);
-        resp->pos = resp_bin.pos;
+        resp_bin.size = resp->size;*/
+        thingset_write_cbor(req, resp, data);
+        //resp->pos = resp_bin.pos;
     }
-    else if (req->data[0] == '!') {      // JSON request
-        if (req->pos > 4 && strncmp(req->data, "!read", 5) == 0) {
-            tsp.str = req->data+6;
+    else if (req->data.str[0] == '!') {      // JSON request
+        if (req->pos > 4 && strncmp(req->data.str, "!read", 5) == 0) {
+            tsp.str = req->data.str+6;
             tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-6, tsp.tokens, TS_NUM_JSON_TOKENS);
             //printf("read command, data: %s, num_tok: %d\n", tsp.str, tsp.tok_count);
             thingset_read_json(&tsp, resp, data);
         }
-        else if (req->pos > 5 && strncmp(req->data, "!write", 6) == 0) {
-            tsp.str = req->data+7;
+        else if (req->pos > 5 && strncmp(req->data.str, "!write", 6) == 0) {
+            tsp.str = req->data.str+7;
             tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-7, tsp.tokens, TS_NUM_JSON_TOKENS);
             //printf("write command, data: %s, num_tok: %d\n", tsp.str, tsp.tok_count);
             thingset_write_json(&tsp, resp, data);
         }
-        else if (req->pos > 5 && strncmp(req->data, "!list", 5) == 0) {
-            tsp.str = req->data+6;
+        else if (req->pos > 5 && strncmp(req->data.str, "!list", 5) == 0) {
+            tsp.str = req->data.str+6;
             tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-6, tsp.tokens, TS_NUM_JSON_TOKENS);
             thingset_list_json(&tsp, resp, data);
         }
@@ -78,7 +78,7 @@ void thingset_process(str_buffer_t *req, str_buffer_t *resp, ts_data_t *data)
         //else if (req_len >= 4 && strncmp(req, "!dfu", 4) == 0) {
             //dfu_run_bootloader();
         //}
-        else if (req->pos >= 4 && strncmp(req->data, "!pub", 4) == 0) {
+        else if (req->pos >= 4 && strncmp(req->data.str, "!pub", 4) == 0) {
             // TODO!!
         }
         else {
@@ -87,7 +87,7 @@ void thingset_process(str_buffer_t *req, str_buffer_t *resp, ts_data_t *data)
     }
     else {
         // not a thingset command --> ignore and set response to empty string
-        resp->data[0] = 0;
+        resp->data.str[0] = 0;
         resp->pos = 0;
         //thingset_status_message(ts, TS_STATUS_UNKNOWN_FUNCTION);
     }

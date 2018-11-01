@@ -32,14 +32,14 @@ const data_object_t* thingset_data_object_by_id(ts_data_t *data, uint16_t id) {
     return NULL;
 }
 
-int _status_msg(bin_buffer_t *resp, uint8_t code)
+int _status_msg(ts_buffer_t *resp, uint8_t code)
 {
-    resp->data[0] = 0x80 + code;
+    resp->data.bin[0] = 0x80 + code;
     resp->pos = 1;
     return code;
 }
 
-int thingset_read_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
+int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     
@@ -48,7 +48,7 @@ int thingset_read_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
     while (pos + 1 < req->pos) {
 
         const data_object_t* data_obj = thingset_data_object_by_id(data,
-            ((uint16_t)req->data[pos] << 8) + (uint16_t)req->data[pos+1]);
+            ((uint16_t)req->data.bin[pos] << 8) + (uint16_t)req->data.bin[pos+1]);
 
         if (data_obj == NULL) {
             return _status_msg(resp, TS_STATUS_UNKNOWN_DATA_OBJ);
@@ -63,31 +63,31 @@ int thingset_read_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
         switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
             case TS_T_UINT64:
-                num_bytes = cbor_serialize_int(&resp->data[resp->pos], *((uint64_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_int(&resp->data.bin[resp->pos], *((uint64_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read INT32, id: 0x%x, value: %d, num_bytes: %d, max_len: %d\n", data_obj->id, *((int32_t*)data_obj->data), num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
             case TS_T_INT64:
-                num_bytes = cbor_serialize_int(&resp->data[resp->pos], *((int64_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_int(&resp->data.bin[resp->pos], *((int64_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read INT32, id: 0x%x, value: %d, num_bytes: %d, max_len: %d\n", data_obj->id, *((int32_t*)data_obj->data), num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
 #endif
             case TS_T_UINT32:
-                num_bytes = cbor_serialize_int(&resp->data[resp->pos], *((uint32_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_int(&resp->data.bin[resp->pos], *((uint32_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read INT32, id: 0x%x, value: %d, num_bytes: %d, max_len: %d\n", data_obj->id, *((int32_t*)data_obj->data), num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
             case TS_T_INT32:
-                num_bytes = cbor_serialize_int(&resp->data[resp->pos], *((int32_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_int(&resp->data.bin[resp->pos], *((int32_t*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read INT32, id: 0x%x, value: %d, num_bytes: %d, max_len: %d\n", data_obj->id, *((int32_t*)data_obj->data), num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
             case TS_T_FLOAT32:
-                num_bytes = cbor_serialize_float(&resp->data[resp->pos], *((float*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_float(&resp->data.bin[resp->pos], *((float*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read FLOAT, id: 0x%x, value: %d, num_bytes: %d, max_len: %d\n", data_obj->id, *((int32_t*)data_obj->data), num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
             case TS_T_BOOL:
-                num_bytes = cbor_serialize_bool(&resp->data[resp->pos], *((bool*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_bool(&resp->data.bin[resp->pos], *((bool*)data_obj->data), TS_RESP_BUFFER_LEN - resp->pos);
                 break;
             case TS_T_STRING:
-                num_bytes = cbor_serialize_string(&resp->data[resp->pos], (char*)data_obj->data, TS_RESP_BUFFER_LEN - resp->pos);
+                num_bytes = cbor_serialize_string(&resp->data.bin[resp->pos], (char*)data_obj->data, TS_RESP_BUFFER_LEN - resp->pos);
                 //printf("read STRING, id: 0x%x, value: %s, num_bytes: %d, max_len: %d\n", data_obj->id, (char*)data_obj->data, num_bytes, TS_RESP_BUFFER_LEN - resp->pos);
                 break;
         }
@@ -104,18 +104,18 @@ int thingset_read_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
     return TS_STATUS_SUCCESS;
 }
 
-int thingset_write_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
+int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
 
-    //printf("write request, id: 0x%x, hex data: %x %x %x %x %x\n", ((uint16_t)req->data[1] << 8) + req->data[2], 
-    //    req->data[3], req->data[4], req->data[5], req->data[6], req->data[7]);
+    //printf("write request, id: 0x%x, hex data: %x %x %x %x %x\n", ((uint16_t)req->data.bin[1] << 8) + req->data.bin[2], 
+    //    req->data.bin[3], req->data.bin[4], req->data.bin[5], req->data.bin[6], req->data.bin[7]);
 
     // loop through all elements to check if request is valid
     while (pos < req->pos) {
 
         const data_object_t* data_obj = thingset_data_object_by_id(data,
-            ((uint16_t)req->data[pos] << 8) + (uint16_t)req->data[pos+1]);
+            ((uint16_t)req->data.bin[pos] << 8) + (uint16_t)req->data.bin[pos+1]);
         pos += 2;
 
         if (data_obj == NULL) {
@@ -129,26 +129,26 @@ int thingset_write_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
         switch (data_obj->type) {
 #if (TS_64BIT_TYPES_SUPPORT == 1)
             case TS_T_UINT64:
-                pos += cbor_deserialize_uint64(&req->data[pos], (uint64_t*)data_obj->data);
+                pos += cbor_deserialize_uint64(&req->data.bin[pos], (uint64_t*)data_obj->data);
                 break;
             case TS_T_INT64:
-                pos += cbor_deserialize_int64(&req->data[pos], (int64_t*)data_obj->data);
+                pos += cbor_deserialize_int64(&req->data.bin[pos], (int64_t*)data_obj->data);
                 break;
 #endif
             case TS_T_UINT32:
-                pos += cbor_deserialize_uint32(&req->data[pos], (uint32_t*)data_obj->data);
+                pos += cbor_deserialize_uint32(&req->data.bin[pos], (uint32_t*)data_obj->data);
                 break;
             case TS_T_INT32:
-                pos += cbor_deserialize_int32(&req->data[pos], (int32_t*)data_obj->data);
+                pos += cbor_deserialize_int32(&req->data.bin[pos], (int32_t*)data_obj->data);
                 break;
             case TS_T_FLOAT32:
-                pos += cbor_deserialize_float(&req->data[pos], (float*)data_obj->data);
+                pos += cbor_deserialize_float(&req->data.bin[pos], (float*)data_obj->data);
                 break;
             case TS_T_BOOL:
-                pos += cbor_deserialize_bool(&req->data[pos], (bool*)data_obj->data);
+                pos += cbor_deserialize_bool(&req->data.bin[pos], (bool*)data_obj->data);
                 break;
             case TS_T_STRING:
-                pos += cbor_deserialize_string(&req->data[pos], (char*)data_obj->data, data_obj->detail);
+                pos += cbor_deserialize_string(&req->data.bin[pos], (char*)data_obj->data, data_obj->detail);
                 break;
             default:
                 break;
@@ -162,16 +162,16 @@ int thingset_write_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
 /*
 int thingset_get_data_object_name(void)
 {
-    _resp->data[0] = TS_OBJ_NAME + 0x80;    // Function ID
+    _resp->data.bin[0] = TS_OBJ_NAME + 0x80;    // Function ID
     int data_obj_id = _req[1] + ((int)_req[2] << 8);
 
     for (unsigned int i = 0; i < sizeof(dataObjects)/sizeof(data_object_t); i++) {
         if (dataObjects[i].id == data_obj_id) {
             if (dataObjects[i].access & ACCESS_READ) {
-                _resp->data[1] = T_STRING;
+                _resp->data.bin[1] = T_STRING;
                 int len = strlen(dataObjects[i].name);
                 for (int j = 0; j < len; j++) {
-                    _resp->data[j+2] = *(dataObjects[i].name + j);
+                    _resp->data.bin[j+2] = *(dataObjects[i].name + j);
                 }
                 #if DEBUG
                 serial.printf("Get Data Object Name: %s (id = %d)\n", dataObjects[i].name, data_obj_id);
@@ -179,22 +179,22 @@ int thingset_get_data_object_name(void)
                 return len + 2;
             }
             else {
-                _resp->data[1] = TS_STATUS_UNAUTHORIZED;
+                _resp->data.bin[1] = TS_STATUS_UNAUTHORIZED;
                 return 2;   // length of response
             }
         }
     }
 
     // data object not found --> send error message
-    _resp->data[1] = TS_STATUS_DATA_UNKNOWN;
+    _resp->data.bin[1] = TS_STATUS_DATA_UNKNOWN;
     return 2;   // length of response
 }
 
 
-int thingset_list_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
+int thingset_list_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
-    _resp->data[0] = TS_LIST + 0x80;    // Function ID
-    //_resp->data[1] = T_UINT16;
+    _resp->data.bin[0] = TS_LIST + 0x80;    // Function ID
+    //_resp->data.bin[1] = T_UINT16;
     int category = _req[1];
     int num_ids = 0;
 
@@ -203,13 +203,13 @@ int thingset_list_cbor(bin_buffer_t *req, bin_buffer_t *resp, ts_data_t *data)
             && (dataObjects[i].category == category || category == TS_C_ALL))
         {
             if (num_ids * 2 < _resp_max_len - 4) {  // enough space left in buffer
-                _resp->data[num_ids*2 + 2] = dataObjects[i].id & 0x00FF;
-                _resp->data[num_ids*2 + 3] = dataObjects[i].id >> 8;
+                _resp->data.bin[num_ids*2 + 2] = dataObjects[i].id & 0x00FF;
+                _resp->data.bin[num_ids*2 + 3] = dataObjects[i].id >> 8;
                 num_ids++;
             }
             else {
                 // not enough space in buffer
-                _resp->data[1] = TS_STATUS_RESPONSE_TOO_LONG;
+                _resp->data.bin[1] = TS_STATUS_RESPONSE_TOO_LONG;
                 return 2;
             }
         }
