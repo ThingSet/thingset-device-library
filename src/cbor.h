@@ -83,6 +83,8 @@ int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);
 #endif
 
+int cbor_serialize_decimal_fraction(uint8_t *data, int32_t mantissa, int32_t exponent, size_t max_len);
+
 int cbor_serialize_float(uint8_t *data, float value, size_t max_len);
 
 int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
@@ -102,6 +104,8 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value);
 
 int cbor_deserialize_uint16(uint8_t *data, uint16_t *value);
 int cbor_deserialize_int16(uint8_t *data, int16_t *value);
+
+int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent);
 
 int cbor_deserialize_float(uint8_t *data, float *value);
 

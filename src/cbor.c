@@ -315,6 +315,13 @@ int cbor_deserialize_int16(uint8_t *data, int16_t *value)
     return 0;
 }
 
+// the exponent is fixed, so the mantissa is multiplied to fit the 
+int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent)
+{
+    return 0;
+}
+
+
 int cbor_deserialize_float(uint8_t *data, float *value)
 {
     if (data[0] != CBOR_FLOAT32 || !value)
