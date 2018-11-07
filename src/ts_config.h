@@ -57,7 +57,7 @@
  * performance
  */
 #ifndef TS_64BIT_TYPES_SUPPORT
-#define TS_64BIT_TYPES_SUPPORT 1
+#define TS_64BIT_TYPES_SUPPORT 0        // default: no support
 #endif
 
 /* Macros for conversion between host and network byte order

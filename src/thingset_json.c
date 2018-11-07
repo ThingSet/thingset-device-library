@@ -219,8 +219,6 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
         }
 
         errno = 0;
-        float tmp_f;
-        int tmp_i;
         switch (data_obj->type) {
             case TS_T_STRING:
                 if (parser->tokens[tok+1].type != JSMN_STRING) {
@@ -234,7 +232,7 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
                     thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
                     return TS_STATUS_WRONG_TYPE;
                 }
-                tmp_f = strtod(buf, NULL);
+                strtod(buf, NULL);
                 if (errno == ERANGE) {
                     thingset_status_message_json(resp, TS_STATUS_INVALID_VALUE);
                     return TS_STATUS_INVALID_VALUE;
@@ -248,7 +246,7 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
                     thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
                     return TS_STATUS_WRONG_TYPE;
                 }
-                tmp_i = strtol(buf, NULL, 0);
+                strtol(buf, NULL, 0);
                 if (errno == ERANGE) {
                     thingset_status_message_json(resp, TS_STATUS_INVALID_VALUE);
                     return TS_STATUS_INVALID_VALUE;

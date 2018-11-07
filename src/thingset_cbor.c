@@ -82,16 +82,16 @@ int _serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj)
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((uint64_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint64_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
     case TS_T_INT64:
         return cbor_serialize_int(&buf->data.bin[buf->pos], *((int64_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
 #endif
     case TS_T_UINT32:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((uint32_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint32_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
     case TS_T_INT32:
         return cbor_serialize_int(&buf->data.bin[buf->pos], *((int32_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
     case TS_T_UINT16:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((uint16_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint16_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
     case TS_T_INT16:
         return cbor_serialize_int(&buf->data.bin[buf->pos], *((int16_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
     case TS_T_FLOAT32:
@@ -112,14 +112,14 @@ int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
     
     _status_msg(resp, TS_STATUS_SUCCESS);   // init response buffer
 
-    //printf("read request, array: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements > 0, 
-    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3], 
-    //    req->data.bin[pos+4], req->data.bin[pos+5], req->data.bin[pos+6], req->data.bin[pos+6]);
-
     pos += cbor_num_elements(&req->data.bin[1], &num_elements);
     if (num_elements != 1 && (req->data.bin[1] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
         return _status_msg(resp, TS_STATUS_WRONG_FORMAT);
     }
+
+    //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements, 
+    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3], 
+    //    req->data.bin[pos+4], req->data.bin[pos+5], req->data.bin[pos+6], req->data.bin[pos+6]);
 
     if (num_elements > 1) {
         resp->pos += cbor_serialize_array(&resp->data.bin[resp->pos], num_elements, resp->size - resp->pos);

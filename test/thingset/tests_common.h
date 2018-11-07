@@ -121,10 +121,11 @@ void write_json_read_cbor()
     _json2cbor("i32", "65536", 0x6004, "1A 00 01 00 00");
     _json2cbor("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
-    // only for int64 or uint32
+    #if TS_64BIT_TYPES_SUPPORT
     _json2cbor("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     _json2cbor("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
     _json2cbor("i64", "9223372036854775807", 0x6002, "1B 7F FF FF FF FF FF FF FF"); // maximum value for int64
+    #endif
 
     // negative integers
     _json2cbor("i32", "-0", 0x6004, "00");
@@ -136,9 +137,11 @@ void write_json_read_cbor()
     _json2cbor("i32", "-65537", 0x6004, "3A 00 01 00 00");
     _json2cbor("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
+    #if TS_64BIT_TYPES_SUPPORT
     _json2cbor("i64", "-4294967296", 0x6002, "3A FF FF FF FF"); 
     _json2cbor("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00"); 
     _json2cbor("i64", "-9223372036854775808", 0x6002, "3B 7F FF FF FF FF FF FF FF"); // maximum value for int64
+    #endif
 
     // float
     _json2cbor("f32", "12.340",  0x6007, "fa 41 45 70 a4");
@@ -169,9 +172,11 @@ void write_cbor_read_json()
     _cbor2json("i32", "65536", 0x6004, "1A 00 01 00 00");
     _cbor2json("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
+    #if TS_64BIT_TYPES_SUPPORT
     _cbor2json("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     _cbor2json("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
     _cbor2json("i64", "9223372036854775807", 0x6002, "1B 7F FF FF FF FF FF FF FF"); // maximum value for int64
+    #endif
 
     // negative integers
     _cbor2json("i32", "-24", 0x6004, "37");
@@ -183,9 +188,11 @@ void write_cbor_read_json()
     _cbor2json("i32", "-65537", 0x6004, "3A 00 01 00 00");
     _cbor2json("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
+    #if TS_64BIT_TYPES_SUPPORT
     _cbor2json("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     _cbor2json("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
     _cbor2json("i64", "-9223372036854775808", 0x6002, "3B 7F FF FF FF FF FF FF FF"); // maximum value for int64
+    #endif
 
     // float
     _cbor2json("f32", "12.34",  0x6007, "fa 41 45 70 a4");

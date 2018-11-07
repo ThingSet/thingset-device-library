@@ -39,27 +39,37 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
     } 
     else if (value <= 0xFF && max_len >= 2) {
         data[0] = CBOR_UINT | CBOR_UINT8_FOLLOWS;
-        data[1] = (uint8_t)value;
+        data[1] = value;
         //printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
         return 2;
     } 
     else if (value <= 0xFFFF && max_len >= 3) {
         data[0] = CBOR_UINT | CBOR_UINT16_FOLLOWS;
-        *((uint16_t*)&data[1]) = htons((uint16_t)value);
+        data[1] = value >> 8;
+        data[2] = value;
         //printf("serialize: value = 0x%.4X <= 0xFFFF, data: %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2]);
         return 3;
     } 
     else if (value <= 0xFFFFFFFF && max_len >= 5) {
         data[0] = CBOR_UINT | CBOR_UINT32_FOLLOWS;
-        *((uint32_t*)&data[1]) = htonl((uint32_t)value);
+        data[1] = value >> 24;
+        data[2] = value >> 16;
+        data[3] = value >> 8;
+        data[4] = value;
         //printf("serialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
         return 5;
     }
 #ifdef TS_64BIT_TYPES_SUPPORT
     else if (max_len >= 9) {
         data[0] = CBOR_UINT | CBOR_UINT64_FOLLOWS;
-        *((uint32_t*)&data[1]) = htonl((uint32_t)(value >> 32));
-        *((uint32_t*)&data[5]) = htonl((uint32_t)value);
+        data[1] = (value >> 32) >> 24;
+        data[2] = (value >> 32) >> 16;
+        data[3] = (value >> 32) >> 8;
+        data[4] = (value >> 32);
+        data[5] = value >> 24;
+        data[6] = value >> 16;
+        data[7] = value >> 8;
+        data[8] = value;
         return 9;
     }
 #endif
@@ -94,11 +104,13 @@ int cbor_serialize_float(uint8_t *data, float value, size_t max_len)
 
     data[0] = CBOR_FLOAT32;
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstrict-aliasing"          // remove compiler warning
-    *((uint32_t*)&data[1]) = htonl(*((uint32_t*)&value));
-    #pragma GCC diagnostic pop
-    
+    union { float f; uint32_t ui; } f2ui;
+    f2ui.f = value;
+    data[1] = f2ui.ui >> 24;
+    data[2] = f2ui.ui >> 16;
+    data[3] = f2ui.ui >> 8;
+    data[4] = f2ui.ui;
+
     return 5;
 }
 
@@ -191,17 +203,19 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
         return 2;
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
-        *bytes = ntohs(*((uint16_t*)&data[1]));
+        *bytes = data[1] << 8 | data[2];
         return 3;
     }
     else if (info == CBOR_UINT32_FOLLOWS) {
-        *bytes = ntohl(*((uint32_t*)&data[1]));
+        // TODO: does not work with uint64_t --> hard-fault
+        *bytes = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
+        //*(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
         return 5;
     }
 #ifdef TS_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT64_FOLLOWS) {
-        *bytes = ((uint64_t)ntohl(*((uint32_t*)&data[1])) << 32)
-               + ntohl(*((uint32_t*)&data[5]));
+        *bytes = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
+        *(bytes+4) = data[5] << 24 | data[6] << 16 | data[7] << 8 | data[8];
         return 9;
     }
 #endif
@@ -242,8 +256,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT64_MAX) {
                 *value = (int64_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
-                //    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -253,8 +267,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT64_MAX) {
                 *value = -1 - (uint64_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
-                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -364,12 +378,9 @@ int cbor_deserialize_float(uint8_t *data, float *value)
     if (data[0] != CBOR_FLOAT32 || !value)
         return 0;
     
-    uint32_t bytes = ntohl(*((uint32_t*)&data[1]));
-
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstrict-aliasing"          // remove compiler warning
-    *value = *((float*)&bytes);
-    #pragma GCC diagnostic pop
+    union { float f; uint32_t ui; } f2ui;
+    f2ui.ui = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
+    *value = f2ui.f;
     
     return 5;
 }

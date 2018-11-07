@@ -11,9 +11,14 @@ extern ts_buffer_t req, resp;
 
 void cbor_write_array()
 {
-    char cbor_req_hex[] = "02 A9 "      // write map with 9 elements
+    char cbor_req_hex[] = 
+        #if TS_64BIT_TYPES_SUPPORT
+        "02 A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
         "19 60 02 02 "
+        #else
+        "02 A7 "      // write map with 7 elements
+        #endif
         "19 60 03 03 "
         "19 60 04 04 "
         "19 60 05 05 "
@@ -37,9 +42,14 @@ void cbor_write_array()
 
 void cbor_read_array()
 {
-    char cbor_req_hex[] = "01 89 "      // read array with 9 elements
+    char cbor_req_hex[] =
+        #if TS_64BIT_TYPES_SUPPORT
+        "01 89 "      // read array with 9 elements
         "19 60 01 "
         "19 60 02 "
+        #else
+        "01 87 "      // read array with 7 elements
+        #endif
         "19 60 03 "
         "19 60 04 "
         "19 60 05 "
@@ -59,9 +69,14 @@ void cbor_read_array()
     req.pos = pos;
     thingset_process(&req, &resp, &data);
 
-    char cbor_resp_hex[] = "80 89 "     // successful response: array with 9 elements
+    char cbor_resp_hex[] = 
+        #if TS_64BIT_TYPES_SUPPORT
+        "80 89 "     // successful response: array with 9 elements
         "01 "                  // value 1
         "02 "
+        #else
+        "80 87 "     // successful response: array with 7 elements
+        #endif
         "03 "
         "04 "
         "05 "
@@ -82,9 +97,11 @@ void cbor_read_array()
 
 void cbor_pub_msg()
 {
-    uint16_t list[] = { 
+    uint16_t list[] = {
+        #if TS_64BIT_TYPES_SUPPORT
         0x6001,
         0x6002,
+        #endif
         0x6003,
         0x6004,
         0x6005,
@@ -98,9 +115,14 @@ void cbor_pub_msg()
 
     TEST_ASSERT_EQUAL(0, status);
 
-    char cbor_resp_hex[] = "1f A9 "     // map with 9 elements
+    char cbor_resp_hex[] = 
+        #if TS_64BIT_TYPES_SUPPORT
+        "1f A9 "     // map with 9 elements
         "19 60 01 01 "                  // value 1
         "19 60 02 02 "
+        #else
+        "1f A7 "     // map with 7 elements
+        #endif
         "19 60 03 03 "
         "19 60 04 04 "
         "19 60 05 05 "
