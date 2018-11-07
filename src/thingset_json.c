@@ -80,6 +80,46 @@ void thingset_status_message_json(ts_buffer_t *resp, int code)
     resp->pos = strlen(resp->data.str);
 }
 
+void _json_serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj, bool include_name)
+{
+    if (include_name) {
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "\"%s\":", data_obj->name);
+    }
+
+    switch (data_obj->type) {
+#ifdef TS_64BIT_TYPES_SUPPORT
+    case TS_T_UINT64:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%" PRIu64 ", ", *((uint64_t*)data_obj->data));
+        break;
+    case TS_T_INT64:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%" PRIi64 ", ", *((int64_t*)data_obj->data));
+        break;
+#endif
+    case TS_T_UINT32:
+    case TS_T_INT32:
+    case TS_T_UINT16:
+    case TS_T_INT16:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%d, ", *((int*)data_obj->data));
+        break;
+    case TS_T_FLOAT32:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%.*f, ", data_obj->detail, *((float*)data_obj->data));
+        break;
+    case TS_T_BOOL:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%s, ", (*((bool*)data_obj->data) == true ? "true" : "false"));
+        break;
+    case TS_T_STRING:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "\"%s\", ", (char*)data_obj->data);
+        break;
+    }
+}
+
 int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 {
     int tok = 0;       // current token
@@ -117,35 +157,7 @@ int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
             return TS_STATUS_UNAUTHORIZED;
         }
 
-        switch (data_obj->type) {
-        case TS_T_FLOAT32:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "%.*f, ", data_obj->detail, *((float*)data_obj->data));
-            break;
-        case TS_T_UINT64:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "%" PRIu64 ", ", *((uint64_t*)data_obj->data));
-            break;
-        case TS_T_INT64:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "%" PRIi64 ", ", *((int64_t*)data_obj->data));
-            break;
-        case TS_T_UINT32:
-        case TS_T_INT32:
-        case TS_T_UINT16:
-        case TS_T_INT16:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "%d, ", *((int*)data_obj->data));
-            break;
-        case TS_T_BOOL:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "%s, ", (*((bool*)data_obj->data) == true ? "true" : "false"));
-            break;
-        case TS_T_STRING:
-            resp->pos += snprintf(&resp->data.str[resp->pos], TS_RESP_BUFFER_LEN - resp->pos, 
-                "\"%s\", ", (char*)data_obj->data);
-            break;
-        }
+        _json_serialize_data_object(resp, data_obj, false);   // array: don't include the name field
 
         if (resp->pos >= TS_RESP_BUFFER_LEN - 2) {
             thingset_status_message_json(resp, TS_STATUS_RESPONSE_TOO_LONG);
@@ -372,6 +384,7 @@ int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     return TS_STATUS_SUCCESS;
 }
 
+
 int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
 {
     resp->pos = sprintf(resp->data.str, "# {");
@@ -380,24 +393,8 @@ int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[
 
         const data_object_t* data_obj = thingset_data_object_by_id(data, pub_list[i]);
 
-        switch (data_obj->type) {
-        case TS_T_FLOAT32:
-            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
-                "\"%s\":%.*f, ", data_obj->name, data_obj->detail, *((float*)data_obj->data));
-            break;
-        case TS_T_STRING:
-            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
-                "\"%s\":\"%s\", ", data_obj->name, (char*)data_obj->data);
-            break;
-        case TS_T_INT32:
-            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
-                "\"%s\":%d, ", data_obj->name, *((int*)data_obj->data));
-            break;
-        case TS_T_BOOL:
-            resp->pos += snprintf(&resp->data.str[resp->pos], resp->size - resp->pos, 
-                "\"%s\":%s, ", data_obj->name, (*((bool*)data_obj->data) == true ? "true" : "false"));
-            break;
-        }
+        _json_serialize_data_object(resp, data_obj, true);   // map: include the name field
+
         if (resp->pos >= resp->size - 2) {
             return TS_STATUS_RESPONSE_TOO_LONG;
         }

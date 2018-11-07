@@ -77,7 +77,7 @@ int _deserialize_data_object(uint8_t *buf, const data_object_t* data_obj)
     }
 }
 
-int _serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj)
+int _cbor_serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj)
 {
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -144,7 +144,7 @@ int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
             return _status_msg(resp, TS_STATUS_UNAUTHORIZED);
         }
 
-        num_bytes = _serialize_data_object(resp, data_obj);
+        num_bytes = _cbor_serialize_data_object(resp, data_obj);
 
         if (num_bytes == 0) {
             return _status_msg(resp, TS_STATUS_RESPONSE_TOO_LONG);
@@ -236,7 +236,7 @@ int thingset_pub_msg_cbor(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[
         }
 
         resp->pos += cbor_serialize_uint(&resp->data.bin[resp->pos], pub_list[element], resp->size - resp->pos);
-        num_bytes = _serialize_data_object(resp, data_obj);
+        num_bytes = _cbor_serialize_data_object(resp, data_obj);
 
         if (num_bytes == 0) {
             return _status_msg(resp, TS_STATUS_RESPONSE_TOO_LONG);
