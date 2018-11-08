@@ -34,6 +34,7 @@ extern "C" {
 #define TS_FUNCTION_NAME     0x04
 #define TS_FUNCTION_PUB      0x05   // publication request
 #define TS_FUNCTION_AUTH     0x06
+#define TS_FUNCTION_EXEC     0x07
 #define TS_FUNCTION_PUBMSG   0x1f   // actual publication message
 
 /* Status codes
@@ -167,6 +168,8 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 
 int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
 
+int thingset_exec_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data);
+
 int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t num_elements);
 
 void thingset_status_message_json(ts_buffer_t *resp, int code);
@@ -178,6 +181,8 @@ void thingset_status_message_json(ts_buffer_t *resp, int code);
 int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
 int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+
+int thingset_exec_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
 int thingset_list_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 

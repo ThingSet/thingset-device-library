@@ -43,12 +43,20 @@ int main()
     RUN_TEST(json_read_array);
     RUN_TEST(json_list_input);
     RUN_TEST(json_list_all);
+    RUN_TEST(json_exec);
 
     // CBOR only tests
     RUN_TEST(cbor_write_array);
     RUN_TEST(cbor_read_array);
     RUN_TEST(cbor_pub_msg);
+    RUN_TEST(cbor_exec);
 
     UNITY_END();
 }
 
+bool dummy_called_flag = 0;
+
+void dummy(void)
+{
+    dummy_called_flag = 1;
+}

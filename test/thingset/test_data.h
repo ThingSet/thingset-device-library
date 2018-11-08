@@ -68,6 +68,8 @@ static int16_t i16;
 
 static bool b;
 
+void dummy(void);
+
 static const data_object_t dataObjects[] = {
     // info
     {0x1001, TS_ACCESS_READ, TS_T_STRING, 0, (void*) manufacturer, "manufacturer"},
@@ -77,20 +79,20 @@ static const data_object_t dataObjects[] = {
     {0x3002, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL, 0, (void*) &(cal.usb_enabled_target), "usbEnTarget"},
 
     // output data
-    {0x4001, TS_ACCESS_READ, TS_T_INT32, 2, (void*) &(i32), "i32_output"},
+    {0x4001, TS_ACCESS_READ, TS_T_INT32, 2, (void*) &i32, "i32_output"},
 
-    // rpc
-    {0x5001, TS_ACCESS_EXEC, TS_T_BOOL, 0, (void*) &(cal.dcdc_current_min), "dfu"},
+    // rpc / exec
+    {0x5001, TS_ACCESS_EXEC, TS_T_BOOL, 0, (void*) &dummy, "dummy"},
 
     // calibration data
-    {0x6001, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT64,  0, (void*) &(ui64), "ui64"},
-    {0x6002, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT64,   0, (void*) &(i64), "i64"},
-    {0x6003, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT32,  0, (void*) &(ui32), "ui32"},
-    {0x6004, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT32,   0, (void*) &(i32), "i32"},
-    {0x6005, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT16,  0, (void*) &(ui16), "ui16"},
-    {0x6006, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT16,   0, (void*) &(i16), "i16"},
-    {0x6007, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 2, (void*) &(f32), "f32"},
-    {0x6008, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL,    0, (void*) &(b), "bool"},
+    {0x6001, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT64,  0, (void*) &ui64, "ui64"},
+    {0x6002, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT64,   0, (void*) &i64, "i64"},
+    {0x6003, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT32,  0, (void*) &ui32, "ui32"},
+    {0x6004, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT32,   0, (void*) &i32, "i32"},
+    {0x6005, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT16,  0, (void*) &ui16, "ui16"},
+    {0x6006, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT16,   0, (void*) &i16, "i16"},
+    {0x6007, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 2, (void*) &f32, "f32"},
+    {0x6008, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL,    0, (void*) &b, "bool"},
     {0x6009, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_STRING,  sizeof(buf), (void*) buf, "strbuf"}
 };
 

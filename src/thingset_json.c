@@ -99,11 +99,20 @@ void _json_serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj
         break;
 #endif
     case TS_T_UINT32:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%" PRIu32 ", ", *((uint32_t*)data_obj->data));
+        break;
     case TS_T_INT32:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%" PRIi32 ", ", *((int32_t*)data_obj->data));
+        break;
     case TS_T_UINT16:
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+            "%" PRIu16 ", ", *((uint16_t*)data_obj->data));
+        break;
     case TS_T_INT16:
         buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
-            "%d, ", *((int*)data_obj->data));
+            "%" PRIi16 ", ", *((int16_t*)data_obj->data));
         break;
     case TS_T_FLOAT32:
         buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
@@ -384,6 +393,36 @@ int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     return TS_STATUS_SUCCESS;
 }
 
+int thingset_exec_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
+{
+    // initialize response with success message
+    thingset_status_message_json(resp, TS_STATUS_SUCCESS);
+
+    if (parser->tokens[0].type != JSMN_STRING) {
+        thingset_status_message_json(resp, TS_STATUS_WRONG_FORMAT);
+        return TS_STATUS_WRONG_FORMAT;
+    }
+
+    const data_object_t *data_obj = thingset_data_object_by_name(data,
+        parser->str + parser->tokens[0].start, 
+        parser->tokens[0].end - parser->tokens[0].start);
+
+    if (data_obj == NULL) {
+        thingset_status_message_json(resp, TS_STATUS_UNKNOWN_DATA_OBJ);
+        return TS_STATUS_UNKNOWN_DATA_OBJ;
+    }
+
+    if (!(data_obj->access & TS_ACCESS_EXEC)) {
+        thingset_status_message_json(resp, TS_STATUS_UNAUTHORIZED);
+        return TS_STATUS_UNAUTHORIZED;
+    }
+
+    // create function pointer and call function
+    void (*fun)(void) = data_obj->data;
+    fun();
+
+    return TS_STATUS_SUCCESS;
+}
 
 int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
 {

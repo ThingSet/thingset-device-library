@@ -88,3 +88,16 @@ void json_list_all()
     TEST_ASSERT_EQUAL_STRING(":0 Success. [\"manufacturer\", \"loadEnTarget\", \"usbEnTarget\", "
         "\"i32_output\", \"ui64\", \"i64\", \"ui32\", \"i32\", \"ui16\", \"i16\", \"f32\", \"bool\", \"strbuf\"]", resp.data.str);
 }
+
+extern bool dummy_called_flag;
+
+void json_exec()
+{
+    dummy_called_flag = 0;
+
+    req.pos = snprintf(req.data.str, TS_REQ_BUFFER_LEN, "!exec \"dummy\"");
+    thingset_process(&req, &resp, &data);
+    TEST_ASSERT_EQUAL(strlen(resp.data.str), resp.pos);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp.data.str);
+    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+}

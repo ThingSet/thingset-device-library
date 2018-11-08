@@ -212,6 +212,30 @@ int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
     }
 }
 
+int thingset_exec_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
+{
+    // only a single function call allowed (no array of data objects)
+    uint16_t id;
+    size_t num_bytes = cbor_deserialize_uint16(&req->data.bin[1], &id);
+    if (num_bytes == 0 || req->pos > 4) {
+        return _status_msg(resp, TS_STATUS_WRONG_FORMAT);
+    }
+
+    const data_object_t* data_obj = thingset_data_object_by_id(data, id);
+    if (data_obj == NULL) {
+        return _status_msg(resp, TS_STATUS_UNKNOWN_DATA_OBJ);
+    }
+    if (!(data_obj->access & TS_ACCESS_EXEC)) {
+        return _status_msg(resp, TS_STATUS_UNAUTHORIZED);
+    }
+
+    // create function pointer and call function
+    void (*fun)(void) = data_obj->data;
+    fun();
+
+    return _status_msg(resp, TS_STATUS_SUCCESS);
+}
+
 int thingset_pub_msg_cbor(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t num_elements)
 {
     size_t element = 0;

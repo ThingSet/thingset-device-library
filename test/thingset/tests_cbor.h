@@ -141,6 +141,23 @@ void cbor_pub_msg()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp.data.bin, pos);
 }
 
+extern bool dummy_called_flag;
+
+void cbor_exec()
+{
+    dummy_called_flag = 0;
+    
+    req.data.bin[0] = 0x07;     // function ID for exec
+    req.data.bin[1] = 0x19;     // uint16 follows
+    req.data.bin[2] = 0x50;     // data object ID 0x5001
+    req.data.bin[3] = 0x01;
+    req.pos = 4;
+    thingset_process(&req, &resp, &data);
+
+    TEST_ASSERT_EQUAL(0, resp.data.bin[0] - 0x80);
+    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+}
+
 /*
 void cbor_get_data_object_name()
 {

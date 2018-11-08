@@ -11,6 +11,7 @@ The following ThingSet functions are fully implemented:
 - !read
 - !write
 - !list
+- !exec
 
 Following functions are currently in progress with high priority
 
@@ -24,6 +25,7 @@ The following functions are fully implemented:
 
 - read (0x01)
 - write (0x02)
+- exec (0x07)
 
 For an efficient implementation, only the most important CBOR data types will be supported:
 

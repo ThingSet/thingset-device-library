@@ -256,8 +256,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT64_MAX) {
                 *value = (int64_t)tmp;
-                printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
-                    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -267,8 +267,8 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT64_MAX) {
                 *value = -1 - (uint64_t)tmp;
-                printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
-                  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }

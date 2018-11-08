@@ -33,6 +33,9 @@ void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
     else if (req->data.bin[0] == TS_FUNCTION_WRITE) {
         thingset_write_cbor(req, resp, data);
     }
+    else if (req->data.bin[0] == TS_FUNCTION_EXEC) {
+        thingset_exec_cbor(req, resp, data);
+    }
     else if (req->data.str[0] == '!') {      // JSON request
         jsmn_init(&(tsp.parser));
         if (req->pos > 4 && strncmp(req->data.str, "!read", 5) == 0) {
@@ -52,13 +55,18 @@ void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
             tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-6, tsp.tokens, TS_NUM_JSON_TOKENS);
             thingset_list_json(&tsp, resp, data);
         }
+        else if (req->pos > 5 && strncmp(req->data.str, "!exec", 5) == 0) {
+            tsp.str = req->data.str+6;
+            tsp.tok_count = jsmn_parse(&(tsp.parser), tsp.str, req->pos-6, tsp.tokens, TS_NUM_JSON_TOKENS);
+            thingset_exec_json(&tsp, resp, data);
+        }
         // quick and dirty hack to go into DFU mode!
         //else if (req_len >= 4 && strncmp(req, "!dfu", 4) == 0) {
             //dfu_run_bootloader();
         //}
-        else if (req->pos >= 4 && strncmp(req->data.str, "!pub", 4) == 0) {
+        //else if (req->pos >= 4 && strncmp(req->data.str, "!pub", 4) == 0) {
             // TODO!!
-        }
+        //}
         else {
             thingset_status_message_json(resp, TS_STATUS_UNKNOWN_FUNCTION);
         }
