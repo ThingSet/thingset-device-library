@@ -31,7 +31,7 @@ void thingset_process(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
         thingset_read_cbor(req, resp, data);
     }
     else if (req->data.bin[0] == TS_FUNCTION_WRITE) {
-        thingset_write_cbor(req, resp, data);
+        thingset_write_cbor(req, resp, data, false);
     }
     else if (req->data.bin[0] == TS_FUNCTION_EXEC) {
         thingset_exec_cbor(req, resp, data);

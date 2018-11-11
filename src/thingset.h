@@ -25,6 +25,7 @@ extern "C" {
 #include "jsmn.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Protocol functions
  */
@@ -180,7 +181,8 @@ void thingset_status_message_json(ts_buffer_t *resp, int code);
  */
 int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 
-int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
+// access restrictions can be ignored if direcly called (e.g. to write data from EEPROM)
+int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data, bool ignore_access);
 
 int thingset_exec_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data);
 

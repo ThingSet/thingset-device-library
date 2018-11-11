@@ -161,7 +161,7 @@ int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
     }
 }
 
-int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
+int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data, bool ignore_access)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     uint16_t num_elements, element = 0;
@@ -191,7 +191,8 @@ int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
         if (data_obj == NULL) {
             return _status_msg(resp, TS_STATUS_UNKNOWN_DATA_OBJ);
         }
-        if (!(data_obj->access & TS_ACCESS_WRITE)) {
+        // access ignored if direcly called (e.g. to write data from EEPROM)
+        if (!(data_obj->access & TS_ACCESS_WRITE) && !ignore_access) {
             return _status_msg(resp, TS_STATUS_UNAUTHORIZED);
         }
 
