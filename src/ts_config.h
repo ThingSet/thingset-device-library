@@ -27,8 +27,8 @@
 
 /* Maximum number of expected JSON tokens (i.e. arrays, map keys, values,
  * primitives, etc.)
- * 
- * Thingset throws an error if maximum number of tokens is reached in a 
+ *
+ * Thingset throws an error if maximum number of tokens is reached in a
  * request or response.
  */
 #ifndef TS_NUM_JSON_TOKENS

@@ -36,20 +36,20 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
         data[0] = CBOR_UINT | (uint8_t)value;
         //printf("serialize: value = %.2X < 24, data: %.2X\n", (uint32_t)value, data[0]);
         return 1;
-    } 
+    }
     else if (value <= 0xFF && max_len >= 2) {
         data[0] = CBOR_UINT | CBOR_UINT8_FOLLOWS;
         data[1] = value;
         //printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
         return 2;
-    } 
+    }
     else if (value <= 0xFFFF && max_len >= 3) {
         data[0] = CBOR_UINT | CBOR_UINT16_FOLLOWS;
         data[1] = value >> 8;
         data[2] = value;
         //printf("serialize: value = 0x%.4X <= 0xFFFF, data: %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2]);
         return 3;
-    } 
+    }
     else if (value <= 0xFFFFFFFF && max_len >= 5) {
         data[0] = CBOR_UINT | CBOR_UINT32_FOLLOWS;
         data[1] = value >> 24;
@@ -118,7 +118,7 @@ int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len)
 {
     if (max_len < 1)
         return 0;
-    
+
     data[0] = value ? CBOR_TRUE : CBOR_FALSE;
     return 1;
 }
@@ -192,7 +192,7 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
 {
     uint8_t info = data[0] & CBOR_INFO_MASK;
 
-    //printf("uint_data: %.2X %.2X %.2X %.2X %.2X\n", data[0], data[1], data[2], data[3], data[4]);
+    //printf("uint_data: %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
 
     if (info < 24) {
         *bytes = info;
@@ -206,17 +206,20 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
         *bytes = data[1] << 8 | data[2];
         return 3;
     }
+#ifdef TS_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT32_FOLLOWS) {
-        // TODO: does not work with uint64_t --> hard-fault
-        *bytes = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
-        //*(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
+        *(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
         return 5;
     }
-#ifdef TS_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT64_FOLLOWS) {
-        *bytes = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
-        *(bytes+4) = data[5] << 24 | data[6] << 16 | data[7] << 8 | data[8];
+        *(uint64_t*)bytes = ((uint64_t)data[1] << 56) | ((uint64_t)data[2] << 48) | ((uint64_t)data[3] << 40) | ((uint64_t)data[4] << 32)
+            | ((uint64_t)data[5] << 24) | ((uint64_t)data[6] << 16) | ((uint64_t)data[7] << 8) | ((uint64_t)data[8]);
         return 9;
+    }
+#else
+    else if (info == CBOR_UINT32_FOLLOWS) {
+        *bytes = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
+        return 5;
     }
 #endif
     else {
@@ -235,7 +238,7 @@ int cbor_deserialize_uint64(uint8_t *data, uint64_t *value)
         return 0;
 
     size = _cbor_uint_data(data, &tmp);
-    if (size > 0 && tmp <= INT64_MAX) {
+    if (size > 0 && tmp <= UINT64_MAX) {
         *value = tmp;
         return size;
     }
@@ -256,7 +259,7 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT64_MAX) {
                 *value = (int64_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
                 //    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
@@ -267,7 +270,7 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT64_MAX) {
                 *value = -1 - (uint64_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
                 //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
@@ -289,7 +292,7 @@ int cbor_deserialize_uint32(uint8_t *data, uint32_t *value)
     int size;
     uint8_t type = data[0] & CBOR_TYPE_MASK;
 
-    //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+    //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
     //  (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
 
     if (!value || type != CBOR_UINT)
@@ -321,7 +324,7 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT32_MAX) {
                 *value = (int32_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
                 //  (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
@@ -332,7 +335,7 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT32_MAX) {
                 *value = -1 - (uint32_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n", 
+                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
                 //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
@@ -366,7 +369,7 @@ int cbor_deserialize_int16(uint8_t *data, int16_t *value)
     return 0;
 }
 
-// the exponent is fixed, so the mantissa is multiplied to fit the 
+// the exponent is fixed, so the mantissa is multiplied to fit the
 int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent)
 {
     return 0;
@@ -377,11 +380,11 @@ int cbor_deserialize_float(uint8_t *data, float *value)
 {
     if (data[0] != CBOR_FLOAT32 || !value)
         return 0;
-    
+
     union { float f; uint32_t ui; } f2ui;
     f2ui.ui = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
     *value = f2ui.f;
-    
+
     return 5;
 }
 
@@ -389,7 +392,7 @@ int cbor_deserialize_bool(uint8_t *data, bool *value)
 {
     if (!value || !data)
         return 0;
-    
+
     if (data[0] == CBOR_TRUE) {
         *value = true;
         return 1;
@@ -520,6 +523,6 @@ int cbor_size(uint8_t *data)
             break;
         }
     }
-    
+
     return 0;   // float16, arrays, maps, tagged types, etc. curently not supported
 }

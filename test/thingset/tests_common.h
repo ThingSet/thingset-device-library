@@ -112,7 +112,41 @@ void _cbor2json(char const *name, char const *json_value, uint16_t id, char cons
 
 void write_json_read_cbor()
 {
-    // positive integers
+    // uint16
+    _json2cbor("ui16", "0", 0x6005, "00");
+    _json2cbor("ui16", "23", 0x6005, "17");
+    _json2cbor("ui16", "24", 0x6005, "18 18");
+    _json2cbor("ui16", "255", 0x6005, "18 ff");
+    _json2cbor("ui16", "256", 0x6005, "19 01 00");
+    _json2cbor("ui16", "65535", 0x6005, "19 FF FF");
+
+    // uint32
+    _json2cbor("ui32", "0", 0x6003, "00");
+    _json2cbor("ui32", "23", 0x6003, "17");
+    _json2cbor("ui32", "24", 0x6003, "18 18");
+    _json2cbor("ui32", "255", 0x6003, "18 ff");
+    _json2cbor("ui32", "256", 0x6003, "19 01 00");
+    _json2cbor("ui32", "65535", 0x6003, "19 FF FF");
+    _json2cbor("ui32", "65536", 0x6003, "1A 00 01 00 00");
+    _json2cbor("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
+
+    // uint64
+    #if TS_64BIT_TYPES_SUPPORT
+    _json2cbor("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
+    _json2cbor("ui64", "4294967296", 0x6001, "1B 00 00 00 01 00 00 00 00");
+    _json2cbor("ui64", "9223372036854775807", 0x6001, "1B 7F FF FF FF FF FF FF FF"); // maximum value for int64
+    #endif
+
+    // int16 (positive values)
+    _json2cbor("i16", "0", 0x6006, "00");
+    _json2cbor("i16", "23", 0x6006, "17");
+    _json2cbor("i16", "24", 0x6006, "18 18");
+    _json2cbor("i16", "255", 0x6006, "18 ff");
+    _json2cbor("i16", "256", 0x6006, "19 01 00");
+    _json2cbor("i16", "32767", 0x6006, "19 7F FF");                 // maximum value for int16
+
+    // int32 (positive values)
+    _json2cbor("i32", "0", 0x6004, "00");
     _json2cbor("i32", "23", 0x6004, "17");
     _json2cbor("i32", "24", 0x6004, "18 18");
     _json2cbor("i32", "255", 0x6004, "18 ff");
@@ -121,13 +155,22 @@ void write_json_read_cbor()
     _json2cbor("i32", "65536", 0x6004, "1A 00 01 00 00");
     _json2cbor("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
+    // int64 (positive values)
     #if TS_64BIT_TYPES_SUPPORT
     _json2cbor("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     _json2cbor("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
     _json2cbor("i64", "9223372036854775807", 0x6002, "1B 7F FF FF FF FF FF FF FF"); // maximum value for int64
     #endif
 
-    // negative integers
+    // int16 (negative values)
+    _json2cbor("i16", "-0", 0x6006, "00");
+    _json2cbor("i16", "-24", 0x6006, "37");
+    _json2cbor("i16", "-25", 0x6006, "38 18");
+    _json2cbor("i16", "-256", 0x6006, "38 ff");
+    _json2cbor("i16", "-257", 0x6006, "39 01 00");
+    _json2cbor("i16", "-32768", 0x6006, "39 7F FF");
+
+    // int32 (negative values)
     _json2cbor("i32", "-0", 0x6004, "00");
     _json2cbor("i32", "-24", 0x6004, "37");
     _json2cbor("i32", "-25", 0x6004, "38 18");
@@ -137,9 +180,10 @@ void write_json_read_cbor()
     _json2cbor("i32", "-65537", 0x6004, "3A 00 01 00 00");
     _json2cbor("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
+    // int64 (negative values)
     #if TS_64BIT_TYPES_SUPPORT
-    _json2cbor("i64", "-4294967296", 0x6002, "3A FF FF FF FF"); 
-    _json2cbor("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00"); 
+    _json2cbor("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
+    _json2cbor("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
     _json2cbor("i64", "-9223372036854775808", 0x6002, "3B 7F FF FF FF FF FF FF FF"); // maximum value for int64
     #endif
 
@@ -160,7 +204,38 @@ void write_json_read_cbor()
 
 void write_cbor_read_json()
 {
-    // positive integers
+    // uint16
+    _cbor2json("ui16", "0", 0x6005, "00");
+    _cbor2json("ui16", "23", 0x6005, "17");
+    _cbor2json("ui16", "23", 0x6005, "18 17");       // less compact format
+    _cbor2json("ui16", "24", 0x6005, "18 18");
+    _cbor2json("ui16", "255", 0x6005, "18 ff");
+    _cbor2json("ui16", "255", 0x6005, "19 00 ff");   // less compact format
+    _cbor2json("ui16", "256", 0x6005, "19 01 00");
+    _cbor2json("ui16", "65535", 0x6005, "19 FF FF");
+
+    // uint32
+    _cbor2json("ui32", "0", 0x6003, "00");
+    _cbor2json("ui32", "23", 0x6003, "17");
+    _cbor2json("ui32", "23", 0x6003, "18 17");       // less compact format
+    _cbor2json("ui32", "24", 0x6003, "18 18");
+    _cbor2json("ui32", "255", 0x6003, "18 ff");
+    _cbor2json("ui32", "255", 0x6003, "19 00 ff");   // less compact format
+    _cbor2json("ui32", "256", 0x6003, "19 01 00");
+    _cbor2json("ui32", "65535", 0x6003, "19 FF FF");
+    _cbor2json("ui32", "65535", 0x6003, "1A 00 00 FF FF");  // less compact format
+    _cbor2json("ui32", "65536", 0x6003, "1A 00 01 00 00");
+    _json2cbor("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
+
+    // uint64
+    #if TS_64BIT_TYPES_SUPPORT
+    _cbor2json("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
+    _cbor2json("ui64", "4294967295", 0x6001, "1B 00 00 00 00 FF FF FF FF"); // less compact format
+    _cbor2json("ui64", "4294967296", 0x6001, "1B 00 00 00 01 00 00 00 00");
+    _cbor2json("ui64", "18446744073709551615", 0x6001, "1B FF FF FF FF FF FF FF FF");
+    #endif
+
+    // int32 (positive values)
     _cbor2json("i32", "23", 0x6004, "17");
     _cbor2json("i32", "23", 0x6004, "18 17");       // less compact format
     _cbor2json("i32", "24", 0x6004, "18 18");
@@ -172,13 +247,22 @@ void write_cbor_read_json()
     _cbor2json("i32", "65536", 0x6004, "1A 00 01 00 00");
     _cbor2json("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
+    // int64 (positive values)
     #if TS_64BIT_TYPES_SUPPORT
     _cbor2json("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     _cbor2json("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
     _cbor2json("i64", "9223372036854775807", 0x6002, "1B 7F FF FF FF FF FF FF FF"); // maximum value for int64
     #endif
 
-    // negative integers
+    // int16 (negative values)
+    _cbor2json("i16", "-24", 0x6006, "37");
+    _cbor2json("i16", "-24", 0x6006, "38 17");      // less compact format
+    _cbor2json("i16", "-25", 0x6006, "38 18");
+    _cbor2json("i16", "-256", 0x6006, "38 ff");
+    _cbor2json("i16", "-257", 0x6006, "39 01 00");
+    _cbor2json("i16", "-32768", 0x6006, "39 7F FF");
+
+    // int32 (negative values)
     _cbor2json("i32", "-24", 0x6004, "37");
     _cbor2json("i32", "-24", 0x6004, "38 17");      // less compact format
     _cbor2json("i32", "-25", 0x6004, "38 18");
@@ -188,6 +272,7 @@ void write_cbor_read_json()
     _cbor2json("i32", "-65537", 0x6004, "3A 00 01 00 00");
     _cbor2json("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
+    // int64 (negative values)
     #if TS_64BIT_TYPES_SUPPORT
     _cbor2json("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     _cbor2json("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");

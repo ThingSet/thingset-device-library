@@ -109,7 +109,7 @@ int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     uint16_t num_elements, element = 0;
-    
+
     _status_msg(resp, TS_STATUS_SUCCESS);   // init response buffer
 
     pos += cbor_num_elements(&req->data.bin[1], &num_elements);
@@ -117,8 +117,8 @@ int thingset_read_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data)
         return _status_msg(resp, TS_STATUS_WRONG_FORMAT);
     }
 
-    //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements, 
-    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3], 
+    //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3],
     //    req->data.bin[pos+4], req->data.bin[pos+5], req->data.bin[pos+6], req->data.bin[pos+6]);
 
     if (num_elements > 1) {
@@ -171,8 +171,8 @@ int thingset_write_cbor(ts_buffer_t *req, ts_buffer_t *resp, ts_data_t *data, bo
         return _status_msg(resp, TS_STATUS_WRONG_FORMAT);
     }
 
-    //printf("write request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements, 
-    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3], 
+    //printf("write request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //    req->data.bin[pos], req->data.bin[pos+1], req->data.bin[pos+2], req->data.bin[pos+3],
     //    req->data.bin[pos+4], req->data.bin[pos+5], req->data.bin[pos+6], req->data.bin[pos+6]);
 
     // loop through all elements to check if request is valid
@@ -247,7 +247,7 @@ int thingset_pub_msg_cbor(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[
     if (num_elements > 1) {
         resp->pos += cbor_serialize_map(&resp->data.bin[resp->pos], num_elements, resp->size - resp->pos);
     }
-    
+
     while (element < num_elements) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)

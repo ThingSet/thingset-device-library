@@ -25,10 +25,10 @@
 #include <errno.h>
 #include <inttypes.h>
 
-const data_object_t* thingset_data_object_by_name(ts_data_t *data, char *str, size_t len) 
+const data_object_t* thingset_data_object_by_name(ts_data_t *data, char *str, size_t len)
 {
     for (unsigned int i = 0; i < data->size; i++) {
-        if (strncmp(data->objects[i].name, str, len) == 0 
+        if (strncmp(data->objects[i].name, str, len) == 0
             && strlen(data->objects[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
             return &(data->objects[i]);
         }
@@ -83,47 +83,47 @@ void thingset_status_message_json(ts_buffer_t *resp, int code)
 void _json_serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj, bool include_name)
 {
     if (include_name) {
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "\"%s\":", data_obj->name);
     }
 
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIu64 ", ", *((uint64_t*)data_obj->data));
         break;
     case TS_T_INT64:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIi64 ", ", *((int64_t*)data_obj->data));
         break;
 #endif
     case TS_T_UINT32:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIu32 ", ", *((uint32_t*)data_obj->data));
         break;
     case TS_T_INT32:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIi32 ", ", *((int32_t*)data_obj->data));
         break;
     case TS_T_UINT16:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIu16 ", ", *((uint16_t*)data_obj->data));
         break;
     case TS_T_INT16:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%" PRIi16 ", ", *((int16_t*)data_obj->data));
         break;
     case TS_T_FLOAT32:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%.*f, ", data_obj->detail, *((float*)data_obj->data));
         break;
     case TS_T_BOOL:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "%s, ", (*((bool*)data_obj->data) == true ? "true" : "false"));
         break;
     case TS_T_STRING:
-        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos, 
+        buf->pos += snprintf(&buf->data.str[buf->pos], TS_RESP_BUFFER_LEN - buf->pos,
             "\"%s\", ", (char*)data_obj->data);
         break;
     }
@@ -153,7 +153,7 @@ int thingset_read_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
         }
 
         const data_object_t *data_obj = thingset_data_object_by_name(data,
-            parser->str + parser->tokens[tok].start, 
+            parser->str + parser->tokens[tok].start,
             parser->tokens[tok].end - parser->tokens[tok].start);
 
         if (data_obj == NULL) {
@@ -208,14 +208,14 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     // loop through all elements to check if request is valid
     while (tok + 1 < parser->tok_count) {
 
-        if (parser->tokens[tok].type != JSMN_STRING || 
+        if (parser->tokens[tok].type != JSMN_STRING ||
             (parser->tokens[tok+1].type != JSMN_PRIMITIVE && parser->tokens[tok+1].type != JSMN_STRING)) {
             thingset_status_message_json(resp, TS_STATUS_WRONG_FORMAT);
             return TS_STATUS_WRONG_FORMAT;
         }
 
         const data_object_t* data_obj = thingset_data_object_by_name(data,
-            parser->str + parser->tokens[tok].start, 
+            parser->str + parser->tokens[tok].start,
             parser->tokens[tok].end - parser->tokens[tok].start);
 
         if (data_obj == NULL) {
@@ -240,49 +240,44 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
         }
 
         errno = 0;
-        switch (data_obj->type) {
-            case TS_T_STRING:
-                if (parser->tokens[tok+1].type != JSMN_STRING) {
-                    thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
-                    return TS_STATUS_WRONG_TYPE;
-                }
-                // data object buffer buffer length already checked above
-                break;
-            case TS_T_FLOAT32:
-                if (parser->tokens[tok+1].type != JSMN_PRIMITIVE) {
-                    thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
-                    return TS_STATUS_WRONG_TYPE;
-                }
-                strtod(buf, NULL);
-                if (errno == ERANGE) {
-                    thingset_status_message_json(resp, TS_STATUS_INVALID_VALUE);
-                    return TS_STATUS_INVALID_VALUE;
-                }
-                break;
-            case TS_T_INT64:
-                // TODO
-                break;
-            case TS_T_INT32:
-                if (parser->tokens[tok+1].type != JSMN_PRIMITIVE) {
-                    thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
-                    return TS_STATUS_WRONG_TYPE;
-                }
-                strtol(buf, NULL, 0);
-                if (errno == ERANGE) {
-                    thingset_status_message_json(resp, TS_STATUS_INVALID_VALUE);
-                    return TS_STATUS_INVALID_VALUE;
-                }
-                break;
-            case TS_T_BOOL:
-                if (!(buf[0] == 't' || buf[0] == '1' || buf[0] == 'f' || buf[0] == '0')) {
-                    thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
-                    return TS_STATUS_WRONG_TYPE;
-                }
-                break;
-            default:
+        if (data_obj->type == TS_T_STRING) {
+            if (parser->tokens[tok+1].type != JSMN_STRING) {
                 thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
                 return TS_STATUS_WRONG_TYPE;
-                break;
+            }
+            // data object buffer buffer length already checked above
+        }
+        else if (data_obj->type == TS_T_BOOL) {
+            if (!(buf[0] == 't' || buf[0] == '1' || buf[0] == 'f' || buf[0] == '0')) {
+                thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
+                return TS_STATUS_WRONG_TYPE;
+            }
+        }
+        else {
+            if (parser->tokens[tok+1].type != JSMN_PRIMITIVE) {
+                thingset_status_message_json(resp, TS_STATUS_WRONG_TYPE);
+                return TS_STATUS_WRONG_TYPE;
+            }
+            if (data_obj->type == TS_T_FLOAT32) {
+                strtod(buf, NULL);
+            }
+            else if (data_obj->type == TS_T_UINT32 || data_obj->type == TS_T_UINT16) {
+                strtoul(buf, NULL, 0);
+            }
+            else if (data_obj->type == TS_T_INT32 || data_obj->type == TS_T_INT16) {
+                strtol(buf, NULL, 0);
+            }
+            else if (data_obj->type == TS_T_UINT64) {
+                strtoull(buf, NULL, 0);
+            }
+            else if (data_obj->type == TS_T_INT64) {
+                strtoll(buf, NULL, 0);
+            }
+
+            if (errno == ERANGE) {
+                thingset_status_message_json(resp, TS_STATUS_INVALID_VALUE);
+                return TS_STATUS_INVALID_VALUE;
+            }
         }
         tok += 2;   // map expected --> always one string + one value
     }
@@ -295,8 +290,8 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     // actually write data
     while (tok + 1 < parser->tok_count) {
 
-        const data_object_t *data_obj = thingset_data_object_by_name(data, 
-            parser->str + parser->tokens[tok].start, 
+        const data_object_t *data_obj = thingset_data_object_by_name(data,
+            parser->str + parser->tokens[tok].start,
             parser->tokens[tok].end - parser->tokens[tok].start);
 
         // extract the value again (max. size was checked before)
@@ -314,14 +309,19 @@ int thingset_write_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
             *((uint64_t*)data_obj->data) = strtoull(buf, NULL, 0);
             break;
         case TS_T_INT64:
-            //printf("%s\n", buf);
             *((int64_t*)data_obj->data) = strtoll(buf, NULL, 0);
             break;
         case TS_T_UINT32:
-            *((uint32_t*)data_obj->data) = strtol(buf, NULL, 0);
+            *((uint32_t*)data_obj->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT32:
-            *((int32_t*)data_obj->data) = strtoul(buf, NULL, 0);
+            *((int32_t*)data_obj->data) = strtol(buf, NULL, 0);
+            break;
+        case TS_T_UINT16:
+            *((uint16_t*)data_obj->data) = strtoul(buf, NULL, 0);
+            break;
+        case TS_T_INT16:
+            *((uint16_t*)data_obj->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_BOOL:
             if (buf[0] == 't' || buf[0] == '1') {
@@ -378,7 +378,7 @@ int thingset_list_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
             resp->pos += snprintf(&resp->data.str[resp->pos],
                 TS_RESP_BUFFER_LEN - resp->pos,
                 "\"%s\", ", data->objects[i].name);
-    
+
             if (resp->pos >= TS_RESP_BUFFER_LEN - 2) {
                 thingset_status_message_json(resp, TS_STATUS_RESPONSE_TOO_LONG);
                 return TS_STATUS_RESPONSE_TOO_LONG;
@@ -404,7 +404,7 @@ int thingset_exec_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
     }
 
     const data_object_t *data_obj = thingset_data_object_by_name(data,
-        parser->str + parser->tokens[0].start, 
+        parser->str + parser->tokens[0].start,
         parser->tokens[0].end - parser->tokens[0].start);
 
     if (data_obj == NULL) {
@@ -427,7 +427,7 @@ int thingset_exec_json(ts_parser_t *parser, ts_buffer_t *resp, ts_data_t *data)
 int thingset_pub_msg_json(ts_buffer_t *resp, ts_data_t *data, uint16_t pub_list[], size_t list_len)
 {
     resp->pos = sprintf(resp->data.str, "# {");
- 
+
     for (unsigned int i = 0; i < list_len; ++i) {
 
         const data_object_t* data_obj = thingset_data_object_by_id(data, pub_list[i]);
