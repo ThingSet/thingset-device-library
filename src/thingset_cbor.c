@@ -82,24 +82,24 @@ int _cbor_serialize_data_object(ts_buffer_t *buf, const data_object_t* data_obj)
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint64_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint64_t*)data_obj->data), buf->size - buf->pos);
     case TS_T_INT64:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int64_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int64_t*)data_obj->data), buf->size - buf->pos);
 #endif
     case TS_T_UINT32:
-        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint32_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint32_t*)data_obj->data), buf->size - buf->pos);
     case TS_T_INT32:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int32_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int32_t*)data_obj->data), buf->size - buf->pos);
     case TS_T_UINT16:
-        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint16_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_uint(&buf->data.bin[buf->pos], *((uint16_t*)data_obj->data), buf->size - buf->pos);
     case TS_T_INT16:
-        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int16_t*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_int(&buf->data.bin[buf->pos], *((int16_t*)data_obj->data), buf->size - buf->pos);
     case TS_T_FLOAT32:
-        return cbor_serialize_float(&buf->data.bin[buf->pos], *((float*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_float(&buf->data.bin[buf->pos], *((float*)data_obj->data), buf->size - buf->pos);
     case TS_T_BOOL:
-        return cbor_serialize_bool(&buf->data.bin[buf->pos], *((bool*)data_obj->data), TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_bool(&buf->data.bin[buf->pos], *((bool*)data_obj->data), buf->size - buf->pos);
     case TS_T_STRING:
-        return cbor_serialize_string(&buf->data.bin[buf->pos], (char*)data_obj->data, TS_RESP_BUFFER_LEN - buf->pos);
+        return cbor_serialize_string(&buf->data.bin[buf->pos], (char*)data_obj->data, buf->size - buf->pos);
     default:
         return 0;
     }
