@@ -42,6 +42,7 @@ int main()
     RUN_TEST(json_list_input);
     RUN_TEST(json_exec);
     RUN_TEST(json_pub_msg);
+    RUN_TEST(json_conf_callback);
 
     // CBOR only tests
     RUN_TEST(cbor_write_array);

@@ -185,7 +185,10 @@ public:
     int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
 
     // function to initialize data objects based on values stored in EEPROM
-    int init_cbor(uint8_t *cbor_data, size_t size);
+    // returns ThingSet status code
+    int init_cbor(uint8_t *cbor_data, size_t len);
+
+    void set_conf_callback(void (*callback)(void));
 
     const data_object_t *get_data_object(uint16_t id);
     const data_object_t *get_data_object(char *str, size_t len);
@@ -243,6 +246,8 @@ private:
 
     const char *user_pass;
     const char *manufacturer_pass;
+
+    void (*conf_callback)(void);
 };
 
 #endif

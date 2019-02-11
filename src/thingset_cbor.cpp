@@ -157,9 +157,13 @@ int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
     }
 }
 
-int ThingSet::init_cbor(uint8_t *cbor_data, size_t size)
+int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
 {
-    return write_cbor(cbor_data, size, 0, true);
+    uint8_t resp[10];
+    req = cbor_data;
+    req_len = len;
+    write_cbor(resp, sizeof(resp), 0, true);
+    return resp[0] - 0x80;
 }
 
 int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access)
@@ -190,19 +194,25 @@ int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_a
 
         const data_object_t* data_obj = get_data_object(id);
         if (data_obj == NULL) {
-            return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
-        }
-
-        if (!ignore_access) {// access ignored if direcly called (e.g. to write data from EEPROM)
-            if (!(data_obj->access & TS_ACCESS_WRITE)) {
-                return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+            if (!ignore_access) {
+                return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
             }
-            if (data_obj->category != category) {
-                return _status_msg(resp, size, TS_STATUS_WRONG_CATEGORY);
-            }
-        }
 
-        num_bytes = _deserialize_data_object(&req[pos], data_obj);
+            // ignore element
+            num_bytes = cbor_size(&req[pos]);
+        }
+        else {
+            if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
+                if (!(data_obj->access & TS_ACCESS_WRITE)) {
+                    return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+                }
+                if (data_obj->category != category) {
+                    return _status_msg(resp, size, TS_STATUS_WRONG_CATEGORY);
+                }
+            }
+
+            num_bytes = _deserialize_data_object(&req[pos], data_obj);
+        }
 
         if (num_bytes == 0) {
             return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);

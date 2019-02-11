@@ -76,7 +76,12 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         }
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("write_cbor\n");
-            return write_cbor(response, resp_size, req[0], false);
+            int len = write_cbor(response, resp_size, req[0], false);
+            if (response[0] == TS_STATUS_SUCCESS &&
+                category == TS_CAT_CONF && conf_callback != NULL) {
+                conf_callback();
+            }
+            return len;
         }
         else {  // array or single data object
             if (req[0] == TS_CAT_EXEC) {
@@ -143,7 +148,11 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         else {
             if (tokens[0].type == JSMN_OBJECT) {
                 //printf("write_json: %s\n", json_str);
-                return write_json((char *)response, resp_size, category);
+                int len = write_json((char *)response, resp_size, category);
+                if (category == TS_CAT_CONF && conf_callback != NULL) {
+                    conf_callback();
+                }
+                return len;
             }
             else {
                 if (category == TS_CAT_EXEC) {
@@ -163,6 +172,11 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         return 0;
         //thingset_status_message(ts, TS_STATUS_UNKNOWN_FUNCTION);
     }
+}
+
+void ThingSet::set_conf_callback(void (*callback)(void))
+{
+    conf_callback = callback;
 }
 
 const data_object_t* ThingSet::get_data_object(char *str, size_t len)

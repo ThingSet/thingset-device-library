@@ -102,3 +102,21 @@ void json_exec()
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
+
+void json_conf_callback()
+{
+    dummy_called_flag = 0;
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i32\":52}");
+
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL(0, dummy_called_flag);
+
+    ts.set_conf_callback(dummy);
+
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+}
