@@ -30,6 +30,14 @@ ThingSet::ThingSet(const data_object_t *data, size_t num)
     num_objects = num;
 }
 
+ThingSet::ThingSet(const data_object_t *data, size_t num_obj, const ts_pub_channel_t *channels, size_t num_ch)
+{
+    data_objects = data;
+    num_objects = num_obj;
+    pub_channels = channels;
+    num_channels = num_ch;
+}
+
 ThingSet::~ThingSet()
 {
 

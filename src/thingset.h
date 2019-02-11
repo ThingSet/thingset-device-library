@@ -160,6 +160,7 @@ class ThingSet
 {
 public:
     ThingSet(const data_object_t *data, size_t num);
+    ThingSet(const data_object_t *data, size_t num_obj, const ts_pub_channel_t *channels, size_t num_ch);
     ~ThingSet();
 
     /* Process ThingSet request
@@ -177,8 +178,14 @@ public:
     int set_user_password(char *password);
     int set_manufacturer_password(char *password);
 
-    int pub_msg_json(char *buf, size_t size, unsigned int channel);
-    int pub_msg_cbor(uint8_t *buf, size_t size, unsigned int channel);
+    int pub_msg_json(char *resp, size_t size, unsigned int channel);
+    int pub_msg_cbor(uint8_t *resp, size_t size, unsigned int channel);
+
+    // manually supplied list of elements
+    int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
+
+    // function to initialize data objects based on values stored in EEPROM
+    int init_cbor(uint8_t *cbor_data, size_t size);
 
     const data_object_t *get_data_object(uint16_t id);
     const data_object_t *get_data_object(char *str, size_t len);

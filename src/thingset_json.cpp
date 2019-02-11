@@ -192,7 +192,7 @@ int ThingSet::write_json(char *buf, size_t size, int category)
 
     if (tok_count < 2) {
         if (tok_count == JSMN_ERROR_NOMEM) {
-            return status_message_json(buf, size, TS_STATUS_WRONG_FORMAT);
+            return status_message_json(buf, size, TS_STATUS_REQUEST_TOO_LONG);
         } else {
             return status_message_json(buf, size, TS_STATUS_WRONG_FORMAT);
         }

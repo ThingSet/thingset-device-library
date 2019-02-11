@@ -157,6 +157,11 @@ int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
     }
 }
 
+int ThingSet::init_cbor(uint8_t *cbor_data, size_t size)
+{
+    return write_cbor(cbor_data, size, 0, true);
+}
+
 int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
@@ -187,9 +192,14 @@ int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_a
         if (data_obj == NULL) {
             return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
         }
-        // access ignored if direcly called (e.g. to write data from EEPROM)
-        if (!(data_obj->access & TS_ACCESS_WRITE) && !ignore_access) {
-            return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+
+        if (!ignore_access) {// access ignored if direcly called (e.g. to write data from EEPROM)
+            if (!(data_obj->access & TS_ACCESS_WRITE)) {
+                return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+            }
+            if (data_obj->category != category) {
+                return _status_msg(resp, size, TS_STATUS_WRONG_CATEGORY);
+            }
         }
 
         num_bytes = _deserialize_data_object(&req[pos], data_obj);
@@ -235,22 +245,27 @@ int ThingSet::exec_cbor(uint8_t *resp, size_t size)
 
 int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, unsigned int channel)
 {
-    resp[0] = TS_FUNCTION_PUBMSG;
-    int len = 1;
-
-    if (num_channels < channel) {
+    if (channel >= num_channels) {
         return 0;      // unknown channel
     }
 
-    if (pub_channels[channel].num > 1) {
-        len += cbor_serialize_map(&resp[len], pub_channels[channel].num, size - len);
+    return pub_msg_cbor(resp, size, pub_channels[channel].object_ids, pub_channels[channel].num);
+}
+
+int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements)
+{
+    resp[0] = TS_FUNCTION_PUBMSG;
+    int len = 1;
+
+    if (num_elements > 1) {
+        len += cbor_serialize_map(&resp[len], num_elements, size - len);
     }
 
-    for (unsigned int element = 0; element < pub_channels[channel].num; element++) {
+    for (unsigned int element = 0; element < num_elements; element++) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        const data_object_t* data_obj = get_data_object(pub_channels[channel].object_ids[element]);
+        const data_object_t* data_obj = get_data_object(pub_list[element]);
         if (data_obj == NULL || !(data_obj->access & TS_ACCESS_READ)) {
             continue;
         }
