@@ -222,7 +222,7 @@ int ThingSet::write_json(char *buf, size_t size, int category)
             return status_message_json(buf, size, TS_STATUS_UNAUTHORIZED);
         }
 
-        if (!(data_obj->category & category)) {
+        if (data_obj->category != category) {
             return status_message_json(buf, size, TS_STATUS_WRONG_CATEGORY);
         }
 

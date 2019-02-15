@@ -77,8 +77,8 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("write_cbor\n");
             int len = write_cbor(response, resp_size, req[0], false);
-            if (response[0] == TS_STATUS_SUCCESS &&
-                category == TS_CAT_CONF && conf_callback != NULL) {
+            if (response[0] == TS_STATUS_SUCCESS && conf_callback != NULL &&
+                (category == TS_CAT_CONF || category == TS_CAT_INFO)) {
                 conf_callback();
             }
             return len;
@@ -95,7 +95,7 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
     }
     else if (req[0] == '!') {      // JSON request
 
-        int len_function = 0;
+        unsigned int len_function = 0;
         if (req_len >= 5 && strncmp((char *)req, "!info", 5) == 0) {
             category = TS_CAT_INFO;
             len_function = 5;
@@ -129,41 +129,47 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         }
         // valid function / category found
 
-        jsmn_parser parser;
-        jsmn_init(&(parser));
+        if (req_len > len_function) {
+            jsmn_parser parser;
+            jsmn_init(&(parser));
 
-        json_str = (char *)req + len_function + 1;
-        tok_count = jsmn_parse(&parser, json_str, req_len - len_function, tokens, sizeof(tokens));
+            json_str = (char *)req + len_function + 1;      // +1 because blank is requested between function and JSON data
+            tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
 
-        if (tok_count == JSMN_ERROR_NOMEM) {
-            return status_message_json((char *)response, resp_size, TS_STATUS_REQUEST_TOO_LONG);
-        }
-        else if (tok_count < 0) {
-            return status_message_json((char *)response, resp_size, TS_STATUS_WRONG_FORMAT);
-        }
-        else if (tok_count == 0) {
-            //printf("list_json: %s\n", json_str);
-            return list_json((char *)response, resp_size, category);
-        }
-        else {
-            if (tokens[0].type == JSMN_OBJECT) {
-                //printf("write_json: %s\n", json_str);
-                int len = write_json((char *)response, resp_size, category);
-                if (category == TS_CAT_CONF && conf_callback != NULL) {
-                    conf_callback();
-                }
-                return len;
+            if (tok_count == JSMN_ERROR_NOMEM) {
+                return status_message_json((char *)response, resp_size, TS_STATUS_REQUEST_TOO_LONG);
+            }
+            else if (tok_count < 0) {
+                return status_message_json((char *)response, resp_size, TS_STATUS_WRONG_FORMAT);
+            }
+            else if (tok_count == 0) {
+                //printf("list_json: %s\n", json_str);
+                return list_json((char *)response, resp_size, category);
             }
             else {
-                if (category == TS_CAT_EXEC) {
-                    //printf("exec_json: %s\n", json_str);
-                    return exec_json((char *)response, resp_size);
+                if (tokens[0].type == JSMN_OBJECT) {
+                    //printf("write_json: %s\n", json_str);
+                    int len = write_json((char *)response, resp_size, category);
+                    if (strncmp((char *)response, ":0", 2) == 0 && conf_callback != NULL &&
+                        (category == TS_CAT_CONF || category == TS_CAT_INFO)) {
+                        conf_callback();
+                    }
+                    return len;
                 }
                 else {
-                    //printf("read_json: %s\n", json_str);
-                    return read_json((char *)response, resp_size, category);
+                    if (category == TS_CAT_EXEC) {
+                        //printf("exec_json: %s\n", json_str);
+                        return exec_json((char *)response, resp_size);
+                    }
+                    else {
+                        //printf("read_json: %s\n", json_str);
+                        return read_json((char *)response, resp_size, category);
+                    }
                 }
             }
+        }
+        else {  // only function without any blank characters --> list
+            return list_json((char *)response, resp_size, category);
         }
     }
     else {
