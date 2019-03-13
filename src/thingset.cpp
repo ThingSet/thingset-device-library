@@ -77,8 +77,8 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("write_cbor\n");
             int len = write_cbor(response, resp_size, req[0], false);
-            if (response[0] == TS_STATUS_SUCCESS && conf_callback != NULL &&
-                (category == TS_CAT_CONF || category == TS_CAT_INFO)) {
+            if ((response[0] - 0x80) == TS_STATUS_SUCCESS &&
+                req[0] == TS_CAT_CONF && conf_callback != NULL) {
                 conf_callback();
             }
             return len;
