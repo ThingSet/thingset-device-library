@@ -85,7 +85,7 @@ int cbor_serialize_float(uint8_t *data, float value, size_t max_len);
 
 int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
 
-int cbor_serialize_string(uint8_t *data, char *value, size_t max_len);
+int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len);
 
 int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len);
 

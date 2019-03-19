@@ -122,7 +122,7 @@ int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len)
     return 1;
 }
 
-int cbor_serialize_string(uint8_t *data, char *value, size_t max_len)
+int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
 {
     unsigned int len = strlen(value);
 

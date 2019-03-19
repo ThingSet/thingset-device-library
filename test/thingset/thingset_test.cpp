@@ -40,6 +40,7 @@ int main()
     RUN_TEST(json_wrong_category);
     RUN_TEST(json_read_array);
     RUN_TEST(json_list_input);
+    RUN_TEST(json_list_names_values_input);
     RUN_TEST(json_exec);
     RUN_TEST(json_pub_msg);
     RUN_TEST(json_conf_callback);
@@ -49,6 +50,7 @@ int main()
     RUN_TEST(cbor_read_array);
     RUN_TEST(cbor_list_ids_input);
     RUN_TEST(cbor_list_names_input);
+    RUN_TEST(cbor_list_names_values_input);
     RUN_TEST(cbor_pub_msg);
     RUN_TEST(cbor_exec);
 

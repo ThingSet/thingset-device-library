@@ -60,7 +60,7 @@ void _write_cbor(uint16_t id, char *value)
     int len = cbor_size((uint8_t*)value);
 
     // generate write request
-    req_buf[0] = TS_FUNCTION_WRITE;
+    req_buf[0] = TS_FUNCTION_CONF;
     req_buf[1] = 0xA1;     // map with 1 element
     req_buf[2] = 0x19;     // uint16 follows
     req_buf[3] = id >> 8;

@@ -324,7 +324,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::list_cbor(uint8_t *resp, size_t size, int category)
+int ThingSet::list_cbor(uint8_t *resp, size_t size, int category, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
     len += _status_msg(resp, size, TS_STATUS_SUCCESS);   // init response buffer
@@ -339,7 +339,12 @@ int ThingSet::list_cbor(uint8_t *resp, size_t size, int category)
         }
     }
 
-    len += cbor_serialize_array(&resp[len], num_elements, size - len);
+    if (values && !ids_only) {
+        len += cbor_serialize_map(&resp[len], num_elements, size - len);
+    }
+    else {
+        len += cbor_serialize_array(&resp[len], num_elements, size - len);
+    }
 
     // actually write elements
     for (unsigned int i = 0; i < num_objects; i++) {
@@ -347,11 +352,14 @@ int ThingSet::list_cbor(uint8_t *resp, size_t size, int category)
             && (data_objects[i].category == category))
         {
             int num_bytes = 0;
-            if (req[1] == CBOR_NULL) {
+            if (ids_only) {
                 num_bytes = cbor_serialize_uint(&resp[len], data_objects[i].id, size - len);
             }
             else {
-                num_bytes = cbor_serialize_string(&resp[len], (char *)data_objects[i].name, size - len);
+                num_bytes = cbor_serialize_string(&resp[len], data_objects[i].name, size - len);
+                if (values) {
+                    num_bytes += _cbor_serialize_data_object(&resp[len + num_bytes], size - len - num_bytes, &data_objects[i]);
+                }
             }
 
             if (num_bytes == 0) {

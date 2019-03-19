@@ -335,20 +335,25 @@ int ThingSet::write_json(char *buf, size_t size, int category)
     return status_message_json(buf, size, TS_STATUS_SUCCESS);
 }
 
-int ThingSet::list_json(char *resp, size_t size, int category)
+int ThingSet::list_json(char *resp, size_t size, int category, bool values)
 {
     // initialize response with success message
     size_t len = status_message_json(resp, size, TS_STATUS_SUCCESS);
 
-    len += sprintf(&resp[len], " [");
+    len += sprintf(&resp[len], values ? " {" : " [");
 
     for (unsigned int i = 0; i < num_objects; i++) {
         if ((data_objects[i].access & TS_ACCESS_READ) &&
             (data_objects[i].category == category))
         {
-            len += snprintf(&resp[len],
-                size - len,
-                "\"%s\", ", data_objects[i].name);
+            if (values) {
+                len += json_serialize_name_value(&resp[len], size - len, &data_objects[i]);
+            }
+            else {
+                len += snprintf(&resp[len],
+                    size - len,
+                    "\"%s\", ", data_objects[i].name);
+            }
 
             if (len >= size - 2) {
                 return status_message_json(resp, size, TS_STATUS_RESPONSE_TOO_LONG);
@@ -357,7 +362,7 @@ int ThingSet::list_json(char *resp, size_t size, int category)
     }
 
     // remove trailing comma and add closing bracket
-    sprintf(&resp[len-2], "]");
+    sprintf(&resp[len-2], values ? "}" : "]");
 
     return len - 1;
 }

@@ -70,9 +70,9 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
 
     int category = 0;
     if (req[0] <= TS_CAT_EXEC) {          // CBOR list/read/write request
-        if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_TEXT)) {
+        if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
             //printf("list_cbor\n");
-            return list_cbor(response, resp_size, req[0]);
+            return list_cbor(response, resp_size, req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
         }
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("write_cbor\n");
@@ -112,13 +112,13 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
             category = TS_CAT_OUTPUT;
             len_function = 7;
         }
+        else if (req_len >= 5 && strncmp((char *)req, "!rec", 5) == 0) {
+            category = TS_CAT_REC;
+            len_function = 5;
+        }
         else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
             category = TS_CAT_CAL;
             len_function = 4;
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!diag", 5) == 0) {
-            category = TS_CAT_DIAG;
-            len_function = 5;
         }
         else if (req_len >= 5 && strncmp((char *)req, "!exec", 5) == 0) {
             category = TS_CAT_EXEC;
@@ -145,6 +145,9 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
             else if (tok_count == 0) {
                 //printf("list_json: %s\n", json_str);
                 return list_json((char *)response, resp_size, category);
+            }
+            else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
+                return list_json((char *)response, resp_size, category, true);
             }
             else {
                 if (tokens[0].type == JSMN_OBJECT) {

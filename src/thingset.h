@@ -29,16 +29,14 @@
 #define TS_FUNCTION_CONF     0x02       // read/write configuration
 #define TS_FUNCTION_INPUT    0x03       // input
 #define TS_FUNCTION_OUTPUT   0x04       // output
-#define TS_FUNCTION_CALL     0x05       // RPC / exec
-#define TS_FUNCTION_LOG      0x07       // access log data
-#define TS_FUNCTION_NAME     0x08
-#define TS_FUNCTION_PUB      0x09       // publication request
-#define TS_FUNCTION_AUTH     0x0A
+#define TS_FUNCTION_REC      0x05       // RPC / exec
+#define TS_FUNCTION_CAL      0x06       // RPC / exec
+#define TS_FUNCTION_EXEC     0x0B       // RPC / function call
+#define TS_FUNCTION_NAME     0x0E
+#define TS_FUNCTION_AUTH     0x10
+#define TS_FUNCTION_LOG      0x11       // access log data
+#define TS_FUNCTION_PUB      0x12       // publication request
 #define TS_FUNCTION_PUBMSG   0x1F       // actual publication message
-
-// temporary
-#define TS_FUNCTION_READ     0x01       // read device info
-#define TS_FUNCTION_WRITE    0x02       // read/write configuration
 
 
 /* Status codes
@@ -86,8 +84,8 @@ enum ts_type {
 #define TS_CAT_CONF    0x02   // configurable settings
 #define TS_CAT_INPUT   0x03   // input data (e.g. set-points)
 #define TS_CAT_OUTPUT  0x04   // output data (e.g. measurement values)
-#define TS_CAT_CAL     0x05   // calibration
-#define TS_CAT_DIAG    0x06   // diagnostics
+#define TS_CAT_REC     0x05   // recorded data (histor-dependent)
+#define TS_CAT_CAL     0x06   // calibration
 #define TS_CAT_EXEC    0x0B   // Remote Procedure Call
 
 
@@ -96,7 +94,7 @@ enum ts_type {
 #define PUB_MULTIFRAME_EN (0x1U << 7)
 #define PUB_TIMESTAMP_EN (0x1U << 6)
 
-/* ThingSet data object struct
+/** ThingSet data object struct
  *
  * id = Data object ID
  * access = one of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
@@ -116,7 +114,7 @@ typedef struct data_object_t {
     const char *name;
 } data_object_t;
 
-/* Buffer for string-type and binary data
+/** Buffer for string-type and binary data
  *
  * Remark: char type data union necessary to use string functions without casts
  */
@@ -130,14 +128,14 @@ typedef struct {
 
 } ts_buffer_t;
 
-/* ThingSet Data Object container including size
+/** ThingSet Data Object container including size
  */
 typedef struct ts_data_t {
     const data_object_t *objects;
     size_t size;
 } ts_data_t;
 
-/* Parser container for JSON data
+/** Parser container for JSON data
  */
 typedef struct {
     char *str;
@@ -147,7 +145,7 @@ typedef struct {
 } ts_parser_t;
 
 
-/* Container for data object publication channel
+/** Container for data object publication channel
  */
 typedef struct {
     const char *name;
@@ -163,7 +161,7 @@ public:
     ThingSet(const data_object_t *data, size_t num_obj, const ts_pub_channel_t *channels, size_t num_ch);
     ~ThingSet();
 
-    /* Process ThingSet request
+    /** Process ThingSet request
     *   - receives a request and stores the pointer
     *   - performs an action (i.e. thingset function)
     *   - saves the response in resp->data
@@ -205,8 +203,8 @@ private:
     */
 
     // call with empty function
-    int list_json(char *buf, size_t size, int category);
-    int list_cbor(uint8_t *buf, size_t size, int category);
+    int list_json(char *buf, size_t size, int category, bool values = false);
+    int list_cbor(uint8_t *buf, size_t size, int category, bool values = false, bool ids_only = true);
 
     // function call with array
     int read_json(char *buf, size_t size, int category);
