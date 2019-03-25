@@ -112,9 +112,9 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
             category = TS_CAT_OUTPUT;
             len_function = 7;
         }
-        else if (req_len >= 5 && strncmp((char *)req, "!rec", 5) == 0) {
+        else if (req_len >= 4 && strncmp((char *)req, "!rec", 4) == 0) {
             category = TS_CAT_REC;
-            len_function = 5;
+            len_function = 4;
         }
         else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
             category = TS_CAT_CAL;
