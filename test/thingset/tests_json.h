@@ -69,10 +69,10 @@ void json_write_unknown()
 void json_read_array()
 {
     //                                                      float        bool         int
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\", \"bool\", \"i32\"]");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.00, false, 50]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.00,false,50]", resp_buf);
 }
 
 void json_list_input()
@@ -80,7 +80,7 @@ void json_list_input()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [\"loadEnTarget\", \"usbEnTarget\"]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [\"loadEnTarget\",\"usbEnTarget\"]", resp_buf);
 }
 
 void json_list_names_values_input()
@@ -88,14 +88,14 @@ void json_list_names_values_input()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input {}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. {\"loadEnTarget\":false, \"usbEnTarget\":false}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
 }
 
 void json_pub_msg()
 {
     int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN, 0);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING("# {\"ui32\":4294967295, \"i32\":50, \"ui16\":65535, \"i16\":-32768, \"f32\":52.00, \"bool\":false, \"strbuf\":\"Hello World!\"}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING("# {\"ui32\":4294967295,\"i32\":50,\"ui16\":65535,\"i16\":-32768,\"f32\":52.00,\"bool\":false,\"strbuf\":\"Hello World!\"}", resp_buf);
 }
 
 extern bool dummy_called_flag;

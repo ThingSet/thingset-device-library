@@ -83,32 +83,32 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const data_object_t* 
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu64 ", ", *((uint64_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu64 ",", *((uint64_t*)data_obj->data));
         break;
     case TS_T_INT64:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi64 ", ", *((int64_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi64 ",", *((int64_t*)data_obj->data));
         break;
 #endif
     case TS_T_UINT32:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu32 ", ", *((uint32_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu32 ",", *((uint32_t*)data_obj->data));
         break;
     case TS_T_INT32:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 ", ", *((int32_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 ",", *((int32_t*)data_obj->data));
         break;
     case TS_T_UINT16:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu16 ", ", *((uint16_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu16 ",", *((uint16_t*)data_obj->data));
         break;
     case TS_T_INT16:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ", ", *((int16_t*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ",", *((int16_t*)data_obj->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&buf[pos], size - pos, "%.*f, ", data_obj->detail, *((float*)data_obj->data));
+        pos = snprintf(&buf[pos], size - pos, "%.*f,", data_obj->detail, *((float*)data_obj->data));
         break;
     case TS_T_BOOL:
-        pos = snprintf(&buf[pos], size - pos, "%s, ", (*((bool*)data_obj->data) == true ? "true" : "false"));
+        pos = snprintf(&buf[pos], size - pos, "%s,", (*((bool*)data_obj->data) == true ? "true" : "false"));
         break;
     case TS_T_STRING:
-        pos = snprintf(&buf[pos], size - pos, "\"%s\", ", (char*)data_obj->data);
+        pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char*)data_obj->data);
         break;
     }
 
@@ -173,7 +173,7 @@ int ThingSet::read_json(char *buf, size_t size, int category)
         tok++;
     }
 
-    pos -= 2;  // remove trailing comma and blank
+    pos--;  // remove trailing comma
     if (tokens[0].type == JSMN_ARRAY) {
         pos += sprintf(&buf[pos], "]");     // buffer will be long enough as we dropped last 2 characters --> sprintf allowed
     } else {
@@ -352,19 +352,19 @@ int ThingSet::list_json(char *resp, size_t size, int category, bool values)
             else {
                 len += snprintf(&resp[len],
                     size - len,
-                    "\"%s\", ", data_objects[i].name);
+                    "\"%s\",", data_objects[i].name);
             }
 
-            if (len >= size - 2) {
+            if (len >= size - 1) {
                 return status_message_json(resp, size, TS_STATUS_RESPONSE_TOO_LONG);
             }
         }
     }
 
     // remove trailing comma and add closing bracket
-    sprintf(&resp[len-2], values ? "}" : "]");
+    resp[len-1] = values ? '}' : ']';
 
-    return len - 1;
+    return len;
 }
 
 int ThingSet::exec_json(char *buf, size_t size)
@@ -406,11 +406,11 @@ int ThingSet::pub_msg_json(char *resp, size_t size, unsigned int channel)
 
         len += json_serialize_name_value(&resp[len], size - len, data_obj);
 
-        if (len >= size - 2) {
+        if (len >= size - 1) {
             return 0;
         }
     }
-    sprintf(&resp[len-2], "}");    // overwrite comma + blank
+    resp[len-1] = '}';    // overwrite comma
 
-    return len - 1;
+    return len;
 }
