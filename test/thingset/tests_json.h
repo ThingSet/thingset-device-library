@@ -34,11 +34,11 @@ void json_write_wrong_data_structure()
 
 void json_write_array()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {    \"f32\" : 52,\"i32\":50.6}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {    \"f32\" : 52.8,\"i32\":50.6}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
-    TEST_ASSERT_EQUAL_FLOAT(52.0, f32);
+    TEST_ASSERT_EQUAL_FLOAT(52.8, f32);
     TEST_ASSERT_EQUAL(50, i32);
 }
 
@@ -72,7 +72,15 @@ void json_read_array()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.00,false,50]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.80,false,50]", resp_buf);
+}
+
+void json_read_rounded()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"f32_rounded\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. 53", resp_buf);
 }
 
 void json_list_input()
@@ -95,7 +103,7 @@ void json_pub_msg()
 {
     int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN, 0);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING("# {\"ui32\":4294967295,\"i32\":50,\"ui16\":65535,\"i16\":-32768,\"f32\":52.00,\"bool\":false,\"strbuf\":\"Hello World!\"}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING("# {\"ui32\":4294967295,\"i32\":50,\"ui16\":65535,\"i16\":-32768,\"f32\":52.80,\"bool\":false,\"strbuf\":\"Hello World!\"}", resp_buf);
 }
 
 extern bool dummy_called_flag;

@@ -96,7 +96,8 @@ static const data_object_t dataObjects[] = {
     {0x6006, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT16,   0, (void*) &i16, "i16"},
     {0x6007, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 2, (void*) &f32, "f32"},
     {0x6008, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL,    0, (void*) &b, "bool"},
-    {0x6009, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"}
+    {0x6009, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"},
+    {0x600A, TS_CAT_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 0, (void*) &f32, "f32_rounded"},
 };
 
 

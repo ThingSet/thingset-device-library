@@ -39,6 +39,7 @@ int main()
     RUN_TEST(json_write_unknown);
     RUN_TEST(json_wrong_category);
     RUN_TEST(json_read_array);
+    RUN_TEST(json_read_rounded);
     RUN_TEST(json_list_input);
     RUN_TEST(json_list_names_values_input);
     RUN_TEST(json_exec);
@@ -48,6 +49,7 @@ int main()
     // CBOR only tests
     RUN_TEST(cbor_write_array);
     RUN_TEST(cbor_read_array);
+    RUN_TEST(cbor_read_rounded);
     RUN_TEST(cbor_list_ids_input);
     RUN_TEST(cbor_list_names_input);
     RUN_TEST(cbor_list_names_values_input);

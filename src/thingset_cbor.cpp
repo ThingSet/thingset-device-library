@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>  // for definition of endianness
+#include <math.h>       // for rounding of floats
 
 int _status_msg(uint8_t *buf, size_t size, uint8_t code)
 {
@@ -90,7 +91,14 @@ int _cbor_serialize_data_object(uint8_t *buf, size_t size, const data_object_t* 
     case TS_T_INT16:
         return cbor_serialize_int(buf, *((int16_t*)data_obj->data), size);
     case TS_T_FLOAT32:
-        return cbor_serialize_float(buf, *((float*)data_obj->data), size);
+        if (data_obj->detail == 0) // round to 0 digits: use int
+#ifdef TS_64BIT_TYPES_SUPPORT
+            return cbor_serialize_int(buf, llroundf(*((float*)data_obj->data)), size);
+#else
+            return cbor_serialize_int(buf, lroundf(*((float*)data_obj->data), size));
+#endif
+        else
+            return cbor_serialize_float(buf, *((float*)data_obj->data), size);
     case TS_T_BOOL:
         return cbor_serialize_bool(buf, *((bool*)data_obj->data), size);
     case TS_T_STRING:

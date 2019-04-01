@@ -25,7 +25,7 @@ void cbor_write_array()
         "19 60 04 04 "
         "19 60 05 05 "
         "19 60 06 06 "
-        "19 60 07 fa 40 e0 00 00 "      // float32 7.0
+        "19 60 07 fa 40 fc 7a e1 "      // float32 7.89
         "19 60 08 f5 "                  // true
         "19 60 09 64 74 65 73 74 ";        // string "test"
 
@@ -81,7 +81,7 @@ void cbor_read_array()
         "04 "
         "05 "
         "06 "
-        "fa 40 e0 00 00 "      // float32 7.0
+        "fa 40 fc 7a e1 "      // float32 7.89
         "f5 "                  // true
         "64 74 65 73 74 ";        // string "test"
 
@@ -95,6 +95,32 @@ void cbor_read_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
+
+void cbor_read_rounded()
+{
+    char cbor_req_hex[] = "01 19 60 0A ";
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+
+    char cbor_resp_hex[] = "80 08 ";
+
+    uint8_t cbor_resp[100];
+    len = strlen(cbor_resp_hex);
+    pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
+    }
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+}
 
 void cbor_list_ids_input()
 {
@@ -183,7 +209,7 @@ void cbor_pub_msg()
         "19 60 04 04 "
         "19 60 05 05 "
         "19 60 06 06 "
-        "19 60 07 fa 40 e0 00 00 "      // float32 7.0
+        "19 60 07 fa 40 fc 7a e1 "      // float32 7.89
         "19 60 08 f5 "                  // true
         "19 60 09 64 74 65 73 74 ";     // string "test"
 
