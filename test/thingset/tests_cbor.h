@@ -95,7 +95,6 @@ void cbor_read_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-
 void cbor_read_rounded()
 {
     char cbor_req_hex[] = "01 19 60 0A ";
@@ -120,6 +119,26 @@ void cbor_read_rounded()
     }
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+}
+
+void cbor_write_rounded()
+{
+    float tmp = f32;
+    char cbor_req_hex[] = "02 A1 19 60 0A 05 ";
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
+    f32 = tmp;
 }
 
 void cbor_list_ids_input()

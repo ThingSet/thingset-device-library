@@ -50,6 +50,7 @@ int main()
     RUN_TEST(cbor_write_array);
     RUN_TEST(cbor_read_array);
     RUN_TEST(cbor_read_rounded);
+    RUN_TEST(cbor_write_rounded);       // writes an integer to float
     RUN_TEST(cbor_list_ids_input);
     RUN_TEST(cbor_list_names_input);
     RUN_TEST(cbor_list_names_values_input);

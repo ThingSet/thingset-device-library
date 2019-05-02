@@ -377,14 +377,43 @@ int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t 
 
 int cbor_deserialize_float(uint8_t *data, float *value)
 {
-    if (data[0] != CBOR_FLOAT32 || !value)
+    if (!value)
         return 0;
 
-    union { float f; uint32_t ui; } f2ui;
-    f2ui.ui = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
-    *value = f2ui.f;
-
-    return 5;
+    uint8_t type = data[0] & CBOR_TYPE_MASK;
+    if (type == CBOR_UINT) {
+#ifdef TS_64BIT_TYPES_SUPPORT
+        uint64_t tmp;
+        int len = cbor_deserialize_uint64(data, &tmp);
+        *value = (float)tmp;
+        return len;
+#else
+        uint32_t tmp;
+        int len = cbor_deserialize_uint32(data, &tmp);
+        *value = (float)tmp;
+        return len;
+#endif
+    }
+    else if (type == CBOR_NEGINT) {
+#ifdef TS_64BIT_TYPES_SUPPORT
+        int64_t tmp;
+        int len = cbor_deserialize_int64(data, &tmp);
+        *value = (float)tmp;
+        return len;
+#else
+        int32_t tmp;
+        int len = cbor_deserialize_int32(data, &tmp);
+        *value = (float)tmp;
+        return len;
+#endif
+    }
+    else if (data[0] == CBOR_FLOAT32) {
+        union { float f; uint32_t ui; } f2ui;
+        f2ui.ui = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
+        *value = f2ui.f;
+        return 5;
+    }
+    return 0;
 }
 
 int cbor_deserialize_bool(uint8_t *data, bool *value)
