@@ -68,8 +68,7 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
     if (req == NULL || req_len < 1)
         return 0;
 
-    int category = 0;
-    if (req[0] <= TS_CAT_EXEC) {          // CBOR list/read/write request
+    if (req[0] <= TS_EXEC) {          // CBOR list/read/write request
         if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
             //printf("list_cbor\n");
             return list_cbor(response, resp_size, req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
@@ -78,13 +77,13 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
             //printf("write_cbor\n");
             int len = write_cbor(response, resp_size, req[0], false);
             if ((response[0] - 0x80) == TS_STATUS_SUCCESS &&
-                req[0] == TS_CAT_CONF && conf_callback != NULL) {
+                req[0] == TS_CONF && conf_callback != NULL) {
                 conf_callback();
             }
             return len;
         }
         else {  // array or single data object
-            if (req[0] == TS_CAT_EXEC) {
+            if (req[0] == TS_EXEC) {
                 return exec_cbor(response, resp_size);
             }
             else {
@@ -95,35 +94,45 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
     }
     else if (req[0] == '!') {      // JSON request
 
+        int function = 0;
         unsigned int len_function = 0;
         if (req_len >= 5 && strncmp((char *)req, "!info", 5) == 0) {
-            category = TS_CAT_INFO;
+            function = TS_INFO;
             len_function = 5;
         }
         else if (req_len >= 5 && strncmp((char *)req, "!conf", 5) == 0) {
-            category = TS_CAT_CONF;
+            function = TS_CONF;
             len_function = 5;
         }
         else if (req_len >= 6 && strncmp((char *)req, "!input", 6) == 0) {
-            category = TS_CAT_INPUT;
+            function = TS_INPUT;
             len_function = 6;
         }
         else if (req_len >= 7 && strncmp((char *)req, "!output", 7) == 0) {
-            category = TS_CAT_OUTPUT;
+            function = TS_OUTPUT;
             len_function = 7;
         }
         else if (req_len >= 4 && strncmp((char *)req, "!rec", 4) == 0) {
-            category = TS_CAT_REC;
+            function = TS_REC;
             len_function = 4;
         }
         else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
-            category = TS_CAT_CAL;
+            function = TS_CAL;
             len_function = 4;
         }
         else if (req_len >= 5 && strncmp((char *)req, "!exec", 5) == 0) {
-            category = TS_CAT_EXEC;
+            function = TS_EXEC;
             len_function = 5;
         }
+        /*
+        else if (req_len >= 2 && strncmp((char *)req, "! ", 2) == 0) {
+            function = TS_ANY;
+            len_function = 2;
+        }
+        else if (req_len >= 4 && strncmp((char *)req, "!pub", 4) == 0) {
+            function = TS_PUB;
+            len_function = 4;
+        }*/
         else {
             return status_message_json((char *)response, resp_size, TS_STATUS_UNKNOWN_FUNCTION);
         }
@@ -144,35 +153,35 @@ int ThingSet::get_response(uint8_t *response, size_t resp_size)
             }
             else if (tok_count == 0) {
                 //printf("list_json: %s\n", json_str);
-                return list_json((char *)response, resp_size, category);
+                return list_json((char *)response, resp_size, function);
             }
             else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
-                return list_json((char *)response, resp_size, category, true);
+                return list_json((char *)response, resp_size, function, true);
             }
             else {
                 if (tokens[0].type == JSMN_OBJECT) {
                     //printf("write_json: %s\n", json_str);
-                    int len = write_json((char *)response, resp_size, category);
+                    int len = write_json((char *)response, resp_size, function);
                     if (strncmp((char *)response, ":0", 2) == 0 && conf_callback != NULL &&
-                        (category == TS_CAT_CONF || category == TS_CAT_INFO)) {
+                        (function == TS_CONF || function == TS_INFO)) {
                         conf_callback();
                     }
                     return len;
                 }
                 else {
-                    if (category == TS_CAT_EXEC) {
+                    if (function == TS_EXEC) {
                         //printf("exec_json: %s\n", json_str);
                         return exec_json((char *)response, resp_size);
                     }
                     else {
                         //printf("read_json: %s\n", json_str);
-                        return read_json((char *)response, resp_size, category);
+                        return read_json((char *)response, resp_size, function);
                     }
                 }
             }
         }
         else {  // only function without any blank characters --> list
-            return list_json((char *)response, resp_size, category);
+            return list_json((char *)response, resp_size, function);
         }
     }
     else {

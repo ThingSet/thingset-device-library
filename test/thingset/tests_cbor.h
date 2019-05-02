@@ -125,7 +125,7 @@ void cbor_read_rounded()
 void cbor_list_ids_input()
 {
     // generate list request
-    req_buf[0] = TS_CAT_INPUT;
+    req_buf[0] = TS_INPUT;
     req_buf[1] = 0xF6;     // nullbyte to get response as numeric IDs
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
@@ -147,7 +147,7 @@ void cbor_list_ids_input()
 void cbor_list_names_input()
 {
     // generate list request
-    req_buf[0] = TS_CAT_INPUT;
+    req_buf[0] = TS_INPUT;
     req_buf[1] = 0x80;     // empty array to get response as names
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
@@ -169,7 +169,7 @@ void cbor_list_names_input()
 void cbor_list_names_values_input()
 {
     // generate list request
-    req_buf[0] = TS_CAT_INPUT;
+    req_buf[0] = TS_INPUT;
     req_buf[1] = 0xA0;     // empty map to get response as names + values
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
@@ -195,7 +195,7 @@ void cbor_pub_msg()
 {
     ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN, 0);
 
-    TEST_ASSERT_EQUAL_UINT8(TS_FUNCTION_PUBMSG, resp_buf[0]);
+    TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, resp_buf[0]);
 
     char cbor_resp_hex[] =
         #if TS_64BIT_TYPES_SUPPORT
@@ -229,7 +229,7 @@ void cbor_exec()
 {
     dummy_called_flag = 0;
 
-    req_buf[0] = TS_CAT_EXEC;     // function ID for exec
+    req_buf[0] = TS_EXEC;     // function ID for exec
     req_buf[1] = 0x19;     // uint16 follows
     req_buf[2] = 0x50;     // data object ID 0x5001
     req_buf[3] = 0x01;

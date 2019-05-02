@@ -23,21 +23,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Protocol functions
+/* Protocol functions / categories
  */
-#define TS_FUNCTION_INFO     0x01       // read device info
-#define TS_FUNCTION_CONF     0x02       // read/write configuration
-#define TS_FUNCTION_INPUT    0x03       // input
-#define TS_FUNCTION_OUTPUT   0x04       // output
-#define TS_FUNCTION_REC      0x05       // RPC / exec
-#define TS_FUNCTION_CAL      0x06       // RPC / exec
-#define TS_FUNCTION_EXEC     0x0B       // RPC / function call
-#define TS_FUNCTION_NAME     0x0E
-#define TS_FUNCTION_AUTH     0x10
-#define TS_FUNCTION_LOG      0x11       // access log data
-#define TS_FUNCTION_PUB      0x12       // publication request
-#define TS_FUNCTION_PUBMSG   0x1F       // actual publication message
-
+// function + data object category
+#define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
+#define TS_CONF     0x02       // configurable settings
+#define TS_INPUT    0x03       // input data (e.g. set-points)
+#define TS_OUTPUT   0x04       // output data (e.g. measurement values)
+#define TS_REC      0x05       // recorded data (history-dependent)
+#define TS_CAL      0x06       // calibration
+#define TS_ANY      0x09       // any of above non-exec categories 0x01-0x08
+#define TS_EXEC     0x0B       // RPC / function call
+// function only
+#define TS_NAME     0x0E
+#define TS_AUTH     0x10
+#define TS_LOG      0x11       // access log data
+#define TS_PUB      0x12       // publication request
+#define TS_PUBMSG   0x1F       // actual publication message
 
 /* Status codes
  */
@@ -78,16 +80,6 @@ enum ts_type {
 #define TS_ACCESS_EXEC          (0x1U << 4)     // execute (for RPC only)
 #define TS_ACCESS_EXEC_AUTH     (0x1U << 5)     // execute after authentication
 
-/* ThingSet data object categories
- */
-#define TS_CAT_INFO    0x01   // read-only device information (e.g. manufacturer, device ID)
-#define TS_CAT_CONF    0x02   // configurable settings
-#define TS_CAT_INPUT   0x03   // input data (e.g. set-points)
-#define TS_CAT_OUTPUT  0x04   // output data (e.g. measurement values)
-#define TS_CAT_REC     0x05   // recorded data (histor-dependent)
-#define TS_CAT_CAL     0x06   // calibration
-#define TS_CAT_EXEC    0x0B   // Remote Procedure Call
-
 
 /* for CAN only...
  */
@@ -109,8 +101,7 @@ typedef struct data_object_t {
     const uint8_t access;
     const uint8_t type;
     const int16_t detail;
-    void *data;    int pub_msg_cbor(uint8_t *buf, size_t size, int channel);
-
+    void *data;
     const char *name;
 } data_object_t;
 
@@ -124,7 +115,7 @@ typedef struct {
         uint8_t *bin;       // pointer to binary data
     } data;
     size_t size;            // size of the array
-    size_t pos;             // index of the next free byte    int pub_msg_cbor(uint8_t *buf, size_t size, int channel);
+    size_t pos;             // index of the next free byte
 
 } ts_buffer_t;
 
@@ -151,6 +142,7 @@ typedef struct {
     const char *name;
     const uint16_t *object_ids;  // array of data object IDs
     const size_t num;             // number of objects
+    bool enabled;
 } ts_pub_channel_t;
 
 
@@ -193,39 +185,40 @@ public:
 
 private:
 
-    void set_request(uint8_t *buf, size_t length);
-    int get_response(uint8_t *buf, size_t size);
+    void set_request(uint8_t *resp, size_t length);
+    int get_response(uint8_t *resp, size_t size);
 
 
     /* ThingSet JSON functions
     *   - append requested data to resp buffer
     *   - return ThingSet status code
     */
+    int data_access_json(char *req, size_t req_len, char *resp, size_t resp_size, int category);
 
     // call with empty function
-    int list_json(char *buf, size_t size, int category, bool values = false);
-    int list_cbor(uint8_t *buf, size_t size, int category, bool values = false, bool ids_only = true);
+    int list_json(char *resp, size_t size, int category, bool values = false);
+    int list_cbor(uint8_t *resp, size_t size, int category, bool values = false, bool ids_only = true);
 
     // function call with array
-    int read_json(char *buf, size_t size, int category);
-    int read_cbor(uint8_t *buf, size_t size, int category);
+    int read_json(char *resp, size_t size, int category);
+    int read_cbor(uint8_t *resp, size_t size, int category);
 
     // function call with map
-    int write_json(char *buf, size_t size, int category);
-    int write_cbor(uint8_t *buf, size_t size, int category, bool ignore_access);
+    int write_json(char *resp, size_t size, int category);
+    int write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access);
 
     // function call with single value
-    int exec_json(char *buf, size_t size);
-    int exec_cbor(uint8_t *buf, size_t size);
+    int exec_json(char *resp, size_t size);
+    int exec_cbor(uint8_t *resp, size_t size);
 
     // authentication
-    int auth_json(char *buf, size_t size);
-    int auth_cbor(uint8_t *buf, size_t size);
+    int auth_json(char *resp, size_t size);
+    int auth_cbor(uint8_t *resp, size_t size);
 
-    int json_serialize_value(char *buf, size_t size, const data_object_t* data_obj);
-    int json_serialize_name_value(char *buf, size_t size, const data_object_t* data_obj);
+    int json_serialize_value(char *resp, size_t size, const data_object_t* data_obj);
+    int json_serialize_name_value(char *resp, size_t size, const data_object_t* data_obj);
 
-    int status_message_json(char *buf, size_t size, int code);
+    int status_message_json(char *resp, size_t size, int code);
 
     const data_object_t *data_objects;
     size_t num_objects;

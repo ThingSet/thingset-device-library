@@ -24,10 +24,10 @@
 #include <sys/types.h>  // for definition of endianness
 #include <math.h>       // for rounding of floats
 
-int _status_msg(uint8_t *buf, size_t size, uint8_t code)
+int _status_msg(uint8_t *resp, size_t size, uint8_t code)
 {
     if (size > 0) {
-        buf[0] = 0x80 + code;
+        resp[0] = 0x80 + code;
         return 1;
     }
     else {
@@ -272,7 +272,7 @@ int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, unsigned int channel)
 
 int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements)
 {
-    resp[0] = TS_FUNCTION_PUBMSG;
+    resp[0] = TS_PUBMSG;
     int len = 1;
 
     if (num_elements > 1) {
