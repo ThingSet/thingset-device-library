@@ -56,6 +56,8 @@ int main()
     RUN_TEST(cbor_list_names_values_input);
     RUN_TEST(cbor_pub_msg);
     RUN_TEST(cbor_exec);
+    RUN_TEST(cbor_num_elem);
+    RUN_TEST(cbor_serialize_long_string);
 
     UNITY_END();
 }

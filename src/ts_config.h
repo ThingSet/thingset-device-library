@@ -17,14 +17,6 @@
 #ifndef __TS_CONFIG_H_
 #define __TS_CONFIG_H_
 
-/* Define endian-ness of CPU (little endian for AVR, x86 and most ARM, e.g. STM32)
- * (if not already defined by your framework)
- */
-#if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
-#define LITTLE_ENDIAN
-//#define BIG_ENDIAN
-#endif
-
 /* Maximum number of expected JSON tokens (i.e. arrays, map keys, values,
  * primitives, etc.)
  *
@@ -49,31 +41,6 @@
  */
 #ifndef TS_64BIT_TYPES_SUPPORT
 #define TS_64BIT_TYPES_SUPPORT 0        // default: no support
-#endif
-
-/* Macros for conversion between host and network byte order
- */
-#if defined(__htonl) && defined(__ntohl)
-    #define htons  __htons
-    #define htonl  __htonl
-    #define ntohs  __ntohs
-    #define ntohl  __ntohl
-#elif defined(BIG_ENDIAN) && !defined(LITTLE_ENDIAN)
-    #define htons(A) (A)
-    #define htonl(A) (A)
-    #define ntohs(A) (A)
-    #define ntohl(A) (A)
-#elif defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
-    #define htons(A) ((((uint16_t)(A) & 0xff00) >> 8) | \
-                      (((uint16_t)(A) & 0x00ff) << 8))
-    #define htonl(A) ((((uint32_t)(A) & 0xff000000) >> 24) | \
-                      (((uint32_t)(A) & 0x00ff0000) >> 8)  | \
-                      (((uint32_t)(A) & 0x0000ff00) << 8)  | \
-                      (((uint32_t)(A) & 0x000000ff) << 24))
-    #define ntohs  htons
-    #define ntohl  htonl
-#else
-    #error "Must define one of BIG_ENDIAN or LITTLE_ENDIAN"
 #endif
 
 #endif /* __TS_CONFIG_H_ */

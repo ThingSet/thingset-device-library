@@ -259,6 +259,43 @@ void cbor_exec()
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
+#include "cbor.h"
+
+void cbor_num_elem()
+{
+    char cbor_req_hex[] = "B9 F0 00 ";
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    uint16_t num_elements;
+    cbor_num_elements(cbor_req, &num_elements);
+    TEST_ASSERT_EQUAL(0xF000, num_elements);
+}
+
+void cbor_serialize_long_string()
+{
+    char str[300];
+    uint8_t buf[302];
+
+    for (int i = 0; i < sizeof(str); i++) {
+        str[i] = 'T';
+    }
+    str[299] = '\0';
+
+    int len_total = cbor_serialize_string(buf, str, sizeof(buf));
+
+    TEST_ASSERT_EQUAL_UINT(302, len_total);
+    TEST_ASSERT_EQUAL_UINT(0x79, buf[0]);
+    TEST_ASSERT_EQUAL_UINT(0x01, buf[1]);   // 0x01 << 8 + 0x2C = 299
+    TEST_ASSERT_EQUAL_UINT(0x2B, buf[2]);
+}
+
+
 /*
 void cbor_get_data_object_name()
 {

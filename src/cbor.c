@@ -128,20 +128,21 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
 
     //printf("serialize string: \"%s\", len = %d, max_len = %d\n", value, len, max_len);
 
-    if (len < 24 && len + 1 < max_len) {
+    if (len < 24 && len + 1 <= max_len) {
         data[0] = CBOR_TEXT | (uint8_t)len;
         strcpy((char*)&data[1], value);
         return len + 1;
     }
-    else if (len < 0xFF && len + 2 < max_len) {
+    else if (len < 0xFF && len + 2 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)len;
         strcpy((char*)&data[2], value);
         return len + 2;
     }
-    else if (len < 0xFFFF && len + 3 < max_len) {
+    else if (len < 0xFFFF && len + 3 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT16_FOLLOWS;
-        *((uint16_t*)&data[1]) = (uint16_t)len;
+        data[1] = (uint16_t)len >> 8;
+        data[2] = (uint16_t)len;
         strcpy((char*)&data[3], value);
         return len + 3;
     }
@@ -163,7 +164,8 @@ int _serialize_num_elements(uint8_t *data, size_t num_elements, size_t max_len)
     }
     else if (num_elements < 0xFFFF && max_len > 1) {
         data[0] |= CBOR_UINT16_FOLLOWS;
-        *((uint16_t*)&data[1]) = htons((uint16_t)num_elements);
+        data[1] = (uint16_t)num_elements >> 8;
+        data[2] = (uint16_t)num_elements;
         return 3;
     }
     else {    // too many elements (more than 65535)
@@ -461,7 +463,7 @@ int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
         }
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
-        len = ntohs(*((uint16_t*)&data[1]));
+        len = data[1] << 8 | data[2];
         if (len < buf_size) {
             strncpy(value, (char*)&data[3], len);
             value[len] = '\0';
@@ -497,7 +499,7 @@ int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
         return 2;
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
-        *num_elements = ntohs(*((uint16_t*)&data[1]));
+        *num_elements = data[1] << 8 | data[2];
         return 3;
     }
     return 0;   // more map elements not supported
@@ -532,7 +534,7 @@ int cbor_size(uint8_t *data)
             if (info == CBOR_UINT8_FOLLOWS)
                 return 1 + data[1];
             else if (info == CBOR_UINT16_FOLLOWS)
-                return 1 + ntohl(*((uint16_t*)&data[1]));
+                return 1 + data[1] << 8 | data[2];
             else
                 return 0;   // longer string / byte array not supported
         }
