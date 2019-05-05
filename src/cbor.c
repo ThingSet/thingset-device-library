@@ -534,7 +534,7 @@ int cbor_size(uint8_t *data)
             if (info == CBOR_UINT8_FOLLOWS)
                 return 1 + data[1];
             else if (info == CBOR_UINT16_FOLLOWS)
-                return 1 + data[1] << 8 | data[2];
+                return 1 + (data[1] << 8 | data[2]);
             else
                 return 0;   // longer string / byte array not supported
         }
