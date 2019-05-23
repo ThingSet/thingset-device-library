@@ -1,5 +1,7 @@
 # C++ library for the ThingSet Protocol
 
+![Travis CI build badge](https://travis-ci.com/ThingSet/thingset-cpp.svg?branch=master)
+
 This C++ implementation is used by the LibreSolar devices' firmware.
 
 ## Text-based protocol

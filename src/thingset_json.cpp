@@ -281,7 +281,7 @@ int ThingSet::write_json(char *resp, size_t size, int category)
 
         // extract the value and check buffer lengths
         value_len = tokens[tok+1].end - tokens[tok+1].start;
-        if (value_len >= sizeof(value_buf) ||
+        if ((data_obj->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
             (data_obj->type == TS_T_STRING && value_len >= (size_t)data_obj->detail)) {
             return status_message_json(resp, size, TS_STATUS_INVALID_VALUE);
         } else {
