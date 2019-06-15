@@ -44,19 +44,19 @@
 /* Status codes
  */
 #define TS_STATUS_SUCCESS            0
-#define TS_STATUS_ERROR             30
-#define TS_STATUS_UNKNOWN_FUNCTION  31    // Function ID unknown
-#define TS_STATUS_UNKNOWN_DATA_OBJ  32    // Data Object ID unknown
-#define TS_STATUS_WRONG_FORMAT      33
-#define TS_STATUS_WRONG_TYPE        34    // Data type not supported
-#define TS_STATUS_DEVICE_BUSY       35    // Device busy
-#define TS_STATUS_UNAUTHORIZED      36
-#define TS_STATUS_REQUEST_TOO_LONG  37
-#define TS_STATUS_RESPONSE_TOO_LONG 38
-#define TS_STATUS_INVALID_VALUE     39     // value out of allowed range
-#define TS_STATUS_WRONG_CATEGORY    40
+#define TS_STATUS_ERROR             32
+#define TS_STATUS_UNKNOWN_FUNCTION  33    // Function ID unknown
+#define TS_STATUS_UNKNOWN_DATA_OBJ  34    // Data Object ID unknown
+#define TS_STATUS_WRONG_FORMAT      35
+#define TS_STATUS_WRONG_TYPE        36    // Data type not supported
+#define TS_STATUS_DEVICE_BUSY       37    // Device busy
+#define TS_STATUS_UNAUTHORIZED      38
+#define TS_STATUS_REQUEST_TOO_LONG  39
+#define TS_STATUS_RESPONSE_TOO_LONG 40
+#define TS_STATUS_INVALID_VALUE     41     // value out of allowed range
+#define TS_STATUS_WRONG_CATEGORY    42
 
-/* Internal C data types (used to cast void* pointers)
+/** Internal C data types (used to cast void* pointers)
  */
 enum ts_type {
     TS_T_BOOL,
@@ -154,13 +154,16 @@ public:
     ~ThingSet();
 
     /** Process ThingSet request
-    *   - receives a request and stores the pointer
-    *   - performs an action (i.e. thingset function)
-    *   - saves the response in resp->data
-    *   - returns ThingSet status code
-    *
-    * This function also detects if JSON or CBOR format is used
-    */
+     *
+     * This function also detects if JSON or CBOR format is used
+     *
+     * @param request Pointer to the request buffer
+     * @param req_len Length of the data in the request buffer
+     * @param response Pointer to the response buffer, where the result should be stored
+     * @param resp_size Size of the response buffer, i.e. maximum allowed length of the response.
+
+     * @returns Status code
+     */
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
 
     void set_pub_channels(const ts_pub_channel_t *channels, size_t num);
@@ -186,29 +189,55 @@ public:
 private:
 
     void set_request(uint8_t *resp, size_t length);
+
+    // returns the length of the response written to response buffer or 0 in case of error
     int get_response(uint8_t *resp, size_t size);
 
 
-    /* ThingSet JSON functions
+    /** ThingSet data access function (text mode)
     *   - append requested data to resp buffer
     *   - return ThingSet status code
     */
     int data_access_json(char *req, size_t req_len, char *resp, size_t resp_size, int category);
 
-    // call with empty function
+    /**
+     * List data objects in text mode (function called with empty argument)
+     */
     int list_json(char *resp, size_t size, int category, bool values = false);
+
+    /**
+     * List data objects in binary mode (function called with empty argument)
+     */
     int list_cbor(uint8_t *resp, size_t size, int category, bool values = false, bool ids_only = true);
 
-    // function call with array
+    /**
+     * Read data object values in text mode (function called with an array as argument)
+     */
     int read_json(char *resp, size_t size, int category);
+
+    /**
+     * Read data object values in binary mode (function called with an array as argument)
+     */
     int read_cbor(uint8_t *resp, size_t size, int category);
 
-    // function call with map
+    /**
+     * Write data object values in text mode (function called with a map as argument)
+     */
     int write_json(char *resp, size_t size, int category);
+
+    /**
+     * Write data object values in binary mode (function called with a map as argument)
+     */
     int write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access);
 
-    // function call with single value
+    /**
+     * Execute command in text mode (function called with a single data object name as argument)
+     */
     int exec_json(char *resp, size_t size);
+
+    /**
+     * Execute command in binary mode (function called with a single data object name/id as argument)
+     */
     int exec_cbor(uint8_t *resp, size_t size);
 
     // authentication

@@ -61,7 +61,6 @@ void ThingSet::set_request(uint8_t *buf, size_t length)
     req_len = length;
 }
 
-// returns the length of the response written to response buffer or 0 in case of error
 int ThingSet::get_response(uint8_t *response, size_t resp_size)
 {
     // check if proper request was set before asking for a response
