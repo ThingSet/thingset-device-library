@@ -1,5 +1,5 @@
-/* ThingSet protocol library
- * Copyright (c) 2017-2018 Martin Jäger (www.libre.solar)
+/* ThingSet protocol client library
+ * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,7 @@
 #include <sys/types.h>  // for definition of endianness
 #include <math.h>       // for rounding of floats
 
-int _status_msg(uint8_t *resp, size_t size, uint8_t code)
-{
-    if (size > 0) {
-        resp[0] = 0x80 + code;
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-int _deserialize_data_object(uint8_t *buf, const data_object_t* data_obj)
+static int cbor_deserialize_data_object(uint8_t *buf, const data_object_t* data_obj)
 {
     switch (data_obj->type) {
 #if (TS_64BIT_TYPES_SUPPORT == 1)
@@ -73,7 +62,7 @@ int _deserialize_data_object(uint8_t *buf, const data_object_t* data_obj)
     }
 }
 
-int _cbor_serialize_data_object(uint8_t *buf, size_t size, const data_object_t* data_obj)
+static int cbor_serialize_data_object(uint8_t *buf, size_t size, const data_object_t* data_obj)
 {
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -108,18 +97,28 @@ int _cbor_serialize_data_object(uint8_t *buf, size_t size, const data_object_t* 
     }
 }
 
+int ThingSet::status_message_cbor(uint8_t code)
+{
+    if (resp_size > 0) {
+        resp[0] = 0x80 + code;
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
 
-int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
+int ThingSet::read_cbor(int category)
 {
     unsigned int pos = 1;       // position in request (ignore first byte for function code)
     unsigned int len = 0;       // current length of response
     uint16_t num_elements, element = 0;
 
-    len += _status_msg(resp, size, TS_STATUS_SUCCESS);   // init response buffer
+    len += status_message_cbor(TS_STATUS_SUCCESS);   // init response buffer
 
     pos += cbor_num_elements(&req[1], &num_elements);
     if (num_elements != 1 && (req[1] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
     }
 
     //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -127,7 +126,7 @@ int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
     //    req[pos+4], req[pos+5], req[pos+6], req[pos+7]);
 
     if (num_elements > 1) {
-        len += cbor_serialize_array(&resp[len], num_elements, size - len);
+        len += cbor_serialize_array(&resp[len], num_elements, resp_size - len);
     }
 
     while (pos + 1 < req_len && element < num_elements) {
@@ -137,21 +136,21 @@ int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
         uint16_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
-            return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
         }
         pos += num_bytes;
 
         const data_object_t* data_obj = get_data_object(id);
         if (data_obj == NULL) {
-            return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
+            return status_message_cbor(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
         if (!(data_obj->access & TS_ACCESS_READ)) {
-            return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+            return status_message_cbor(TS_STATUS_UNAUTHORIZED);
         }
 
-        num_bytes = _cbor_serialize_data_object(&resp[len], size - len, data_obj);
+        num_bytes = cbor_serialize_data_object(&resp[len], resp_size - len, data_obj);
         if (num_bytes == 0) {
-            return _status_msg(resp, size, TS_STATUS_RESPONSE_TOO_LONG);
+            return status_message_cbor(TS_STATUS_RESPONSE_TOO_LONG);
         } else {
             len += num_bytes;
         }
@@ -161,27 +160,29 @@ int ThingSet::read_cbor(uint8_t *resp, size_t size, int category)
     if (element == num_elements) {
         return len;
     } else {
-        return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
     }
 }
 
 int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
 {
-    uint8_t resp[10];
+    uint8_t resp_tmp[1] = {};   // only one character as response expected
     req = cbor_data;
     req_len = len;
-    write_cbor(resp, sizeof(resp), 0, true);
+    resp = resp_tmp;
+    resp_size = sizeof(resp_tmp);
+    write_cbor(0, true);
     return resp[0] - 0x80;
 }
 
-int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access)
+int ThingSet::write_cbor(int category, bool ignore_access)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     uint16_t num_elements, element = 0;
 
     pos += cbor_num_elements(&req[1], &num_elements);
     if ((req[1] & CBOR_TYPE_MASK) != CBOR_MAP) {
-        return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
     }
 
     //printf("write request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -196,14 +197,14 @@ int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_a
         uint16_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
-            return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
         }
         pos += num_bytes;
 
         const data_object_t* data_obj = get_data_object(id);
         if (data_obj == NULL) {
             if (!ignore_access) {
-                return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
+                return status_message_cbor(TS_STATUS_UNKNOWN_DATA_OBJ);
             }
 
             // ignore element
@@ -212,18 +213,18 @@ int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_a
         else {
             if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
                 if (!(data_obj->access & TS_ACCESS_WRITE)) {
-                    return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+                    return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
                 if (data_obj->category != category) {
-                    return _status_msg(resp, size, TS_STATUS_WRONG_CATEGORY);
+                    return status_message_cbor(TS_STATUS_WRONG_CATEGORY);
                 }
             }
 
-            num_bytes = _deserialize_data_object(&req[pos], data_obj);
+            num_bytes = cbor_deserialize_data_object(&req[pos], data_obj);
         }
 
         if (num_bytes == 0) {
-            return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
         }
         pos += num_bytes;
 
@@ -231,52 +232,52 @@ int ThingSet::write_cbor(uint8_t *resp, size_t size, int category, bool ignore_a
     }
 
     if (element == num_elements) {
-        return _status_msg(resp, size, TS_STATUS_SUCCESS);
+        return status_message_cbor(TS_STATUS_SUCCESS);
     } else {
-        return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
     }
 }
 
-int ThingSet::exec_cbor(uint8_t *resp, size_t size)
+int ThingSet::exec_cbor()
 {
     // only a single function call allowed (no array of data objects)
     uint16_t id;
     size_t num_bytes = cbor_deserialize_uint16(&req[1], &id);
     if (num_bytes == 0 || req_len > 4) {
-        return _status_msg(resp, size, TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
     }
 
     const data_object_t* data_obj = get_data_object(id);
     if (data_obj == NULL) {
-        return _status_msg(resp, size, TS_STATUS_UNKNOWN_DATA_OBJ);
+        return status_message_cbor(TS_STATUS_UNKNOWN_DATA_OBJ);
     }
     if (!(data_obj->access & TS_ACCESS_EXEC)) {
-        return _status_msg(resp, size, TS_STATUS_UNAUTHORIZED);
+        return status_message_cbor(TS_STATUS_UNAUTHORIZED);
     }
 
     // create function pointer and call function
     void (*fun)(void) = reinterpret_cast<void(*)()>(data_obj->data);
     fun();
 
-    return _status_msg(resp, size, TS_STATUS_SUCCESS);
+    return status_message_cbor(TS_STATUS_SUCCESS);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, unsigned int channel)
+int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel)
 {
     if (channel >= num_channels) {
         return 0;      // unknown channel
     }
 
-    return pub_msg_cbor(resp, size, pub_channels[channel].object_ids, pub_channels[channel].num);
+    return pub_msg_cbor(msg_buf, size, pub_channels[channel].object_ids, pub_channels[channel].num);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements)
+int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, const uint16_t pub_list[], size_t num_elements)
 {
-    resp[0] = TS_PUBMSG;
+    msg_buf[0] = TS_PUBMSG;
     int len = 1;
 
     if (num_elements > 1) {
-        len += cbor_serialize_map(&resp[len], num_elements, size - len);
+        len += cbor_serialize_map(&msg_buf[len], num_elements, size - len);
     }
 
     for (unsigned int element = 0; element < num_elements; element++) {
@@ -288,8 +289,8 @@ int ThingSet::pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[]
             continue;
         }
 
-        len += cbor_serialize_uint(&resp[len], data_obj->id, size - len);
-        num_bytes += _cbor_serialize_data_object(&resp[len], size - len, data_obj);
+        len += cbor_serialize_uint(&msg_buf[len], data_obj->id, size - len);
+        num_bytes += cbor_serialize_data_object(&msg_buf[len], size - len, data_obj);
 
         if (num_bytes == 0) {
             return 0;
@@ -332,10 +333,10 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::list_cbor(uint8_t *resp, size_t size, int category, bool values, bool ids_only)
+int ThingSet::list_cbor(int category, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
-    len += _status_msg(resp, size, TS_STATUS_SUCCESS);   // init response buffer
+    len += status_message_cbor(TS_STATUS_SUCCESS);   // init response buffer
 
     // find out number of elements
     int num_elements = 0;
@@ -348,10 +349,10 @@ int ThingSet::list_cbor(uint8_t *resp, size_t size, int category, bool values, b
     }
 
     if (values && !ids_only) {
-        len += cbor_serialize_map(&resp[len], num_elements, size - len);
+        len += cbor_serialize_map(&resp[len], num_elements, resp_size - len);
     }
     else {
-        len += cbor_serialize_array(&resp[len], num_elements, size - len);
+        len += cbor_serialize_array(&resp[len], num_elements, resp_size - len);
     }
 
     // actually write elements
@@ -361,17 +362,17 @@ int ThingSet::list_cbor(uint8_t *resp, size_t size, int category, bool values, b
         {
             int num_bytes = 0;
             if (ids_only) {
-                num_bytes = cbor_serialize_uint(&resp[len], data_objects[i].id, size - len);
+                num_bytes = cbor_serialize_uint(&resp[len], data_objects[i].id, resp_size - len);
             }
             else {
-                num_bytes = cbor_serialize_string(&resp[len], data_objects[i].name, size - len);
+                num_bytes = cbor_serialize_string(&resp[len], data_objects[i].name, resp_size - len);
                 if (values) {
-                    num_bytes += _cbor_serialize_data_object(&resp[len + num_bytes], size - len - num_bytes, &data_objects[i]);
+                    num_bytes += cbor_serialize_data_object(&resp[len + num_bytes], resp_size - len - num_bytes, &data_objects[i]);
                 }
             }
 
             if (num_bytes == 0) {
-                return _status_msg(resp, size, TS_STATUS_RESPONSE_TOO_LONG);
+                return status_message_cbor(TS_STATUS_RESPONSE_TOO_LONG);
             } else {
                 len += num_bytes;
             }

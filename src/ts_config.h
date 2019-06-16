@@ -1,5 +1,5 @@
-/* ThingSet protocol library
- * Copyright (c) 2017-2018 Martin Jäger (www.libre.solar)
+/* ThingSet protocol client library
+ * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

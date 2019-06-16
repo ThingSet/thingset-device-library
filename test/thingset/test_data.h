@@ -115,16 +115,9 @@ static const uint16_t pub_data_objects[] = {
         0x6009
 };
 
-ts_data_t data;
-
 static const ts_pub_channel_t pub_channels[] = {
     { "Serial", pub_data_objects, sizeof(pub_data_objects)/sizeof(uint16_t), false }
 };
 
-void test_data_init()
-{
-    data.objects = dataObjects;
-    data.size = sizeof(dataObjects) / sizeof(data_object_t);
-}
 
 #endif

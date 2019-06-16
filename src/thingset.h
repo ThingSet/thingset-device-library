@@ -1,5 +1,5 @@
-/* LibreSolar MPPT charge controller firmware
- * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+/* ThingSet protocol client library
+ * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,69 +80,47 @@ enum ts_type {
 #define TS_ACCESS_EXEC          (0x1U << 4)     // execute (for RPC only)
 #define TS_ACCESS_EXEC_AUTH     (0x1U << 5)     // execute after authentication
 
-
-/* for CAN only...
- */
-#define PUB_MULTIFRAME_EN (0x1U << 7)
-#define PUB_TIMESTAMP_EN (0x1U << 6)
-
 /** ThingSet data object struct
- *
- * id = Data object ID
- * access = one of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
- * type = one of TS_TYPE_INT32, _FLOAT, ...
- * detail = exponent (10^exponent = factor to convert to SI unit) for UINT / INT
- *          decimal digits to use for plotting of floats in JSON strings
- *          lenght of string buffer for string type
  */
 typedef struct data_object_t {
+    /** Data Object ID
+     */
     const uint16_t id;
+
+    /** One of TS_INFO, TS_CONF, ...
+     */
     const uint16_t category;
+
+    /** One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
+     */
     const uint8_t access;
+
+    /** One of TS_TYPE_INT32, _FLOAT, ...
+     */
     const uint8_t type;
+
+    /** Exponent (10^exponent = factor to convert to SI unit) for UINT / INT,
+     * decimal digits to use for plotting of floats in JSON strings or
+     * lenght of string buffer for string type
+     */
     const int16_t detail;
+
+    /** Pointer to the variable containing the data. The variable type must match the type as specified
+     */
     void *data;
+
+    /** Data Object name
+     */
     const char *name;
 } data_object_t;
-
-/** Buffer for string-type and binary data
- *
- * Remark: char type data union necessary to use string functions without casts
- */
-typedef struct {
-    union {
-        char *str;          // pointer to ASCII data
-        uint8_t *bin;       // pointer to binary data
-    } data;
-    size_t size;            // size of the array
-    size_t pos;             // index of the next free byte
-
-} ts_buffer_t;
-
-/** ThingSet Data Object container including size
- */
-typedef struct ts_data_t {
-    const data_object_t *objects;
-    size_t size;
-} ts_data_t;
-
-/** Parser container for JSON data
- */
-typedef struct {
-    char *str;
-    jsmn_parser parser;
-    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
-    int tok_count;
-} ts_parser_t;
-
 
 /** Container for data object publication channel
  */
 typedef struct {
-    const char *name;
-    const uint16_t *object_ids;  // array of data object IDs
-    const size_t num;             // number of objects
-    bool enabled;
+    const char *name;           ///< Publication channel name
+    const uint16_t *object_ids; ///< Array of data object IDs
+    const size_t num;           ///< Number of objects
+    bool enabled;               ///< Enabled/disabled status
 } ts_pub_channel_t;
 
 
@@ -157,12 +135,12 @@ public:
      *
      * This function also detects if JSON or CBOR format is used
      *
-     * @param request Pointer to the request buffer
+     * @param request Pointer to the ThingSet request buffer
      * @param req_len Length of the data in the request buffer
-     * @param response Pointer to the response buffer, where the result should be stored
-     * @param resp_size Size of the response buffer, i.e. maximum allowed length of the response.
+     * @param response Pointer to the buffer where the ThingSet response should be stored
+     * @param resp_size Size of the response buffer, i.e. maximum allowed length of the response
 
-     * @returns Status code
+     * @returns Actual length of the response written to the buffer or 0 in case of error
      */
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
 
@@ -171,83 +149,118 @@ public:
     int set_user_password(char *password);
     int set_manufacturer_password(char *password);
 
-    int pub_msg_json(char *resp, size_t size, unsigned int channel);
-    int pub_msg_cbor(uint8_t *resp, size_t size, unsigned int channel);
+    /** Generates a publication message in JSON format for a defined channel
+     *
+     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param channel Number/ID of the publication channel
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    int pub_msg_json(char *msg_buf, size_t size, unsigned int channel);
 
-    // manually supplied list of elements
+    /** Generates a publication message in CBOR format for a defined channel
+     *
+     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param channel Number/ID of the publication channel
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    int pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel);
+
+    /** Generates a publication message in CBOR format for supplied list of data object IDs
+     *
+     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param pub_list Array of data object IDs to be published
+     * @param num_elements Number of elements in the pub_list array
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
     int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
 
-    // function to initialize data objects based on values stored in EEPROM
-    // returns ThingSet status code
+    /** Initialize data objects based on values stored in EEPROM
+     *
+     * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data objects
+     * @param len Length of the data in the buffer
+     *
+     * @returns ThingSet status code
+     */
     int init_cbor(uint8_t *cbor_data, size_t len);
 
+    /** Set function to be called when data objects of conf category were changed
+     */
     void set_conf_callback(void (*callback)(void));
 
+    /** Get data object by ID
+     */
     const data_object_t *get_data_object(uint16_t id);
-    const data_object_t *get_data_object(char *str, size_t len);
+
+    /** Get data object by name
+     */
+    const data_object_t *get_data_object(char *name, size_t len);
 
 private:
-
-    void set_request(uint8_t *resp, size_t length);
-
-    // returns the length of the response written to response buffer or 0 in case of error
-    int get_response(uint8_t *resp, size_t size);
-
-
-    /** ThingSet data access function (text mode)
-    *   - append requested data to resp buffer
-    *   - return ThingSet status code
-    */
-    int data_access_json(char *req, size_t req_len, char *resp, size_t resp_size, int category);
-
     /**
      * List data objects in text mode (function called with empty argument)
      */
-    int list_json(char *resp, size_t size, int category, bool values = false);
+    int list_json(int category, bool values = false);
 
     /**
      * List data objects in binary mode (function called with empty argument)
      */
-    int list_cbor(uint8_t *resp, size_t size, int category, bool values = false, bool ids_only = true);
+    int list_cbor(int category, bool values = false, bool ids_only = true);
 
     /**
      * Read data object values in text mode (function called with an array as argument)
      */
-    int read_json(char *resp, size_t size, int category);
+    int read_json(int category);
 
     /**
      * Read data object values in binary mode (function called with an array as argument)
      */
-    int read_cbor(uint8_t *resp, size_t size, int category);
+    int read_cbor(int category);
 
     /**
      * Write data object values in text mode (function called with a map as argument)
      */
-    int write_json(char *resp, size_t size, int category);
+    int write_json(int category);
 
     /**
      * Write data object values in binary mode (function called with a map as argument)
      */
-    int write_cbor(uint8_t *resp, size_t size, int category, bool ignore_access);
+    int write_cbor(int category, bool ignore_access);
 
     /**
      * Execute command in text mode (function called with a single data object name as argument)
      */
-    int exec_json(char *resp, size_t size);
+    int exec_json();
 
     /**
      * Execute command in binary mode (function called with a single data object name/id as argument)
      */
-    int exec_cbor(uint8_t *resp, size_t size);
+    int exec_cbor();
 
     // authentication
-    int auth_json(char *resp, size_t size);
-    int auth_cbor(uint8_t *resp, size_t size);
+    int auth_json();
+    int auth_cbor();
 
-    int json_serialize_value(char *resp, size_t size, const data_object_t* data_obj);
-    int json_serialize_name_value(char *resp, size_t size, const data_object_t* data_obj);
+    /**
+     * Fill the resp buffer with a JSON response status message
+     *
+     * @param code Status code
+     * @returns length of status message in buffer or 0 in case of error
+     */
+    int status_message_json(int code);
 
-    int status_message_json(char *resp, size_t size, int code);
+    /**
+     * Fill the resp buffer with a CBOR response status message
+     *
+     * @param code Status code
+     * @returns length of status message in buffer or 0 in case of error
+     */
+    int status_message_cbor(uint8_t code);
 
     const data_object_t *data_objects;
     size_t num_objects;
@@ -255,9 +268,11 @@ private:
     const ts_pub_channel_t *pub_channels;
     size_t num_channels;
 
-    // request raw data
-    uint8_t *req;
-    size_t req_len;             // length of request
+    uint8_t *req;               ///< Request buffer
+    size_t req_len;             ///< Length of request
+
+    uint8_t *resp;              ///< Response buffer
+    size_t resp_size;           ///< Size of response buffer (i.e. maximum length)
 
     // parsed JSON data of request
     jsmntok_t tokens[TS_NUM_JSON_TOKENS];
