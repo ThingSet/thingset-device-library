@@ -22,12 +22,13 @@ addons:
 
 script:
     - platformio test -e unit_test_native
-#    - doxygen Doxyfile
+    - doxygen Doxyfile
 
-#deploy:
-#    provider: pages
-#    skip_cleanup: true
-#    local_dir: html
-#    github_token: $GH_REPO_TOKEN
-#    on:
-#        branch: master
+deploy:
+    provider: pages
+    skip_cleanup: true
+    local_dir: html
+    github_token: $GH_REPO_TOKEN
+    on:
+        branch: master
+
