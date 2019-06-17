@@ -56,6 +56,7 @@
 #define TS_STATUS_INVALID_VALUE     41     // value out of allowed range
 #define TS_STATUS_WRONG_CATEGORY    42
 #define TS_STATUS_WRONG_PASSWORD    43
+#define TS_STATUS_UNSUPPORTED       44    // type of request not (yet) supported
 
 /** Internal C data types (used to cast void* pointers)
  */
@@ -134,7 +135,7 @@ class ThingSet
 {
 public:
     ThingSet(const data_object_t *data, size_t num);
-    ThingSet(const data_object_t *data, size_t num_obj, const ts_pub_channel_t *channels, size_t num_ch);
+    ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch);
     ~ThingSet();
 
     /** Process ThingSet request
@@ -150,7 +151,7 @@ public:
      */
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
 
-    void set_pub_channels(const ts_pub_channel_t *channels, size_t num);
+    void set_pub_channels(ts_pub_channel_t *channels, size_t num);
 
     /** Sets password for users
      */
@@ -212,6 +213,10 @@ public:
      */
     const data_object_t *get_data_object(char *name, size_t len);
 
+    /** Get pub channel by name
+     */
+    ts_pub_channel_t *get_pub_channel(char *name, size_t len);
+
 private:
     /**
      * Parser preparation and calling of the different data object access functions read/write/list
@@ -258,6 +263,10 @@ private:
      */
     int exec_cbor();
 
+    /** Publication control function in text mode
+     */
+    int pub_json();
+
     /** Authentication command in text mode (user or root level)
      */
     int auth_json();
@@ -283,7 +292,7 @@ private:
     const data_object_t *data_objects;
     size_t num_objects;
 
-    const ts_pub_channel_t *pub_channels;
+    ts_pub_channel_t *pub_channels;
     size_t num_channels;
 
     uint8_t *req;               ///< Request buffer

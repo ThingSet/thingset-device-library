@@ -226,3 +226,21 @@ void json_auth_reset()
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
 }
+
+void json_pub_list()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [\"Serial_1s\"]", resp_buf);
+}
+
+void json_pub_enable()
+{
+    pub_channels[0].enabled = false;
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub {\"Serial_1s\":true}");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL(pub_channels[0].enabled, true);
+}

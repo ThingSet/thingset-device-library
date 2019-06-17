@@ -23,7 +23,7 @@ ThingSet ts(dataObjects, sizeof(dataObjects)/sizeof(data_object_t));
 int main()
 {
     //test_data_init();
-    ts.set_pub_channels(pub_channels, sizeof(pub_channels));
+    ts.set_pub_channels(pub_channels, sizeof(pub_channels)/sizeof(ts_pub_channel_t));
 
     UNITY_BEGIN();
 
@@ -50,6 +50,8 @@ int main()
     RUN_TEST(json_auth_long_password);
     RUN_TEST(json_auth_failure);
     RUN_TEST(json_auth_reset);
+    RUN_TEST(json_pub_list);
+    RUN_TEST(json_pub_enable);
 
     // CBOR only tests
     RUN_TEST(cbor_write_array);

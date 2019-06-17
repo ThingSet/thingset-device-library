@@ -63,6 +63,9 @@ int ThingSet::status_message_json(int code)
     case TS_STATUS_WRONG_CATEGORY:
         pos = snprintf((char *)resp, resp_size, ":%d Wrong category.", code);
         break;
+    case TS_STATUS_UNSUPPORTED:
+        pos = snprintf((char *)resp, resp_size, ":%d Unsupported request.", code);
+        break;
     case TS_STATUS_WRONG_PASSWORD:
         pos = snprintf((char *)resp, resp_size, ":%d Wrong password.", code);
         break;
@@ -524,4 +527,68 @@ int ThingSet::auth_json()
     }
 
     return 0;
+}
+
+int ThingSet::pub_json()
+{
+    const int len_function = 4; // !pub
+    jsmn_parser parser;
+    jsmn_init(&(parser));
+
+    json_str = (char *)req + len_function + 1;
+    tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+
+    // initialize response with success message
+    size_t len = status_message_json(TS_STATUS_SUCCESS);
+
+    if (req_len == len_function || tok_count == 0) {
+        // list channels
+        len += sprintf((char *)&resp[len], " [");
+        for (unsigned int i = 0; i < num_channels; i++) {
+            len += snprintf((char *)&resp[len], resp_size - len, "\"%s\",", pub_channels[i].name);
+            if (len >= resp_size - 1) {
+                return status_message_json(TS_STATUS_RESPONSE_TOO_LONG);
+            }
+        }
+        // remove trailing comma and add closing bracket
+        resp[len-1] = ']';
+        return len;
+    }
+    else if (tok_count == 1) {
+        // can be:
+        // - true/false to globally enable/disable publication messages
+        // - a string to list elements of that channel
+        return status_message_json(TS_STATUS_UNSUPPORTED);
+    }
+    else if (tok_count >= 3) {   // map with at least one key/value pair
+        // change channel setting
+        if (tokens[0].type != JSMN_OBJECT && tokens[1].type != JSMN_STRING) {
+            return status_message_json(TS_STATUS_WRONG_FORMAT);
+        }
+
+        ts_pub_channel_t* pub_ch = get_pub_channel(
+            json_str + tokens[1].start,
+            tokens[1].end - tokens[1].start);
+
+        if (pub_ch == NULL) {
+            return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
+        }
+
+        if (tokens[2].type == JSMN_PRIMITIVE) {
+            if (json_str[tokens[2].start] == 't' || json_str[tokens[2].start] == '1') {
+                pub_ch->enabled = true;
+            }
+            else if (json_str[tokens[2].start] == 'f' || json_str[tokens[2].start] == '0') {
+                pub_ch->enabled = false;
+            }
+            else {
+                return status_message_json(TS_STATUS_WRONG_FORMAT);
+            }
+            return status_message_json(TS_STATUS_SUCCESS);
+        }
+        return status_message_json(TS_STATUS_WRONG_FORMAT);
+    }
+    else {
+        return status_message_json(TS_STATUS_WRONG_FORMAT);
+    }
 }

@@ -30,7 +30,7 @@ ThingSet::ThingSet(const data_object_t *data, size_t num)
     num_objects = num;
 }
 
-ThingSet::ThingSet(const data_object_t *data, size_t num_obj, const ts_pub_channel_t *channels, size_t num_ch)
+ThingSet::ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch)
 {
     data_objects = data;
     num_objects = num_obj;
@@ -43,7 +43,7 @@ ThingSet::~ThingSet()
 
 }
 
-void ThingSet::set_pub_channels(const ts_pub_channel_t *channels, size_t num)
+void ThingSet::set_pub_channels(ts_pub_channel_t *channels, size_t num)
 {
     pub_channels = channels;
     num_channels = num;
@@ -112,11 +112,10 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
         else if (req_len >= 2 && strncmp((char *)req, "! ", 2) == 0) {
             function = TS_ANY;
             len_function = 2;
-        }
-        else if (req_len >= 4 && strncmp((char *)req, "!pub", 4) == 0) {
-            function = TS_PUB;
-            len_function = 4;
         }*/
+        else if (req_len >= 4 && strncmp((char *)req, "!pub", 4) == 0) {
+            return pub_json();
+        }
         else if (req_len >= 5 && strncmp((char *)req, "!auth", 5) == 0) {
             return auth_json();
         }
@@ -154,6 +153,17 @@ const data_object_t* ThingSet::get_data_object(uint16_t id)
     for (unsigned int i = 0; i < num_objects; i++) {
         if (data_objects[i].id == id) {
             return &(data_objects[i]);
+        }
+    }
+    return NULL;
+}
+
+ts_pub_channel_t *ThingSet::get_pub_channel(char *name, size_t len)
+{
+    for (unsigned int i = 0; i < num_channels; i++) {
+        if (strncmp(pub_channels[i].name, name, len) == 0
+            && strlen(pub_channels[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
+            return &(pub_channels[i]);
         }
     }
     return NULL;

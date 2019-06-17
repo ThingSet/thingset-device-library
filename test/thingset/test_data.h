@@ -121,8 +121,8 @@ static const uint16_t pub_data_objects[] = {
         0x6009
 };
 
-static const ts_pub_channel_t pub_channels[] = {
-    { "Serial", pub_data_objects, sizeof(pub_data_objects)/sizeof(uint16_t), false }
+static ts_pub_channel_t pub_channels[] = {
+    { "Serial_1s", pub_data_objects, sizeof(pub_data_objects)/sizeof(uint16_t), false }
 };
 
 
