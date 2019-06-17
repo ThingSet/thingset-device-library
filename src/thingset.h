@@ -55,6 +55,7 @@
 #define TS_STATUS_RESPONSE_TOO_LONG 40
 #define TS_STATUS_INVALID_VALUE     41     // value out of allowed range
 #define TS_STATUS_WRONG_CATEGORY    42
+#define TS_STATUS_WRONG_PASSWORD    43
 
 /** Internal C data types (used to cast void* pointers)
  */
@@ -73,12 +74,17 @@ enum ts_type {
 
 /* Internal access rights to data objects
  */
-#define TS_ACCESS_READ          (0x1U)
-#define TS_ACCESS_WRITE         (0x1U << 1)
-#define TS_ACCESS_READ_AUTH     (0x1U << 2)     // read after authentication
-#define TS_ACCESS_WRITE_AUTH    (0x1U << 3)     // write after authentication
-#define TS_ACCESS_EXEC          (0x1U << 4)     // execute (for RPC only)
-#define TS_ACCESS_EXEC_AUTH     (0x1U << 5)     // execute after authentication
+#define TS_ACCESS_READ          (0x1U << 0)
+#define TS_ACCESS_READ_USER     (0x1U << 1)     // read after authentication as user
+#define TS_ACCESS_READ_ROOT     (0x1U << 2)     // read after authentication as admin / root
+
+#define TS_ACCESS_WRITE         (0x1U << 3)
+#define TS_ACCESS_WRITE_USER    (0x1U << 4)     // write after authentication as user
+#define TS_ACCESS_WRITE_ROOT    (0x1U << 5)     // write after authentication as admin / root
+
+#define TS_ACCESS_EXEC          (0x1U << 6)     // execute (for RPC only)
+#define TS_ACCESS_EXEC_USER     (0x1U << 7)     // execute after authentication as user
+#define TS_ACCESS_EXEC_ROOT     (0x1U << 8)     // execute after authentication as admin / root
 
 /** ThingSet data object struct
  */
@@ -146,8 +152,13 @@ public:
 
     void set_pub_channels(const ts_pub_channel_t *channels, size_t num);
 
-    int set_user_password(char *password);
-    int set_manufacturer_password(char *password);
+    /** Sets password for users
+     */
+    void set_user_password(const char *password);
+
+    /** Sets password for root (e.g. manufacturer)
+     */
+    void set_root_password(const char *password);
 
     /** Generates a publication message in JSON format for a defined channel
      *
@@ -203,6 +214,11 @@ public:
 
 private:
     /**
+     * Parser preparation and calling of the different data object access functions read/write/list
+     */
+    int access_json(int category, size_t pos);
+
+    /**
      * List data objects in text mode (function called with empty argument)
      */
     int list_json(int category, bool values = false);
@@ -242,9 +258,11 @@ private:
      */
     int exec_cbor();
 
-    // authentication
+    /** Authentication command in text mode (user or root level)
+     */
     int auth_json();
-    int auth_cbor();
+
+    //int auth_cbor();
 
     /**
      * Fill the resp buffer with a JSON response status message
@@ -279,8 +297,11 @@ private:
     char *json_str;
     int tok_count;
 
-    const char *user_pass;
-    const char *manufacturer_pass;
+    const char *user_pass = NULL;
+    const char *root_pass = NULL;
+
+    bool user_authorized = false;
+    bool root_authorized = false;
 
     void (*conf_callback)(void);
 };

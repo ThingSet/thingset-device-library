@@ -45,6 +45,11 @@ int main()
     RUN_TEST(json_exec);
     RUN_TEST(json_pub_msg);
     RUN_TEST(json_conf_callback);
+    RUN_TEST(json_auth_user);
+    RUN_TEST(json_auth_root);
+    RUN_TEST(json_auth_long_password);
+    RUN_TEST(json_auth_failure);
+    RUN_TEST(json_auth_reset);
 
     // CBOR only tests
     RUN_TEST(cbor_write_array);
@@ -58,6 +63,9 @@ int main()
     RUN_TEST(cbor_exec);
     RUN_TEST(cbor_num_elem);
     RUN_TEST(cbor_serialize_long_string);
+    //RUN_TEST(cbor_auth);
+    //RUN_TEST(cbor_auth_failure);
+    //RUN_TEST(cbor_auth_reset);
 
     UNITY_END();
 }

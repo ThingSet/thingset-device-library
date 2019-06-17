@@ -11,10 +11,10 @@ The following ThingSet functions are fully implemented:
 - Data abject access functions for all categories (!info, !conf, ...)
 - Execution of functions (!exec)
 - Sending of publication messages (# {...})
+- Authentication (!auth)
 
 Following functions are currently in progress with high priority
 
-- Authentication (!auth)
 - Publication message control (!pub)
 
 In order to reduce code size, verbose status messages can be turned of using the TS_VERBOSE_STATUS_MESSAGES = 0 in ts_config.h.

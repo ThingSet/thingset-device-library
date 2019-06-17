@@ -87,35 +87,26 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     }
     else if (req[0] == '!') {      // JSON request
 
-        int function = 0;
-        unsigned int len_function = 0;
         if (req_len >= 5 && strncmp((char *)req, "!info", 5) == 0) {
-            function = TS_INFO;
-            len_function = 5;
+            return access_json(TS_INFO, 5);
         }
         else if (req_len >= 5 && strncmp((char *)req, "!conf", 5) == 0) {
-            function = TS_CONF;
-            len_function = 5;
+            return access_json(TS_CONF, 5);
         }
         else if (req_len >= 6 && strncmp((char *)req, "!input", 6) == 0) {
-            function = TS_INPUT;
-            len_function = 6;
+            return access_json(TS_INPUT, 6);
         }
         else if (req_len >= 7 && strncmp((char *)req, "!output", 7) == 0) {
-            function = TS_OUTPUT;
-            len_function = 7;
+            return access_json(TS_OUTPUT, 7);
         }
         else if (req_len >= 4 && strncmp((char *)req, "!rec", 4) == 0) {
-            function = TS_REC;
-            len_function = 4;
+            return access_json(TS_REC, 4);
         }
         else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
-            function = TS_CAL;
-            len_function = 4;
+            return access_json(TS_CAL, 4);
         }
         else if (req_len >= 5 && strncmp((char *)req, "!exec", 5) == 0) {
-            function = TS_EXEC;
-            len_function = 5;
+            return access_json(TS_EXEC, 5);
         }
         /*
         else if (req_len >= 2 && strncmp((char *)req, "! ", 2) == 0) {
@@ -126,62 +117,17 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
             function = TS_PUB;
             len_function = 4;
         }*/
+        else if (req_len >= 5 && strncmp((char *)req, "!auth", 5) == 0) {
+            return auth_json();
+        }
         else {
             return status_message_json(TS_STATUS_UNKNOWN_FUNCTION);
-        }
-        // valid function / category found
-
-        if (req_len > len_function) {
-            jsmn_parser parser;
-            jsmn_init(&(parser));
-
-            json_str = (char *)req + len_function + 1;      // +1 because blank is requested between function and JSON data
-            tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
-
-            if (tok_count == JSMN_ERROR_NOMEM) {
-                return status_message_json(TS_STATUS_REQUEST_TOO_LONG);
-            }
-            else if (tok_count < 0) {
-                return status_message_json(TS_STATUS_WRONG_FORMAT);
-            }
-            else if (tok_count == 0) {
-                //printf("list_json: %s\n", json_str);
-                return list_json(function);
-            }
-            else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
-                return list_json(function, true);
-            }
-            else {
-                if (tokens[0].type == JSMN_OBJECT) {
-                    //printf("write_json: %s\n", json_str);
-                    int len = write_json(function);
-                    if (strncmp((char *)resp, ":0", 2) == 0 && conf_callback != NULL &&
-                        (function == TS_CONF || function == TS_INFO)) {
-                        conf_callback();
-                    }
-                    return len;
-                }
-                else {
-                    if (function == TS_EXEC) {
-                        //printf("exec_json: %s\n", json_str);
-                        return exec_json();
-                    }
-                    else {
-                        //printf("read_json: %s\n", json_str);
-                        return read_json(function);
-                    }
-                }
-            }
-        }
-        else {  // only function without any blank characters --> list
-            return list_json(function);
         }
     }
     else {
         // not a thingset command --> ignore and set response to empty string
         response[0] = 0;
         return 0;
-        //thingset_status_message(ts, TS_STATUS_UNKNOWN_FUNCTION);
     }
 }
 
@@ -211,4 +157,14 @@ const data_object_t* ThingSet::get_data_object(uint16_t id)
         }
     }
     return NULL;
+}
+
+void ThingSet::set_user_password(const char *password)
+{
+    user_pass = password;
+}
+
+void ThingSet::set_root_password(const char *password)
+{
+    root_pass = password;
 }

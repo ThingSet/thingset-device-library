@@ -71,6 +71,9 @@ static int16_t i16;
 
 static bool b;
 
+static uint32_t secret_user = 1;
+static uint32_t secret_root = 2;
+
 void dummy(void);
 
 static const data_object_t dataObjects[] = {
@@ -98,6 +101,9 @@ static const data_object_t dataObjects[] = {
     {0x6008, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL,    0, (void*) &b, "bool"},
     {0x6009, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"},
     {0x600A, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 0, (void*) &f32, "f32_rounded"},
+
+    {0x7001, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE_USER, TS_T_UINT32,  0, (void*) &secret_user, "secret_user"},
+    {0x7002, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE_ROOT, TS_T_UINT32,  0, (void*) &secret_root, "secret_root"},
 };
 
 

@@ -63,6 +63,9 @@ int ThingSet::status_message_json(int code)
     case TS_STATUS_WRONG_CATEGORY:
         pos = snprintf((char *)resp, resp_size, ":%d Wrong category.", code);
         break;
+    case TS_STATUS_WRONG_PASSWORD:
+        pos = snprintf((char *)resp, resp_size, ":%d Wrong password.", code);
+        break;
     default:
         pos = snprintf((char *)resp, resp_size, ":%d Error.", code);
         break;
@@ -128,6 +131,55 @@ static int json_serialize_name_value(char *resp, size_t size, const data_object_
         return 0;
 }
 
+int ThingSet::access_json(int function, size_t len_function)
+{
+    if (req_len > len_function) {
+        jsmn_parser parser;
+        jsmn_init(&(parser));
+
+        json_str = (char *)req + len_function + 1;      // +1 because blank is requested between function and JSON data
+        tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+
+        if (tok_count == JSMN_ERROR_NOMEM) {
+            return status_message_json(TS_STATUS_REQUEST_TOO_LONG);
+        }
+        else if (tok_count < 0) {
+            return status_message_json(TS_STATUS_WRONG_FORMAT);
+        }
+        else if (tok_count == 0) {
+            //printf("list_json: %s\n", json_str);
+            return list_json(function);
+        }
+        else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
+            return list_json(function, true);
+        }
+        else {
+            if (tokens[0].type == JSMN_OBJECT) {
+                //printf("write_json: %s\n", json_str);
+                int len = write_json(function);
+                if (strncmp((char *)resp, ":0", 2) == 0 && conf_callback != NULL &&
+                    (function == TS_CONF || function == TS_INFO)) {
+                    conf_callback();
+                }
+                return len;
+            }
+            else {
+                if (function == TS_EXEC) {
+                    //printf("exec_json: %s\n", json_str);
+                    return exec_json();
+                }
+                else {
+                    //printf("read_json: %s\n", json_str);
+                    return read_json(function);
+                }
+            }
+        }
+    }
+    else {  // only function without any blank characters --> list
+        return list_json(function);
+    }
+}
+
 int ThingSet::read_json(int category)
 {
     size_t pos = 0;
@@ -157,7 +209,11 @@ int ThingSet::read_json(int category)
             return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
 
-        if (!(data_obj->access & TS_ACCESS_READ)) {
+        if (!( (data_obj->access & TS_ACCESS_READ) ||
+               ((data_obj->access & TS_ACCESS_READ_USER) && user_authorized) ||
+               ((data_obj->access & TS_ACCESS_READ_ROOT) && root_authorized)
+           ))
+        {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
 
@@ -218,7 +274,11 @@ int ThingSet::write_json(int category)
             return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
 
-        if (!(data_obj->access & TS_ACCESS_WRITE)) {
+        if (!( (data_obj->access & TS_ACCESS_WRITE) ||
+               ((data_obj->access & TS_ACCESS_WRITE_USER) && user_authorized) ||
+               ((data_obj->access & TS_ACCESS_WRITE_ROOT) && root_authorized)
+           ))
+        {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
 
@@ -377,7 +437,11 @@ int ThingSet::exec_json()
     if (data_obj == NULL) {
         return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
     }
-    if (!(data_obj->access & TS_ACCESS_EXEC)) {
+    if (!( (data_obj->access & TS_ACCESS_EXEC) ||
+            ((data_obj->access & TS_ACCESS_EXEC_USER) && user_authorized) ||
+            ((data_obj->access & TS_ACCESS_EXEC_ROOT) && root_authorized)
+        ))
+    {
         return status_message_json(TS_STATUS_UNAUTHORIZED);
     }
 
@@ -413,4 +477,51 @@ int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
     msg_buf[len-1] = '}';    // overwrite comma
 
     return len;
+}
+
+int ThingSet::auth_json()
+{
+    const int len_function = 5; // !auth
+    jsmn_parser parser;
+    jsmn_init(&(parser));
+
+    json_str = (char *)req + len_function + 1;
+    tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+
+    if (req_len == len_function || tok_count == 0) {   // logout
+        user_authorized = false;
+        root_authorized = false;
+        return status_message_json(TS_STATUS_SUCCESS);
+    }
+    else if (tok_count == 1) {
+        if (tokens[0].type != JSMN_STRING) {
+            return status_message_json(TS_STATUS_WRONG_FORMAT);
+        }
+
+        if (user_pass != NULL &&
+            tokens[0].end - tokens[0].start == (int)strlen(user_pass) &&
+            strncmp(json_str + tokens[0].start, user_pass, strlen(user_pass)) == 0)
+        {
+            user_authorized = true;
+            return status_message_json(TS_STATUS_SUCCESS);
+        }
+        else if (root_pass != NULL &&
+            tokens[0].end - tokens[0].start == (int)strlen(root_pass) &&
+            strncmp(json_str + tokens[0].start, root_pass, strlen(root_pass)) == 0)
+        {
+            user_authorized = true;     // authorize root also for user access
+            root_authorized = true;
+            return status_message_json(TS_STATUS_SUCCESS);
+        }
+        else {
+            user_authorized = false;
+            root_authorized = false;
+            return status_message_json(TS_STATUS_WRONG_PASSWORD);
+        }
+    }
+    else {
+        return status_message_json(TS_STATUS_WRONG_FORMAT);
+    }
+
+    return 0;
 }

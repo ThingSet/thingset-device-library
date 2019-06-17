@@ -136,3 +136,93 @@ void json_conf_callback()
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
+
+void json_auth_user()
+{
+    ts.set_user_password("user123");
+
+    // authorize as user
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"user123\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    // write user data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    // attempt to write admin data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_root\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+}
+
+void json_auth_root()
+{
+    ts.set_root_password("root456");
+
+    // authorize as root
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"root456\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    // write user data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    // write admin data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_root\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+}
+
+void json_auth_failure()
+{
+    ts.set_user_password("pass_user");
+
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"abc\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":43 Wrong password.", resp_buf);
+
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+}
+
+void json_auth_long_password()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"012345678901234567890123456789\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":43 Wrong password.", resp_buf);
+
+}
+
+void json_auth_reset()
+{
+    ts.set_user_password("pass_user");
+
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"pass_user\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+}
