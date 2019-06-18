@@ -11,13 +11,13 @@ The following ThingSet functions are fully implemented:
 - Data abject access functions for all categories (!info, !conf, ...)
 - Execution of functions (!exec)
 - Sending of publication messages (# {...})
-- Authentication (!auth)
+- Authentication (!auth) with 3 different levels
+    - All: no password
+    - User password: Can be used for battery config, etc.
+    - Maker password: Admin/root password for manufacturer, e.g. for calibration settings. Maker authorization level also has all rights of "all" and "user" levels.
+- Publication message (!pub): List and enable/disable channels implemented, changing of channel data objects per channel still to be done.
 
-Following functions are currently in progress with high priority
-
-- Publication message control (!pub)
-
-In order to reduce code size, verbose status messages can be turned of using the TS_VERBOSE_STATUS_MESSAGES = 0 in ts_config.h.
+In order to reduce code size, verbose status messages can be turned off using the TS_VERBOSE_STATUS_MESSAGES = 0 in ts_config.h.
 
 ## Binary protocol
 

@@ -154,7 +154,7 @@ void json_auth_user()
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
 
     // attempt to write admin data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_root\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
@@ -162,10 +162,10 @@ void json_auth_user()
 
 void json_auth_root()
 {
-    ts.set_root_password("root456");
+    ts.set_maker_password("maker456");
 
     // authorize as root
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"root456\"");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"maker456\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
@@ -177,7 +177,7 @@ void json_auth_root()
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
 
     // write admin data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_root\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);

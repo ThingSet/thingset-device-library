@@ -174,7 +174,7 @@ void ThingSet::set_user_password(const char *password)
     user_pass = password;
 }
 
-void ThingSet::set_root_password(const char *password)
+void ThingSet::set_maker_password(const char *password)
 {
-    root_pass = password;
+    maker_pass = password;
 }

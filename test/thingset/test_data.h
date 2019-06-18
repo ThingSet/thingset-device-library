@@ -72,38 +72,38 @@ static int16_t i16;
 static bool b;
 
 static uint32_t secret_user = 1;
-static uint32_t secret_root = 2;
+static uint32_t secret_maker = 2;
 
 void dummy(void);
 
 static const data_object_t dataObjects[] = {
     // info
-    {0x1001, TS_INFO, TS_ACCESS_READ, TS_T_STRING, 0, (void*) manufacturer, "manufacturer"},
+    {0x1001, TS_INFO, TS_READ_ALL, TS_T_STRING, 0, (void*) manufacturer, "manufacturer"},
 
     // input data
-    {0x3001, TS_INPUT, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL, 0, (void*) &(cal.load_enabled_target), "loadEnTarget"},
-    {0x3002, TS_INPUT, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL, 0, (void*) &(cal.usb_enabled_target), "usbEnTarget"},
+    {0x3001, TS_INPUT, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL, 0, (void*) &(cal.load_enabled_target), "loadEnTarget"},
+    {0x3002, TS_INPUT, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL, 0, (void*) &(cal.usb_enabled_target), "usbEnTarget"},
 
     // output data
-    {0x4001, TS_OUTPUT, TS_ACCESS_READ, TS_T_INT32, 2, (void*) &i32, "i32_output"},
+    {0x4001, TS_OUTPUT, TS_READ_ALL, TS_T_INT32, 2, (void*) &i32, "i32_output"},
 
     // rpc / exec
-    {0x5001, TS_EXEC, TS_ACCESS_EXEC, TS_T_BOOL, 0, (void*) &dummy, "dummy"},
+    {0x5001, TS_EXEC, TS_EXEC_ALL, TS_T_BOOL, 0, (void*) &dummy, "dummy"},
 
     // calibration data
-    {0x6001, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT64,  0, (void*) &ui64, "ui64"},
-    {0x6002, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT64,   0, (void*) &i64, "i64"},
-    {0x6003, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT32,  0, (void*) &ui32, "ui32"},
-    {0x6004, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT32,   0, (void*) &i32, "i32"},
-    {0x6005, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_UINT16,  0, (void*) &ui16, "ui16"},
-    {0x6006, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_INT16,   0, (void*) &i16, "i16"},
-    {0x6007, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 2, (void*) &f32, "f32"},
-    {0x6008, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_BOOL,    0, (void*) &b, "bool"},
-    {0x6009, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"},
-    {0x600A, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE, TS_T_FLOAT32, 0, (void*) &f32, "f32_rounded"},
+    {0x6001, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT64,  0, (void*) &ui64, "ui64"},
+    {0x6002, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT64,   0, (void*) &i64, "i64"},
+    {0x6003, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT32,  0, (void*) &ui32, "ui32"},
+    {0x6004, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT32,   0, (void*) &i32, "i32"},
+    {0x6005, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT16,  0, (void*) &ui16, "ui16"},
+    {0x6006, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT16,   0, (void*) &i16, "i16"},
+    {0x6007, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_FLOAT32, 2, (void*) &f32, "f32"},
+    {0x6008, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL,    0, (void*) &b, "bool"},
+    {0x6009, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"},
+    {0x600A, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_FLOAT32, 0, (void*) &f32, "f32_rounded"},
 
-    {0x7001, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE_USER, TS_T_UINT32,  0, (void*) &secret_user, "secret_user"},
-    {0x7002, TS_CONF, TS_ACCESS_READ | TS_ACCESS_WRITE_ROOT, TS_T_UINT32,  0, (void*) &secret_root, "secret_root"},
+    {0x7001, TS_CONF, TS_READ_ALL | TS_WRITE_USER,  TS_T_UINT32,  0, (void*) &secret_user,  "secret_user"},
+    {0x7002, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER, TS_T_UINT32,  0, (void*) &secret_maker, "secret_maker"},
 };
 
 
@@ -124,6 +124,5 @@ static const uint16_t pub_data_objects[] = {
 static ts_pub_channel_t pub_channels[] = {
     { "Serial_1s", pub_data_objects, sizeof(pub_data_objects)/sizeof(uint16_t), false }
 };
-
 
 #endif

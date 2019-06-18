@@ -211,10 +211,9 @@ int ThingSet::read_json(int category)
         if (data_obj == NULL) {
             return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
-
-        if (!( (data_obj->access & TS_ACCESS_READ) ||
-               ((data_obj->access & TS_ACCESS_READ_USER) && user_authorized) ||
-               ((data_obj->access & TS_ACCESS_READ_ROOT) && root_authorized)
+        if (!( ((data_obj->access & TS_READ_MASK) == TS_READ_ALL) ||
+               (((data_obj->access & TS_READ_MASK) == TS_READ_USER) && user_authorized) ||
+               (((data_obj->access & TS_READ_MASK) == TS_READ_MAKER) && maker_authorized)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
@@ -277,9 +276,9 @@ int ThingSet::write_json(int category)
             return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
 
-        if (!( (data_obj->access & TS_ACCESS_WRITE) ||
-               ((data_obj->access & TS_ACCESS_WRITE_USER) && user_authorized) ||
-               ((data_obj->access & TS_ACCESS_WRITE_ROOT) && root_authorized)
+        if (!( ((data_obj->access & TS_WRITE_MASK) == TS_WRITE_ALL) ||
+               (((data_obj->access & TS_WRITE_MASK) == TS_WRITE_USER) && user_authorized) ||
+               (((data_obj->access & TS_WRITE_MASK) == TS_WRITE_MAKER) && maker_authorized)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
@@ -406,7 +405,7 @@ int ThingSet::list_json(int category, bool values)
     len += sprintf((char *)&resp[len], values ? " {" : " [");
 
     for (unsigned int i = 0; i < num_objects; i++) {
-        if ((data_objects[i].access & TS_ACCESS_READ) &&
+        if ((data_objects[i].access & TS_READ_ALL) &&
             (data_objects[i].category == category))
         {
             if (values) {
@@ -440,9 +439,9 @@ int ThingSet::exec_json()
     if (data_obj == NULL) {
         return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
     }
-    if (!( (data_obj->access & TS_ACCESS_EXEC) ||
-            ((data_obj->access & TS_ACCESS_EXEC_USER) && user_authorized) ||
-            ((data_obj->access & TS_ACCESS_EXEC_ROOT) && root_authorized)
+    if (!( ((data_obj->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
+            (((data_obj->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
+            (((data_obj->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
         ))
     {
         return status_message_json(TS_STATUS_UNAUTHORIZED);
@@ -467,7 +466,7 @@ int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
     for (unsigned int element = 0; element < pub_channels[channel].num; element++) {
 
         const data_object_t* data_obj = get_data_object(pub_channels[channel].object_ids[element]);
-        if (data_obj == NULL || !(data_obj->access & TS_ACCESS_READ)) {
+        if (data_obj == NULL || !(data_obj->access & TS_READ_ALL)) {
             continue;
         }
 
@@ -493,7 +492,7 @@ int ThingSet::auth_json()
 
     if (req_len == len_function || tok_count == 0) {   // logout
         user_authorized = false;
-        root_authorized = false;
+        maker_authorized = false;
         return status_message_json(TS_STATUS_SUCCESS);
     }
     else if (tok_count == 1) {
@@ -508,17 +507,17 @@ int ThingSet::auth_json()
             user_authorized = true;
             return status_message_json(TS_STATUS_SUCCESS);
         }
-        else if (root_pass != NULL &&
-            tokens[0].end - tokens[0].start == (int)strlen(root_pass) &&
-            strncmp(json_str + tokens[0].start, root_pass, strlen(root_pass)) == 0)
+        else if (maker_pass != NULL &&
+            tokens[0].end - tokens[0].start == (int)strlen(maker_pass) &&
+            strncmp(json_str + tokens[0].start, maker_pass, strlen(maker_pass)) == 0)
         {
-            user_authorized = true;     // authorize root also for user access
-            root_authorized = true;
+            user_authorized = true;     // authorize maker also for user access
+            maker_authorized = true;
             return status_message_json(TS_STATUS_SUCCESS);
         }
         else {
             user_authorized = false;
-            root_authorized = false;
+            maker_authorized = false;
             return status_message_json(TS_STATUS_WRONG_PASSWORD);
         }
     }

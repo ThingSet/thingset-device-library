@@ -75,17 +75,28 @@ enum ts_type {
 
 /* Internal access rights to data objects
  */
-#define TS_ACCESS_READ          (0x1U << 0)
-#define TS_ACCESS_READ_USER     (0x1U << 1)     // read after authentication as user
-#define TS_ACCESS_READ_ROOT     (0x1U << 2)     // read after authentication as admin / root
+#define TS_READ_ALL     (0x1U << 0)     // read access for all
+#define TS_READ_USER    (0x3U << 0)     // read after authentication as normal user
+#define TS_READ_MAKER   (0x7U << 0)     // read after authentication as manufacturer, e.g. for factory calibration
+#define TS_READ_MASK    TS_READ_MAKER   // maker has all 3 bits set
 
-#define TS_ACCESS_WRITE         (0x1U << 3)
-#define TS_ACCESS_WRITE_USER    (0x1U << 4)     // write after authentication as user
-#define TS_ACCESS_WRITE_ROOT    (0x1U << 5)     // write after authentication as admin / root
+#define TS_WRITE_ALL    (0x1U << 3)     // write access for all
+#define TS_WRITE_USER   (0x3U << 3)     // write after authentication as normal user
+#define TS_WRITE_MAKER  (0x7U << 3)     // write after authentication as manufacturer, e.g. for factory calibration
+#define TS_WRITE_MASK   TS_WRITE_MAKER
 
-#define TS_ACCESS_EXEC          (0x1U << 6)     // execute (for RPC only)
-#define TS_ACCESS_EXEC_USER     (0x1U << 7)     // execute after authentication as user
-#define TS_ACCESS_EXEC_ROOT     (0x1U << 8)     // execute after authentication as admin / root
+#define TS_EXEC_ALL     (0x1U << 6)     // execute access for all (only for RPC)
+#define TS_EXEC_USER    (0x3U << 6)     // execute after authentication as normal user
+#define TS_EXEC_MAKER   (0x7U << 6)     // execute after authentication as manufacturer, e.g. for factory calibration
+#define TS_EXEC_MASK    TS_EXEC_MAKER
+
+// legacy names
+#define TS_ACCESS_READ          TS_READ_ALL
+#define TS_ACCESS_READ_AUTH     TS_READ_USER
+#define TS_ACCESS_WRITE         TS_WRITE_ALL
+#define TS_ACCESS_WRITE_AUTH    TS_WRITE_USER
+#define TS_ACCESS_EXEC          TS_EXEC_ALL
+#define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
 
 /** ThingSet data object struct
  */
@@ -157,9 +168,9 @@ public:
      */
     void set_user_password(const char *password);
 
-    /** Sets password for root (e.g. manufacturer)
+    /** Sets password for maker/manufacturer
      */
-    void set_root_password(const char *password);
+    void set_maker_password(const char *password);
 
     /** Generates a publication message in JSON format for a defined channel
      *
@@ -307,10 +318,10 @@ private:
     int tok_count;
 
     const char *user_pass = NULL;
-    const char *root_pass = NULL;
+    const char *maker_pass = NULL;
 
     bool user_authorized = false;
-    bool root_authorized = false;
+    bool maker_authorized = false;
 
     void (*conf_callback)(void);
 };

@@ -144,7 +144,7 @@ int ThingSet::read_cbor(int category)
         if (data_obj == NULL) {
             return status_message_cbor(TS_STATUS_UNKNOWN_DATA_OBJ);
         }
-        if (!(data_obj->access & TS_ACCESS_READ)) {
+        if (!(data_obj->access & TS_READ_ALL)) {
             return status_message_cbor(TS_STATUS_UNAUTHORIZED);
         }
 
@@ -212,7 +212,7 @@ int ThingSet::write_cbor(int category, bool ignore_access)
         }
         else {
             if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
-                if (!(data_obj->access & TS_ACCESS_WRITE)) {
+                if (!(data_obj->access & TS_WRITE_ALL)) {
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
                 if (data_obj->category != category) {
@@ -251,7 +251,7 @@ int ThingSet::exec_cbor()
     if (data_obj == NULL) {
         return status_message_cbor(TS_STATUS_UNKNOWN_DATA_OBJ);
     }
-    if (!(data_obj->access & TS_ACCESS_EXEC)) {
+    if (!(data_obj->access & TS_EXEC_ALL)) {
         return status_message_cbor(TS_STATUS_UNAUTHORIZED);
     }
 
@@ -285,7 +285,7 @@ int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, const uint16_t pub_lis
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
         const data_object_t* data_obj = get_data_object(pub_list[element]);
-        if (data_obj == NULL || !(data_obj->access & TS_ACCESS_READ)) {
+        if (data_obj == NULL || !(data_obj->access & TS_READ_ALL)) {
             continue;
         }
 
@@ -341,7 +341,7 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
     // find out number of elements
     int num_elements = 0;
     for (unsigned int i = 0; i < num_objects; i++) {
-        if (data_objects[i].access & TS_ACCESS_READ
+        if (data_objects[i].access & TS_READ_ALL
             && (data_objects[i].category == category))
         {
             num_elements++;
@@ -357,7 +357,7 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
 
     // actually write elements
     for (unsigned int i = 0; i < num_objects; i++) {
-        if (data_objects[i].access & TS_ACCESS_READ
+        if (data_objects[i].access & TS_READ_ALL
             && (data_objects[i].category == category))
         {
             int num_bytes = 0;
