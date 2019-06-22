@@ -203,6 +203,17 @@ public:
      */
     int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
 
+    /** Encodes a publication message in CAN message format for supplied data object
+     *
+     * @param can_node_id id of the can node
+     * @param msg_id reference to can message id storage
+     * @param data_object reference to data object to be published
+     * @param msg_data reference to the buffer where the publication message should be stored
+     *
+     * @returns Actual length of the message_data, or -1 if not encodable / in case of error
+     */
+    int encode_msg_can(const data_object_t& object, uint8_t can_node_id, unsigned int& msg_id, uint8_t (&msg_data)[8]);
+
     /** Initialize data objects based on values stored in EEPROM
      *
      * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data objects
@@ -227,6 +238,13 @@ public:
     /** Get pub channel by name
      */
     ts_pub_channel_t *get_pub_channel(char *name, size_t len);
+
+    /** Get pub channel by id
+     */
+    inline ts_pub_channel_t *get_pub_channel(unsigned int id)
+    {
+        return id < num_channels ? &pub_channels[id] : NULL;
+    }
 
 private:
     /**
