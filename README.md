@@ -4,6 +4,8 @@
 
 This C++ implementation is used by the LibreSolar devices' firmware.
 
+The implementation is tested vs. newlib-nano and the default newlib provided by GNU C++ compiler.
+
 ## Text-based protocol
 
 The following ThingSet functions are fully implemented:
@@ -45,7 +47,15 @@ It is possible to enable or disable 64 bit data types to decrease code size usin
 
 ## Unit testing
 
-Using Visual Studio Code with platformio extension, just press the test button to run the unit tests.
+The tests are implemented using the UNITY environment integrated in PlatformIO. The tests can be run on the device and in the native environment of the computer. For native (and more quick) tests run:
+
+    pio test -e native-std
+
+The test in native environment is also set as the default unit-test, so it is run if you push the test button in PlatformIO.
+
+To run the unit tests on the device, execute the following command:
+
+    pio test -e device-std -e device-newlib-nano
 
 ## Remarks
 

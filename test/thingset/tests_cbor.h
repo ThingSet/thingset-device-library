@@ -282,7 +282,7 @@ void cbor_serialize_long_string()
     char str[300];
     uint8_t buf[302];
 
-    for (int i = 0; i < sizeof(str); i++) {
+    for (unsigned int i = 0; i < sizeof(str); i++) {
         str[i] = 'T';
     }
     str[299] = '\0';

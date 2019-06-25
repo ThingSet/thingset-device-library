@@ -21,7 +21,7 @@ addons:
             - doxygen
 
 script:
-    - platformio test -e unit_test_native
+    - platformio test -e native-std
     - doxygen Doxyfile
 
 deploy:
