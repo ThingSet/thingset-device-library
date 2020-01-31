@@ -24,14 +24,27 @@
 
 #define DEBUG 0
 
+static void _check_id_duplicates(const data_object_t *data, size_t num)
+{
+    for (unsigned int i = 0; i < num; i++) {
+        for (unsigned int j = i + 1; j < num; j++) {
+            if (data[i].id == data[j].id) {
+                printf("ThingSet error: Duplicate data object ID 0x%X.\n", data[i].id);
+            }
+        }
+    }
+}
+
 ThingSet::ThingSet(const data_object_t *data, size_t num)
 {
+    _check_id_duplicates(data, num);
     data_objects = data;
     num_objects = num;
 }
 
 ThingSet::ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch)
 {
+    _check_id_duplicates(data, num_obj);
     data_objects = data;
     num_objects = num_obj;
     pub_channels = channels;
