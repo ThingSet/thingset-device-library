@@ -23,7 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Protocol functions / categories
+/*
+ * Protocol functions / categories
  */
 // function + data object category
 #define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
@@ -41,7 +42,8 @@
 #define TS_PUB      0x12       // publication request
 #define TS_PUBMSG   0x1F       // actual publication message
 
-/* Status codes
+/*
+ * Status codes
  */
 #define TS_STATUS_SUCCESS            0
 #define TS_STATUS_ERROR             32
@@ -58,7 +60,8 @@
 #define TS_STATUS_WRONG_PASSWORD    43
 #define TS_STATUS_UNSUPPORTED       44    // type of request not (yet) supported
 
-/** Internal C data types (used to cast void* pointers)
+/**
+ * Internal C data types (used to cast void* pointers)
  */
 enum ts_type {
     TS_T_BOOL,
@@ -73,7 +76,55 @@ enum ts_type {
     TS_T_DECFRAC       // CBOR decimal fraction
 };
 
-/* Internal access rights to data objects
+/*
+ * Functions to generate data_object map and make compiler complain if wrong
+ * type is passed
+ */
+
+#define TS_DATA_OBJ_ID_CHECK(_id) TS_DATA_OBJ_ID_TEMP_##_id
+
+static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_BOOL(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_BOOL, 0, _bool_to_void(_data_ptr), _name}
+
+static inline void *_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_UINT64(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_UINT64, 0, _uint64_to_void(_data_ptr), _name}
+
+static inline void *_int64_to_void(int64_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_INT64(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_INT64, 0, _int64_to_void(_data_ptr), _name}
+
+static inline void *_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_UINT32(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_UINT32, 0, _uint32_to_void(_data_ptr), _name}
+
+static inline void *_int32_to_void(int32_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_INT32(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_INT32, 0, _int32_to_void(_data_ptr), _name}
+
+static inline void *_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_UINT16(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_UINT16, 0, _uint16_to_void(_data_ptr), _name}
+
+static inline void *_int16_to_void(int16_t *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_INT16(_id, _name, _data_ptr, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_INT16, 0, _int16_to_void(_data_ptr), _name}
+
+static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_FLOAT(_id, _name, _data_ptr, _digits, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_FLOAT32, _digits, _float_to_void(_data_ptr), _name}
+
+static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
+#define TS_DATA_OBJ_STRING(_id, _name, _data_ptr, _buf_size, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
+
+static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
+#define TS_DATA_OBJ_EXEC(_id, _name, _data_ptr, _acc) \
+    {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_data_ptr), _name}
+
+/*
+ * Internal access rights to data objects
  */
 #define TS_READ_ALL     (0x1U << 0)     // read access for all
 #define TS_READ_USER    (0x3U << 0)     // read after authentication as normal user
@@ -117,8 +168,8 @@ typedef struct data_object_t {
      */
     const uint8_t type;
 
-    /** Exponent (10^exponent = factor to convert to SI unit) for UINT / INT,
-     * decimal digits to use for plotting of floats in JSON strings or
+    /** Exponent (10^exponent = factor to convert to SI unit) for decimal fraction type,
+     * decimal digits to use for printing of floats in JSON strings or
      * lenght of string buffer for string type
      */
     const int16_t detail;

@@ -77,33 +77,48 @@ static uint32_t secret_maker = 2;
 void dummy(void);
 
 static const data_object_t dataObjects[] = {
+
     // info
-    {0x1001, TS_INFO, TS_READ_ALL, TS_T_STRING, 0, (void*) manufacturer, "manufacturer"},
+
+    TS_DATA_OBJ_STRING(0x1001, "manufacturer", manufacturer, 0,
+        TS_INFO, TS_READ_ALL),
 
     // input data
-    {0x3001, TS_INPUT, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL, 0, (void*) &(cal.load_enabled_target), "loadEnTarget"},
-    {0x3002, TS_INPUT, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL, 0, (void*) &(cal.usb_enabled_target), "usbEnTarget"},
+
+    TS_DATA_OBJ_BOOL(0x3001, "loadEnTarget", &cal.load_enabled_target,
+        TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_OBJ_BOOL(0x3002, "usbEnTarget", &cal.usb_enabled_target,
+        TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
 
     // output data
-    {0x4001, TS_OUTPUT, TS_READ_ALL, TS_T_INT32, 2, (void*) &i32, "i32_output"},
+
+    TS_DATA_OBJ_INT32(0x4001, "i32_output", &i32,
+        TS_OUTPUT, TS_READ_ALL),
 
     // rpc / exec
-    {0x5001, TS_EXEC, TS_EXEC_ALL, TS_T_BOOL, 0, (void*) &dummy, "dummy"},
 
-    // calibration data
-    {0x6001, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT64,  0, (void*) &ui64, "ui64"},
-    {0x6002, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT64,   0, (void*) &i64, "i64"},
-    {0x6003, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT32,  0, (void*) &ui32, "ui32"},
-    {0x6004, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT32,   0, (void*) &i32, "i32"},
-    {0x6005, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_UINT16,  0, (void*) &ui16, "ui16"},
-    {0x6006, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_INT16,   0, (void*) &i16, "i16"},
-    {0x6007, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_FLOAT32, 2, (void*) &f32, "f32"},
-    {0x6008, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_BOOL,    0, (void*) &b, "bool"},
-    {0x6009, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_STRING,  sizeof(strbuf), (void*) strbuf, "strbuf"},
-    {0x600A, TS_CONF, TS_READ_ALL | TS_WRITE_ALL, TS_T_FLOAT32, 0, (void*) &f32, "f32_rounded"},
+    TS_DATA_OBJ_EXEC(0x5001, "dummy", &dummy, TS_EXEC_ALL),
 
-    {0x7001, TS_CONF, TS_READ_ALL | TS_WRITE_USER,  TS_T_UINT32,  0, (void*) &secret_user,  "secret_user"},
-    {0x7002, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER, TS_T_UINT32,  0, (void*) &secret_maker, "secret_maker"},
+    // configuration data
+
+    TS_DATA_OBJ_UINT64(0x6001, "ui64", &ui64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_INT64(0x6002, "i64", &i64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_UINT32(0x6003, "ui32", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_INT32(0x6004, "i32", &i32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_UINT16(0x6005, "ui16", &ui16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_INT16(0x6006, "i16", &i16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_FLOAT(0x6007, "f32", &f32, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_OBJ_BOOL(0x6008, "bool", &b, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_OBJ_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf),
+        TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_OBJ_FLOAT(0x600A, "f32_rounded", &f32, 0,
+        TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_OBJ_UINT32(0x7001, "secret_user", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_USER),
+    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER),
 };
 
 
