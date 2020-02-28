@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <inttypes.h>
+#include <cinttypes>
 
 int ThingSet::status_message_json(int code)
 {

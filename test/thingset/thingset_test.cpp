@@ -7,6 +7,10 @@
 
 #include "test_data.h"
 
+// To avoid compilation error of unit tests
+void setUp (void) {}
+void tearDown (void) {}
+
 measurement_data_t meas;
 calibration_data_t cal;
 
