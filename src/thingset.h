@@ -73,8 +73,19 @@ enum ts_type {
     TS_T_INT16,
     TS_T_FLOAT32,
     TS_T_STRING,
+    TS_T_ARRAY,
     TS_T_DECFRAC       // CBOR decimal fraction
 };
+
+/**
+ * Data structure to store the array pointer, length, and its type
+ */
+typedef struct {
+    void *ptr;          ///< Pointer to the array
+    int num_elements;            ///< Number of elements in the array. For eg, sizeof(data)/sizeof(data[0]);
+    uint8_t type;       ///< Type of the array
+    int max_elements;   ///< The maximum number of elements in the array
+} ArrayInfo;
 
 /*
  * Functions to generate data_object map and make compiler complain if wrong
@@ -122,6 +133,10 @@ static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 #define TS_DATA_OBJ_EXEC(_id, _name, _data_ptr, _acc) \
     {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_data_ptr), _name}
+
+static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
+#define TS_DATA_OBJ_ARRAY(_id, _name, _data_ptr, _digits, _cat, _acc) \
+    {_id, _cat, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
 
 /*
  * Internal access rights to data objects

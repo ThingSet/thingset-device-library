@@ -67,7 +67,6 @@ extern "C" {
 #define CBOR_FLOAT64    (CBOR_7 | 27)
 #define CBOR_BREAK      (CBOR_7 | 31)
 
-
 /* Serialization (C values to CBOR data)
  */
 
@@ -87,6 +86,16 @@ int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
 
 int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len);
 
+/** Serializes the array header to make the array in CBOR format.
+ * Adds the length fleld to the beginning of the CBOR buffer.
+ * 
+ * @param data Pointer to the buffer, which contains the received CBOR array
+ * @param num_elements The number of elements in the array
+ * @param max_len The maximum size left to fill in the CBOR buffer
+ * 
+ * @returns Returns the position at which the first element of the array need to be inserted 
+ * in the buffer. Returns 0 if the array is too long (more than 65535 elements)
+ */
 int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len);
 
 int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len);
@@ -112,6 +121,17 @@ int cbor_deserialize_float(uint8_t *data, float *value);
 int cbor_deserialize_bool(uint8_t *data, bool *value);
 
 int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size);
+
+/** Deserializes the received CBOR array header before updating the data object.
+ * 
+ * @param buf Pointer to the buffer, which contains the received CBOR array
+ * @param max_elements The maximum possible number of elements in the array
+ * @param num_elements Pointer to the variable that will store the number of elements in the array
+ * 
+ * @returns Returns the position in the buffer at which the first element of the array starts.
+ * 0 if the array type or size is not supported.
+ */
+int cbor_deserialize_array(uint8_t *buf, int max_elements, int *num_elements);
 
 /* Determine the number of elements in a map or array and store it in num_elements
  */

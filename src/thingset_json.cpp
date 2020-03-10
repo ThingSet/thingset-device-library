@@ -82,56 +82,110 @@ int ThingSet::status_message_json(int code)
         return 0;
 }
 
-static int json_serialize_value(char *resp, size_t size, const data_object_t* data_obj)
+static int json_serialize_value(char *resp, size_t size, const data_object_t *data_obj)
 {
     size_t pos = 0;
 
     switch (data_obj->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu64 ",", *((uint64_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)data_obj->data));
         break;
     case TS_T_INT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi64 ",", *((int64_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi64 ",", *((int64_t *)data_obj->data));
         break;
 #endif
     case TS_T_UINT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu32 ",", *((uint32_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)data_obj->data));
         break;
     case TS_T_INT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi32 ",", *((int32_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi32 ",", *((int32_t *)data_obj->data));
         break;
     case TS_T_UINT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu16 ",", *((uint16_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)data_obj->data));
         break;
     case TS_T_INT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t *)data_obj->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail, *((float*)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail, 
+                *((float *)data_obj->data));
         break;
     case TS_T_BOOL:
-        pos = snprintf(&resp[pos], size - pos, "%s,", (*((bool*)data_obj->data) == true ? "true" : "false"));
+        pos = snprintf(&resp[pos], size - pos, "%s,", 
+                (*((bool *)data_obj->data) == true ? "true" : "false"));
         break;
     case TS_T_STRING:
-        pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char*)data_obj->data);
+        pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_obj->data);
         break;
+    case TS_T_ARRAY:
+        ArrayInfo *array_info;
+        array_info = (ArrayInfo *)data_obj->data;
+        // If the data object is not defined
+        if (!array_info) {
+            return 0;
+        }
+
+        pos += snprintf(&resp[pos], size - pos, "[");
+
+        for (int i = 0; i < array_info->num_elements; i++) {
+            switch (array_info->type) {
+            case TS_T_UINT64:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu64 ",", 
+                        ((uint64_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_INT64:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi64 ",", 
+                        ((int64_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_UINT32:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu32 ",", 
+                        ((uint32_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_INT32:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi32 ",", 
+                        ((int32_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_UINT16:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu16 ",", 
+                        ((uint16_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_INT16:
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi16 ",", 
+                        ((int16_t *)array_info->ptr)[i]);
+                break;
+            case TS_T_FLOAT32:
+                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail, 
+                        ((float *)array_info->ptr)[i]);
+                break;
+            default:
+                break;
+            } // end of switch (data_array->type)
+        } // end of 'for' loop
+
+        pos--; // Remove the last comma inside the array
+        pos += snprintf(&resp[pos], size - pos, "],");
+        break; //case TS_T_ARRAY:
     }
 
-    if (pos < size)
+    if (pos < size) {
         return pos;
-    else
+    }
+    else {
         return 0;
+    }
 }
 
 static int json_serialize_name_value(char *resp, size_t size, const data_object_t* data_obj)
 {
     size_t pos = snprintf(resp, size, "\"%s\":", data_obj->name);
 
-    if (pos < size)
+    if (pos < size) {
         return pos + json_serialize_value(&resp[pos], size - pos, data_obj);
-    else
+    }
+    else {
         return 0;
+    }
 }
 
 int ThingSet::access_json(int function, size_t len_function)
