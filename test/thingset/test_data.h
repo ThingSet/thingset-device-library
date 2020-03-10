@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "thingset.h"
 
 #define TS_REQ_BUFFER_LEN 500
 #define TS_RESP_BUFFER_LEN 500
@@ -74,6 +75,12 @@ static bool b;
 static uint32_t secret_user = 1;
 static uint32_t secret_maker = 2;
 
+int A[100];
+ArrayInfo int32_array = {A, 0, 0, 0};
+
+float B[100];
+ArrayInfo float32_array = {B, 0, 0, 0};
+
 void dummy(void);
 
 static const data_object_t dataObjects[] = {
@@ -118,9 +125,11 @@ static const data_object_t dataObjects[] = {
         TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 
     TS_DATA_OBJ_UINT32(0x7001, "secret_user", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_USER),
-    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER),
+    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER), 
+    TS_DATA_OBJ_ARRAY(0x7003, "arrayi32", &int32_array, 0, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    // data_obj->detail will specify the number of decimal places for float
+    TS_DATA_OBJ_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 };
-
 
 static const uint16_t pub_data_objects[] = {
         #if TS_64BIT_TYPES_SUPPORT

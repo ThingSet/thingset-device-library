@@ -95,6 +95,115 @@ void cbor_read_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
+void cbor_write_int32_array()
+{
+    // Writing int32 array
+    int32_array.type = TS_T_INT32;
+    int32_array.num_elements = 4;
+    int32_array.max_elements = 100; // Maximum length of the array
+
+    char cbor_req_hex[] =
+        "02 A1 "    // write map
+        "19 70 03 84 04 02 08 04 ";        // Array [4, 2, 8, 4]
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+}
+
+void cbor_read_int32_array()
+{
+    // Request: Read int32 array
+    char cbor_req_hex[] =
+        "01 81 "      // read array
+        "19 70 03 ";
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+
+    char cbor_resp_hex[] =
+        "80 "     // successful response:
+        "84 04 02 08 04 ";
+
+    uint8_t cbor_resp[100];
+    len = strlen(cbor_resp_hex);
+    pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
+    }
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+}
+
+void cbor_write_float_array()
+{
+    // Writing float array
+    float32_array.type = TS_T_FLOAT32; // Set the array type
+    float32_array.num_elements = 2; // Length of the array
+    float32_array.max_elements = 100; // Maximum length of the array
+
+    // {28676: [2.27, 3.44]}
+    char cbor_req_hex_float[] =
+        "02 A1 "    // write map
+        "19 70 04 82 FA 40 11 15 40 FA 40 5C 71 E1 "; // Array
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex_float);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex_float[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+}
+
+void cbor_read_float_array()
+{
+    // Read int32 array
+    char cbor_req_hex[] =
+        "01 81 "      // read array
+        "19 70 04 ";
+
+    uint8_t cbor_req[100];
+    int len = strlen(cbor_req_hex);
+    int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
+    }
+
+    memcpy(req_buf, cbor_req, pos);
+    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+
+    char cbor_resp_hex[] =
+        "80 "     // successful response:
+        "82 FA 40 11 15 40 FA 40 5C 71 E1 ";
+
+    uint8_t cbor_resp[100];
+    len = strlen(cbor_resp_hex);
+    pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
+    }
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+}
+
 void cbor_read_rounded()
 {
     char cbor_req_hex[] = "01 19 60 0A ";

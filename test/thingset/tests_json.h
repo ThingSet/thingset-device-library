@@ -99,6 +99,22 @@ void json_list_names_values_input()
     TEST_ASSERT_EQUAL_STRING(":0 Success. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
 }
 
+void json_read_int32_array()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayi32\"]");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [[4,2,8,4]]", resp_buf);
+}
+
+void json_read_float_array()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayfloat\"]");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":0 Success. [[2.27,3.44]]", resp_buf);
+}
+
 void json_pub_msg()
 {
     int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN, 0);

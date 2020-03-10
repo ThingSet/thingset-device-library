@@ -60,6 +60,16 @@ int main()
     // CBOR only tests
     RUN_TEST(cbor_write_array);
     RUN_TEST(cbor_read_array);
+    RUN_TEST(cbor_write_int32_array); 
+    RUN_TEST(cbor_read_int32_array);
+
+    RUN_TEST(json_read_int32_array); // json read for array types
+
+    RUN_TEST(cbor_write_float_array);
+    RUN_TEST(cbor_read_float_array);
+
+    RUN_TEST(json_read_float_array); // json read for array types
+
     RUN_TEST(cbor_read_rounded);
     RUN_TEST(cbor_write_rounded);       // writes an integer to float
     RUN_TEST(cbor_list_ids_input);
