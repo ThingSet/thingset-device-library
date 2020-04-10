@@ -3,20 +3,22 @@
 #include "thingset.h"
 //#include "cbor.h"
 #include "unity.h"
-//#include <sys/types.h>  // for definition of endianness
 
 #include "test_data.h"
+
+#ifdef __WIN32__
 
 // To avoid compilation error of unit tests
 void setUp (void) {}
 void tearDown (void) {}
+
+#endif
 
 measurement_data_t meas;
 calibration_data_t cal;
 
 uint8_t req_buf[TS_REQ_BUFFER_LEN];
 uint8_t resp_buf[TS_RESP_BUFFER_LEN];
-//ts_buffer_t req, resp;
 
 #include "tests_json.h"
 #include "tests_cbor.h"
@@ -60,15 +62,15 @@ int main()
     // CBOR only tests
     RUN_TEST(cbor_write_array);
     RUN_TEST(cbor_read_array);
-    RUN_TEST(cbor_write_int32_array); 
+    RUN_TEST(cbor_write_int32_array);
     RUN_TEST(cbor_read_int32_array);
 
-    RUN_TEST(json_read_int32_array); // json read for array types
+    RUN_TEST(json_read_int32_array);
 
     RUN_TEST(cbor_write_float_array);
     RUN_TEST(cbor_read_float_array);
 
-    RUN_TEST(json_read_float_array); // json read for array types
+    RUN_TEST(json_read_float_array);
 
     RUN_TEST(cbor_read_rounded);
     RUN_TEST(cbor_write_rounded);       // writes an integer to float
