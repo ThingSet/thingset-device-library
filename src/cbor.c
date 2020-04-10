@@ -474,53 +474,6 @@ int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
     return 0;   // longer string not supported
 }
 
-
-int cbor_deserialize_array(uint8_t *buf, int max_elements, int *num_elements)
-{
-    uint8_t type = buf[0] & CBOR_TYPE_MASK;
-    uint8_t info = buf[0] & CBOR_INFO_MASK;
-    int pos = 0; // Index of the next value in the buffer
-
-    if (type != CBOR_ARRAY) {
-        return 0;
-    }
-
-    if (info < 24) {
-        *num_elements = info;
-        // If the received number of elements is less than the maximum number of array elements
-        if (*num_elements < max_elements) {
-            pos += 1; // The first element of the array starts at the 2nd byte of buf
-            return pos;
-        }
-        else {
-            return 0; // Array size is not supported
-        }
-    }
-    else if (info == CBOR_UINT8_FOLLOWS) {
-        *num_elements = buf[1];
-        if (*num_elements < max_elements) {
-            pos += 2; // The first element of the array starts at the 3rd byte of buf
-            return pos;
-        }
-        else {
-            return 0; // Array size is not supported
-        }
-    }
-    else if (info == CBOR_UINT16_FOLLOWS) {
-        *num_elements = buf[1] << 8 | buf[2];
-        if (*num_elements < max_elements) {
-            pos += 3; // The first element of the array starts at the 4th byte of buf
-            return pos;
-        }
-        else {
-            return 0; // Array size is not supported
-        }
-    }
-    else {
-        return 0; // longer array is not supported
-    }
-}
-
 // stores size of map or array in num_elements
 int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
 {

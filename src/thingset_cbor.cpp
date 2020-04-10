@@ -50,7 +50,7 @@ static int cbor_deserialize_data_object(uint8_t *buf, const data_object_t *data_
         return cbor_deserialize_bool(buf, (bool *)data_obj->data);
     case TS_T_STRING:
         return cbor_deserialize_string(buf, (char *)data_obj->data, data_obj->detail);
-    case TS_T_ARRAY: 
+    case TS_T_ARRAY:
         return cbor_deserialize_array_type(buf, data_obj);
     default:
         return 0;
@@ -59,7 +59,7 @@ static int cbor_deserialize_data_object(uint8_t *buf, const data_object_t *data_
 
 int cbor_deserialize_array_type(uint8_t *buf, const data_object_t *data_obj)
 {
-    int num_elements;
+    uint16_t num_elements;
     int pos = 0; // Index of the next value in the buffer
     ArrayInfo *array_info;
     array_info = (ArrayInfo *)data_obj->data;
@@ -69,10 +69,9 @@ int cbor_deserialize_array_type(uint8_t *buf, const data_object_t *data_obj)
     }
 
     // Deserialize the buffer length, and calculate the actual number of array elements
-    pos = cbor_deserialize_array(buf, array_info->max_elements, &num_elements);
+    pos = cbor_num_elements(buf, &num_elements);
 
-    // If the array length is invalid
-    if (pos == 0) {
+    if (num_elements > array_info->max_elements) {
         return 0;
     }
 
@@ -140,7 +139,7 @@ static int cbor_serialize_data_object(uint8_t *buf, size_t size, const data_obje
         return cbor_serialize_bool(buf, *((bool *)data_obj->data), size);
     case TS_T_STRING:
         return cbor_serialize_string(buf, (char *)data_obj->data, size);
-    case TS_T_ARRAY: 
+    case TS_T_ARRAY:
         return cbor_serialize_array_type(buf, size, data_obj);
     default:
         return 0;
@@ -185,10 +184,10 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const data_object_t *da
         case TS_T_FLOAT32:
             if (data_obj->detail == 0) { // round to 0 digits: use int
 #ifdef TS_64BIT_TYPES_SUPPORT
-                pos += cbor_serialize_int(&(buf[pos]), 
+                pos += cbor_serialize_int(&(buf[pos]),
                     llroundf(((float *)array_info->ptr)[i]), size);
 #else
-                pos += cbor_serialize_int(&(buf[pos]), 
+                pos += cbor_serialize_int(&(buf[pos]),
                     lroundf(((float *)array_info->ptr)[i]), size);
 #endif
             }
