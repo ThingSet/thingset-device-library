@@ -1,7 +1,10 @@
-
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
+ */
 
 #include "thingset.h"
-//#include "cbor.h"
 #include "unity.h"
 
 #include "test_data.h"

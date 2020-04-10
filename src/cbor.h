@@ -1,21 +1,11 @@
-/* ThingSet protocol library
- * Copyright (c) 2017-2018 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#ifndef __CBOR_H_
-#define __CBOR_H_
+#ifndef CBOR_H_
+#define CBOR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,66 +57,234 @@ extern "C" {
 #define CBOR_FLOAT64    (CBOR_7 | 27)
 #define CBOR_BREAK      (CBOR_7 | 31)
 
-/* Serialization (C values to CBOR data)
+/**
+ * Serialize unsigned integer value
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param value Variable containing value to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
  */
-
 #ifdef TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len);
-int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
 #else
 int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
+#endif
+
+/**
+ * Serialize signed integer value
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param value Variable containing value to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
+#ifdef TS_64BIT_TYPES_SUPPORT
+int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
+#else
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);
 #endif
 
-int cbor_serialize_decimal_fraction(uint8_t *data, int32_t mantissa, int32_t exponent, size_t max_len);
+/**
+ * Serialize decimal fraction (e.g. 1234 * 10^3)
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param mantissa Mantissa of the value to be serialized
+ * @param exponent Exponent of the value to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
+int cbor_serialize_decimal_fraction(uint8_t *data, int32_t mantissa, int32_t exponent,
+                                                                                size_t max_len);
 
+/**
+ * Serialize 32-bit float
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param value Variable containing value to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
 int cbor_serialize_float(uint8_t *data, float value, size_t max_len);
 
+
+/**
+ * Serialize boolean
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param value Variable containing value to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
 int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
 
+/**
+ * Serialize string
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param value Pointer to string that should be be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
 int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len);
 
-/** Serializes the array header to make the array in CBOR format.
- * Adds the length fleld to the beginning of the CBOR buffer.
+/**
+ * Serialize the header (length field) of an array
  *
- * @param data Pointer to the buffer, which contains the received CBOR array
- * @param num_elements The number of elements in the array
- * @param max_len The maximum size left to fill in the CBOR buffer
+ * Actual elements of the array have to be serialized afterwards
  *
- * @returns Returns the position at which the first element of the array need to be inserted
- * in the buffer. Returns 0 if the array is too long (more than 65535 elements)
+ * @param data Buffer where CBOR data shall be stored
+ * @param num_elements Number of elements in the array
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
  */
 int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len);
 
+/**
+ * Serialize the header (length field) of a map (equivalent to JSON object)
+ *
+ * Actual elements of the map have to be serialized afterwards
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param num_elements Number of elements in the array
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns number of bytes added to buffer or 0 in case of error
+ */
 int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len);
 
-/* Deserialization (CBOR data to C values)
+/**
+ * Deserialization (CBOR data to C values)
  */
 
 #ifdef TS_64BIT_TYPES_SUPPORT
+/**
+ * Deserialize 64-bit unsigned integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_uint64(uint8_t *data, uint64_t *value);
+
+/**
+ * Deserialize 64-bit signed integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_int64(uint8_t *data, int64_t *value);
 #endif
 
+/**
+ * Deserialize 32-bit unsigned integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_uint32(uint8_t *data, uint32_t *value);
+
+/**
+ * Deserialize 32-bit signed integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_int32(uint8_t *data, int32_t *value);
 
+/**
+ * Deserialize 16-bit unsigned integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_uint16(uint8_t *data, uint16_t *value);
+
+/**
+ * Deserialize 16-bit signed integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_int16(uint8_t *data, int16_t *value);
 
+/**
+ * Deserialize decimal fraction type
+ *
+ * The exponent is fixed, so the mantissa is multiplied to match the exponent
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param mantissa Pointer to the variable where the mantissa should be stored
+ * @param exponent Exponent of internally used variable in C
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent);
 
+/**
+ * Deserialize 32-bit float
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_float(uint8_t *data, float *value);
 
+/**
+ * Deserialize bool
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_bool(uint8_t *data, bool *value);
 
+/**
+ * Deserialize string
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
 int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size);
 
-/* Determine the number of elements in a map or array and store it in num_elements
+/**
+ * Determine the number of elements in a map or an array
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param num_elements Pointer to the variable where the result should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
  */
 int cbor_num_elements(uint8_t *data, uint16_t *num_elements);
 
-/* Determine the size of the cbor data item starting at given pointer
+/**
+ * Determine the size of the cbor data item
+ *
+ * @param data Pointer for starting point of data item
+ *
+ * @returns Size in bytes
  */
 int cbor_size(uint8_t *data);
 
@@ -134,4 +292,4 @@ int cbor_size(uint8_t *data);
 }
 #endif
 
-#endif /* __CBOR_H_ */
+#endif /* CBOR_H_ */

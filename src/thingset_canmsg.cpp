@@ -1,17 +1,7 @@
-/* ThingSet protocol client library
- * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2019 Martin Jäger / Libre Solar
  */
 
 #include "ts_config.h"
@@ -31,14 +21,9 @@
 #define CAN_TS_T_FLOAT32 30
 #define CAN_TS_T_DECFRAC 36
 
-
-/**
- * @returns -1 if the object could not be encoded successfully, message length otherwise. msg_len 0 is valid, just the id is transmitted
- * in this case
- * 
- */
-int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id, unsigned int& msg_id, uint8_t (&msg_data)[8])
-{    
+int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
+                                unsigned int& msg_id, uint8_t (&msg_data)[8])
+{
     int msg_len = -1;
 
     union float2bytes { float f; char b[4]; } f2b;     // for conversion of float to single bytes

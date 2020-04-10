@@ -1,17 +1,7 @@
-/* ThingSet protocol client library
- * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
 #ifndef __THINGSET_H_
@@ -82,7 +72,7 @@ enum ts_type {
  */
 typedef struct {
     void *ptr;          ///< Pointer to the array
-    int num_elements;            ///< Number of elements in the array. For eg, sizeof(data)/sizeof(data[0]);
+    int num_elements;   ///< Number of elements in the array. For eg, sizeof(data)/sizeof(data[0]);
     uint8_t type;       ///< Type of the array
     int max_elements;   ///< The maximum number of elements in the array
 } ArrayInfo;
@@ -167,38 +157,47 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 /** ThingSet data object struct
  */
 typedef struct data_object_t {
-    /** Data Object ID
+    /**
+     * Data Object ID
      */
     const uint16_t id;
 
-    /** One of TS_INFO, TS_CONF, ...
+    /**
+     * One of TS_INFO, TS_CONF, ...
      */
     const uint16_t category;
 
-    /** One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
+    /**
+     * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
      */
     const uint8_t access;
 
-    /** One of TS_TYPE_INT32, _FLOAT, ...
+    /**
+     * One of TS_TYPE_INT32, _FLOAT, ...
      */
     const uint8_t type;
 
-    /** Exponent (10^exponent = factor to convert to SI unit) for decimal fraction type,
+    /**
+     * Exponent (10^exponent = factor to convert to SI unit) for decimal fraction type,
      * decimal digits to use for printing of floats in JSON strings or
      * lenght of string buffer for string type
      */
     const int16_t detail;
 
-    /** Pointer to the variable containing the data. The variable type must match the type as specified
+    /**
+     * Pointer to the variable containing the data. The variable type must match the type as
+     * specified
      */
     void *data;
 
-    /** Data Object name
+    /**
+     * Data Object name
      */
     const char *name;
 } data_object_t;
 
-/** Container for data object publication channel
+/**
+ * Container for data object publication channel
  */
 typedef struct {
     const char *name;           ///< Publication channel name
@@ -215,7 +214,8 @@ public:
     ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch);
     ~ThingSet();
 
-    /** Process ThingSet request
+    /**
+     * Process ThingSet request
      *
      * This function also detects if JSON or CBOR format is used
      *
@@ -230,15 +230,18 @@ public:
 
     void set_pub_channels(ts_pub_channel_t *channels, size_t num);
 
-    /** Sets password for users
+    /**
+     * Sets password for users
      */
     void set_user_password(const char *password);
 
-    /** Sets password for maker/manufacturer
+    /**
+     * Sets password for maker/manufacturer
      */
     void set_maker_password(const char *password);
 
-    /** Generates a publication message in JSON format for a defined channel
+    /**
+     * Generates a publication message in JSON format for a defined channel
      *
      * @param msg_buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
@@ -248,7 +251,8 @@ public:
      */
     int pub_msg_json(char *msg_buf, size_t size, unsigned int channel);
 
-    /** Generates a publication message in CBOR format for a defined channel
+    /**
+     * Generates a publication message in CBOR format for a defined channel
      *
      * @param msg_buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
@@ -258,7 +262,8 @@ public:
      */
     int pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel);
 
-    /** Generates a publication message in CBOR format for supplied list of data object IDs
+    /**
+     * Generates a publication message in CBOR format for supplied list of data object IDs
      *
      * @param msg_buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
@@ -269,35 +274,43 @@ public:
      */
     int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
 
-    /** Encodes a publication message in CAN message format for supplied data object
+    /**
+     * Encodes a publication message in CAN message format for supplied data object
      *
      * @param can_node_id id of the can node
      * @param msg_id reference to can message id storage
      * @param data_object reference to data object to be published
      * @param msg_data reference to the buffer where the publication message should be stored
      *
-     * @returns Actual length of the message_data, or -1 if not encodable / in case of error
+     * @returns Actual length of the message_data, or -1 if not encodable / in case of error,
+     *          message length otherwise. msg_len 0 is valid, just the id is transmitted
      */
-    int encode_msg_can(const data_object_t& object, uint8_t can_node_id, unsigned int& msg_id, uint8_t (&msg_data)[8]);
+    int encode_msg_can(const data_object_t& object, uint8_t can_node_id, unsigned int& msg_id,
+        uint8_t (&msg_data)[8]);
 
-    /** Initialize data objects based on values stored in EEPROM
+    /**
+     * Initialize data objects based on values stored in EEPROM
      *
-     * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data objects
+     * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data
+     *                  objects
      * @param len Length of the data in the buffer
      *
      * @returns ThingSet status code
      */
     int init_cbor(uint8_t *cbor_data, size_t len);
 
-    /** Set function to be called when data objects of conf category were changed
+    /**
+     * Set function to be called when data objects of conf category were changed
      */
     void set_conf_callback(void (*callback)(void));
 
-    /** Get data object by ID
+    /**
+     * Get data object by ID
      */
     const data_object_t *get_data_object(uint16_t id);
 
-    /** Get data object by name
+    /**
+     * Get data object by name
      */
     const data_object_t *get_data_object(char *name, size_t len);
 
@@ -305,7 +318,8 @@ public:
      */
     ts_pub_channel_t *get_pub_channel(char *name, size_t len);
 
-    /** Get pub channel by id
+    /**
+     * Get pub channel by id
      */
     inline ts_pub_channel_t *get_pub_channel(unsigned int id)
     {
@@ -358,11 +372,13 @@ private:
      */
     int exec_cbor();
 
-    /** Publication control function in text mode
+    /**
+     * Publication control function in text mode
      */
     int pub_json();
 
-    /** Authentication command in text mode (user or root level)
+    /**
+     * Authentication command in text mode (user or root level)
      */
     int auth_json();
 

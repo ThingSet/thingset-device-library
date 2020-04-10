@@ -1,17 +1,7 @@
-/* ThingSet protocol library
- * Copyright (c) 2017-2018 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
 #include "cbor.h"
@@ -20,7 +10,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-
 
 #ifdef TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len)
@@ -209,12 +198,14 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
     }
 #ifdef TS_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT32_FOLLOWS) {
-        *(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
+        *(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) |
+            ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
         return 5;
     }
     else if (info == CBOR_UINT64_FOLLOWS) {
-        *(uint64_t*)bytes = ((uint64_t)data[1] << 56) | ((uint64_t)data[2] << 48) | ((uint64_t)data[3] << 40) | ((uint64_t)data[4] << 32)
-            | ((uint64_t)data[5] << 24) | ((uint64_t)data[6] << 16) | ((uint64_t)data[7] << 8) | ((uint64_t)data[8]);
+        *(uint64_t*)bytes = ((uint64_t)data[1] << 56) | ((uint64_t)data[2] << 48) |
+            ((uint64_t)data[3] << 40) | ((uint64_t)data[4] << 32) | ((uint64_t)data[5] << 24) |
+            ((uint64_t)data[6] << 16) | ((uint64_t)data[7] << 8) | ((uint64_t)data[8]);
         return 9;
     }
 #else
@@ -370,12 +361,11 @@ int cbor_deserialize_int16(uint8_t *data, int16_t *value)
     return 0;
 }
 
-// the exponent is fixed, so the mantissa is multiplied to fit the
 int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent)
 {
+    // ToDo: implementation
     return 0;
 }
-
 
 int cbor_deserialize_float(uint8_t *data, float *value)
 {
@@ -503,7 +493,7 @@ int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
         *num_elements = data[1] << 8 | data[2];
         return 3;
     }
-    return 0;   // more map elements not supported
+    return 0;   // more map/array elements not supported
 }
 
 

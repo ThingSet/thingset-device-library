@@ -1,17 +1,7 @@
-/* ThingSet protocol client library
- * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
 #include "ts_config.h"
@@ -63,7 +53,7 @@ int cbor_deserialize_array_type(uint8_t *buf, const data_object_t *data_obj)
     int pos = 0; // Index of the next value in the buffer
     ArrayInfo *array_info;
     array_info = (ArrayInfo *)data_obj->data;
-    // If the data object is not defined
+
     if (!array_info) {
         return 0;
     }
@@ -102,8 +92,8 @@ int cbor_deserialize_array_type(uint8_t *buf, const data_object_t *data_obj)
             break;
         default:
             break;
-        } // switch (data_array->type)
-    } // end of 'for' loop
+        }
+    }
     return pos;
 }
 
@@ -143,7 +133,7 @@ static int cbor_serialize_data_object(uint8_t *buf, size_t size, const data_obje
         return cbor_serialize_array_type(buf, size, data_obj);
     default:
         return 0;
-    } // switch (data_obj->type)
+    }
 }
 
 int cbor_serialize_array_type(uint8_t *buf, size_t size, const data_object_t *data_obj)
@@ -151,12 +141,12 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const data_object_t *da
     int pos = 0; // Index of the next value in the buffer
     ArrayInfo *array_info;
     array_info = (ArrayInfo *)data_obj->data;
-    // If the data object is not defined
+
     if (!array_info) {
         return 0;
     }
 
-    // Add the length fleld to the beginning of the CBOR buffer and update the CBOR buffer index
+    // Add the length field to the beginning of the CBOR buffer and update the CBOR buffer index
     pos = cbor_serialize_array(buf, array_info->num_elements, size);
 
     for (int i = 0; i < array_info->num_elements; i++) {
@@ -197,10 +187,9 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const data_object_t *da
             break;
         default:
             break;
-        } // switch (data_array->type)
-    } // end of 'for' loop
-
-    return pos; // Returns the final length of the CBOR buffer
+        }
+    }
+    return pos;
 }
 
 
@@ -378,7 +367,8 @@ int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel)
     return pub_msg_cbor(msg_buf, size, pub_channels[channel].object_ids, pub_channels[channel].num);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, const uint16_t pub_list[], size_t num_elements)
+int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, const uint16_t pub_list[],
+    size_t num_elements)
 {
     msg_buf[0] = TS_PUBMSG;
     int len = 1;
@@ -472,9 +462,11 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
                 num_bytes = cbor_serialize_uint(&resp[len], data_objects[i].id, resp_size - len);
             }
             else {
-                num_bytes = cbor_serialize_string(&resp[len], data_objects[i].name, resp_size - len);
+                num_bytes = cbor_serialize_string(&resp[len], data_objects[i].name,
+                    resp_size - len);
                 if (values) {
-                    num_bytes += cbor_serialize_data_object(&resp[len + num_bytes], resp_size - len - num_bytes, &data_objects[i]);
+                    num_bytes += cbor_serialize_data_object(&resp[len + num_bytes],
+                        resp_size - len - num_bytes, &data_objects[i]);
                 }
             }
 

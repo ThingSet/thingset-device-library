@@ -1,4 +1,8 @@
-
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
+ */
 
 #ifndef DATA_OBJECTS_H
 #define DATA_OBJECTS_H
@@ -125,7 +129,7 @@ static const data_object_t dataObjects[] = {
         TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 
     TS_DATA_OBJ_UINT32(0x7001, "secret_user", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_USER),
-    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER), 
+    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER),
     TS_DATA_OBJ_ARRAY(0x7003, "arrayi32", &int32_array, 0, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
     // data_obj->detail will specify the number of decimal places for float
     TS_DATA_OBJ_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),

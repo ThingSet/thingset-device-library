@@ -1,17 +1,7 @@
-/* ThingSet protocol client library
- * Copyright (c) 2017-2019 Martin Jäger (www.libre.solar)
+/*
+ * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
 #include "ts_config.h"
@@ -108,64 +98,59 @@ static int json_serialize_value(char *resp, size_t size, const data_object_t *da
         pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t *)data_obj->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail, 
+        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail,
                 *((float *)data_obj->data));
         break;
     case TS_T_BOOL:
-        pos = snprintf(&resp[pos], size - pos, "%s,", 
+        pos = snprintf(&resp[pos], size - pos, "%s,",
                 (*((bool *)data_obj->data) == true ? "true" : "false"));
         break;
     case TS_T_STRING:
         pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_obj->data);
         break;
     case TS_T_ARRAY:
-        ArrayInfo *array_info;
-        array_info = (ArrayInfo *)data_obj->data;
-        // If the data object is not defined
+        ArrayInfo *array_info = (ArrayInfo *)data_obj->data;
         if (!array_info) {
             return 0;
         }
-
         pos += snprintf(&resp[pos], size - pos, "[");
-
         for (int i = 0; i < array_info->num_elements; i++) {
             switch (array_info->type) {
             case TS_T_UINT64:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu64 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu64 ",",
                         ((uint64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT64:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi64 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi64 ",",
                         ((int64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT32:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu32 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu32 ",",
                         ((uint32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT32:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi32 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi32 ",",
                         ((int32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT16:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu16 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIu16 ",",
                         ((uint16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT16:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi16 ",", 
+                pos += snprintf(&resp[pos], size - pos, "%" PRIi16 ",",
                         ((int16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_FLOAT32:
-                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail, 
+                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail,
                         ((float *)array_info->ptr)[i]);
                 break;
             default:
                 break;
-            } // end of switch (data_array->type)
-        } // end of 'for' loop
-
-        pos--; // Remove the last comma inside the array
+            }
+        }
+        pos--; // remove trailing comma
         pos += snprintf(&resp[pos], size - pos, "],");
-        break; //case TS_T_ARRAY:
+        break;
     }
 
     if (pos < size) {
@@ -194,8 +179,10 @@ int ThingSet::access_json(int function, size_t len_function)
         jsmn_parser parser;
         jsmn_init(&(parser));
 
-        json_str = (char *)req + len_function + 1;      // +1 because blank is requested between function and JSON data
-        tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+        // +1 because blank is requested between function and JSON data
+        json_str = (char *)req + len_function + 1;
+        tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens,
+            sizeof(tokens));
 
         if (tok_count == JSMN_ERROR_NOMEM) {
             return status_message_json(TS_STATUS_REQUEST_TOO_LONG);
@@ -287,7 +274,8 @@ int ThingSet::read_json(int category)
 
     pos--;  // remove trailing comma
     if (tokens[0].type == JSMN_ARRAY) {
-        pos += sprintf((char *)&resp[pos], "]");     // buffer will be long enough as we dropped last 2 characters --> sprintf allowed
+        // buffer will be long enough as we dropped last 2 characters --> sprintf allowed
+        pos += sprintf((char *)&resp[pos], "]");
     } else {
         resp[pos] = '\0';    // terminate string
     }
@@ -299,7 +287,8 @@ int ThingSet::write_json(int category)
 {
     int tok = 0;       // current token
 
-    char value_buf[21];       // buffer for data object value (largest negative 64bit integer has 20 digits)
+    // buffer for data object value (largest negative 64bit integer has 20 digits)
+    char value_buf[21];
     size_t value_len;   // length of value in buffer
 
     if (tok_count < 2) {
@@ -360,7 +349,9 @@ int ThingSet::write_json(int category)
             // data object buffer length already checked above
         }
         else if (data_obj->type == TS_T_BOOL) {
-            if (!(value_buf[0] == 't' || value_buf[0] == '1' || value_buf[0] == 'f' || value_buf[0] == '0')) {
+            if (!(value_buf[0] == 't' || value_buf[0] == '1' || value_buf[0] == 'f' ||
+                value_buf[0] == '0'))
+            {
                 return status_message_json(TS_STATUS_WRONG_TYPE);
             }
         }
@@ -463,7 +454,8 @@ int ThingSet::list_json(int category, bool values)
             (data_objects[i].category == category))
         {
             if (values) {
-                len += json_serialize_name_value((char *)&resp[len], resp_size - len, &data_objects[i]);
+                len += json_serialize_name_value((char *)&resp[len], resp_size - len,
+                    &data_objects[i]);
             }
             else {
                 len += snprintf((char *)&resp[len],
@@ -489,7 +481,8 @@ int ThingSet::exec_json()
         return status_message_json(TS_STATUS_WRONG_FORMAT);
     }
 
-    const data_object_t *data_obj = get_data_object(json_str + tokens[0].start, tokens[0].end - tokens[0].start);
+    const data_object_t *data_obj = get_data_object(json_str + tokens[0].start,
+        tokens[0].end - tokens[0].start);
     if (data_obj == NULL) {
         return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
     }
