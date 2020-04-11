@@ -88,39 +88,29 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
             }
         }
     }
-    else if (req[0] == '!') {      // JSON request
+    // JSON request
+    else if (req[0] == '!') {
 
-        if (req_len >= 5 && strncmp((char *)req, "!info", 5) == 0) {
-            return access_json(TS_INFO, 5);
+        int path_len = req_len;
+        char *path_end = strchr((char *)req + 1, ' ');
+        if (path_end) {
+            path_len = (uint8_t *)path_end - req;
         }
-        else if (req_len >= 5 && strncmp((char *)req, "!conf", 5) == 0) {
-            return access_json(TS_CONF, 5);
-        }
-        else if (req_len >= 6 && strncmp((char *)req, "!input", 6) == 0) {
-            return access_json(TS_INPUT, 6);
-        }
-        else if (req_len >= 7 && strncmp((char *)req, "!output", 7) == 0) {
-            return access_json(TS_OUTPUT, 7);
-        }
-        else if (req_len >= 4 && strncmp((char *)req, "!rec", 4) == 0) {
-            return access_json(TS_REC, 4);
-        }
-        else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
-            return access_json(TS_CAL, 4);
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!exec", 5) == 0) {
-            return access_json(TS_EXEC, 5);
-        }
-        /*
-        else if (req_len >= 2 && strncmp((char *)req, "! ", 2) == 0) {
-            function = TS_ANY;
-            len_function = 2;
-        }*/
-        else if (req_len >= 4 && strncmp((char *)req, "!pub", 4) == 0) {
-            return pub_json();
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!auth", 5) == 0) {
-            return auth_json();
+        const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len - 1);
+
+        //printf("path = %.*s\n", path_len - 1, (char *)req + 1);
+
+        if (endpoint) {
+            //printf("endpoint: %s\n", endpoint->name);
+            if (endpoint->id == TS_AUTH) {
+                return auth_json();
+            }
+            else if (endpoint->id == TS_PUB) {
+                return pub_json();
+            }
+            else {
+                return access_json(endpoint->id, path_len);
+            }
         }
         else {
             return status_message_json(TS_STATUS_UNKNOWN_FUNCTION);
@@ -138,13 +128,18 @@ void ThingSet::set_conf_callback(void (*callback)(void))
     conf_callback = callback;
 }
 
-const DataNode* ThingSet::get_data_node(char *str, size_t len)
+const DataNode* ThingSet::get_data_node(const char *str, size_t len, uint16_t parent)
 {
-    //printf("get_data_node(%.*s)\n", len, str);
+    //printf("get_data_node(%.*s) par=%d\n", len, str, parent);
     for (unsigned int i = 0; i < num_nodes; i++) {
-        //printf("i=%d num_nodes=%d name=%s\n", i, num_nodes, data_nodes[i].name);
-        if (strncmp(data_nodes[i].name, str, len) == 0
-            && strlen(data_nodes[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
+        //printf("i=%d num_nodes=%d name=%s parent=%d\n", i, num_nodes,
+        //    data_nodes[i].name, data_nodes[i].parent);
+        if (data_nodes[i].parent != parent) {
+            continue;
+        }
+        else if (strncmp(data_nodes[i].name, str, len) == 0
+            && strlen(data_nodes[i].name) == len)  // otherwise e.g. foo and fooBar would be recognized as equal
+        {
             return &(data_nodes[i]);
         }
     }
@@ -161,12 +156,43 @@ const DataNode* ThingSet::get_data_node(uint16_t id)
     return NULL;
 }
 
-ts_pub_channel_t *ThingSet::get_pub_channel(char *name, size_t len)
+ts_pub_channel_t *ThingSet::get_pub_channel(const char *name, size_t len)
 {
     for (unsigned int i = 0; i < num_channels; i++) {
         if (strncmp(pub_channels[i].name, name, len) == 0
             && strlen(pub_channels[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
             return &(pub_channels[i]);
+        }
+    }
+    return NULL;
+}
+
+const DataNode *ThingSet::get_endpoint_node(const char *path, size_t len)
+{
+    const DataNode *node;
+    const char *start = path;
+    const char *end = strchr(path, '/');
+    uint16_t parent = 0;
+
+    // maximum depth of 10 assumed
+    for (int i = 0; i < 10; i++) {
+        if (end != NULL) {
+            if (end - path != len - 1) {
+                node = get_data_node(start, end - start, parent);
+                if (!node) {
+                    return NULL;
+                }
+                parent = node->id;
+                start = end + 1;
+                end = strchr(start, '/');
+            }
+            else {
+                // resource ends with trailing slash
+                return get_data_node(start, end - start, parent);
+            }
+        }
+        else {
+            return get_data_node(start, path + len - start, parent);
         }
     }
     return NULL;

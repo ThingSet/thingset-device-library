@@ -64,7 +64,8 @@ enum ts_type {
     TS_T_STRING,
     TS_T_ARRAY,
     TS_T_DECFRAC,       // CBOR decimal fraction
-    TS_T_PATH           // internal node to describe URI path
+    TS_T_PATH,          // internal node to describe URI path
+    TS_T_NODE_ID        // internally equal to uint16_t
 };
 
 /**
@@ -121,31 +122,31 @@ static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
     {_id, _parent, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
-#define TS_DATA_NODE_EXEC(_id, _name, _data_ptr, _acc) \
-    {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_EXEC(_id, _name, _function_ptr, _acc) \
+    {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_function_ptr), _name}
 
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_DATA_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc) \
     {_id, _parent, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
 
-#define TS_DATA_NODE_PATH(_id, _name, _parent) \
-    {_id, _parent, TS_READ_ALL, TS_T_PATH, 0, NULL, _name}
+#define TS_DATA_NODE_PATH(_id, _name, _parent, _callback) \
+    {_id, _parent, TS_READ_ALL, TS_T_PATH, 0, _function_to_void(_callback), _name}
 
 /*
  * This macro should be called first in the data_nodes array
  */
 #define TS_CATEGORIES_DATA_NODES \
-    TS_DATA_NODE_PATH(TS_INFO,   "info",   0),  \
-    TS_DATA_NODE_PATH(TS_CONF,   "conf",   0),  \
-    TS_DATA_NODE_PATH(TS_INPUT,  "input",  0),  \
-    TS_DATA_NODE_PATH(TS_OUTPUT, "output", 0),  \
-    TS_DATA_NODE_PATH(TS_REC,    "rec",    0),  \
-    TS_DATA_NODE_PATH(TS_CAL,    "cal",    0),  \
-    TS_DATA_NODE_PATH(TS_EXEC,   "exec",   0),  \
-    TS_DATA_NODE_PATH(TS_NAME,   "name",   0),  \
-    TS_DATA_NODE_PATH(TS_AUTH,   "auth",   0),  \
-    TS_DATA_NODE_PATH(TS_LOG,    "log",    0),  \
-    TS_DATA_NODE_PATH(TS_PUB,    "pub",    0)
+    TS_DATA_NODE_PATH(TS_INFO,   "info",   0, NULL),  \
+    TS_DATA_NODE_PATH(TS_CONF,   "conf",   0, NULL),  \
+    TS_DATA_NODE_PATH(TS_INPUT,  "input",  0, NULL),  \
+    TS_DATA_NODE_PATH(TS_OUTPUT, "output", 0, NULL),  \
+    TS_DATA_NODE_PATH(TS_REC,    "rec",    0, NULL),  \
+    TS_DATA_NODE_PATH(TS_CAL,    "cal",    0, NULL),  \
+    TS_DATA_NODE_PATH(TS_EXEC,   "exec",   0, NULL),  \
+    TS_DATA_NODE_PATH(TS_NAME,   "name",   0, NULL),  \
+    TS_DATA_NODE_PATH(TS_AUTH,   "auth",   0, NULL),  \
+    TS_DATA_NODE_PATH(TS_LOG,    "log",    0, NULL),  \
+    TS_DATA_NODE_PATH(TS_PUB,    "pub",    0, NULL)
 
 /*
  * Deprecate old macros
@@ -392,12 +393,14 @@ public:
 
     /**
      * Get data node by name
+     *
+     * As the names are not necessarily unique in the entire data tree, the parent is needed
      */
-    const DataNode *get_data_node(char *name, size_t len);
+    const DataNode *get_data_node(const char *name, size_t len, uint16_t parent);
 
     /** Get pub channel by name
      */
-    ts_pub_channel_t *get_pub_channel(char *name, size_t len);
+    ts_pub_channel_t *get_pub_channel(const char *name, size_t len);
 
     /**
      * Get pub channel by id
@@ -406,6 +409,11 @@ public:
     {
         return id < num_channels ? &pub_channels[id] : NULL;
     }
+
+    /**
+     * Get the endpoint node of a provided path, e.g. "conf"
+     */
+    const DataNode *get_endpoint_node(const char *path, size_t len);
 
 private:
     /**
@@ -472,6 +480,10 @@ private:
      * @returns length of status message in buffer or 0 in case of error
      */
     int status_message_json(int code);
+
+    int json_serialize_value(char *resp, size_t size, const DataNode *data_node);
+
+    int json_serialize_name_value(char *resp, size_t size, const DataNode* data_node);
 
     /**
      * Fill the resp buffer with a CBOR response status message

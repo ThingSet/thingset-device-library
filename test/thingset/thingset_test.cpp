@@ -45,8 +45,8 @@ int main()
     RUN_TEST(json_write_wrong_data_structure);
     RUN_TEST(json_write_array);
     RUN_TEST(json_write_readonly);
-    RUN_TEST(json_write_unknown);
-    RUN_TEST(json_wrong_category);
+    RUN_TEST(json_write_wrong_path);
+    RUN_TEST(json_write_unknown_node);
     RUN_TEST(json_read_array);
     RUN_TEST(json_read_rounded);
     RUN_TEST(json_list_input);
@@ -61,6 +61,7 @@ int main()
     RUN_TEST(json_auth_reset);
     RUN_TEST(json_pub_list);
     RUN_TEST(json_pub_enable);
+    RUN_TEST(json_get_endpoint_node);
 
     // CBOR only tests
     RUN_TEST(cbor_write_array);

@@ -27,7 +27,7 @@ int ThingSet::status_message_json(int code)
         pos = snprintf((char *)resp, resp_size, ":%d Unknown function.", code);
         break;
     case TS_STATUS_UNKNOWN_DATA_NODE:
-        pos = snprintf((char *)resp, resp_size, ":%d Data node not found.", code);
+        pos = snprintf((char *)resp, resp_size, ":%d Data node not found for given path.", code);
         break;
     case TS_STATUS_WRONG_FORMAT:
         pos = snprintf((char *)resp, resp_size, ":%d Wrong format.", code);
@@ -50,9 +50,6 @@ int ThingSet::status_message_json(int code)
     case TS_STATUS_INVALID_VALUE:
         pos = snprintf((char *)resp, resp_size, ":%d Invalid or too large value.", code);
         break;
-    case TS_STATUS_WRONG_CATEGORY:
-        pos = snprintf((char *)resp, resp_size, ":%d Wrong category.", code);
-        break;
     case TS_STATUS_UNSUPPORTED:
         pos = snprintf((char *)resp, resp_size, ":%d Unsupported request.", code);
         break;
@@ -72,9 +69,10 @@ int ThingSet::status_message_json(int code)
         return 0;
 }
 
-static int json_serialize_value(char *resp, size_t size, const DataNode *data_node)
+int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data_node)
 {
     size_t pos = 0;
+    const DataNode *sub_node;
 
     switch (data_node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -144,6 +142,12 @@ static int json_serialize_value(char *resp, size_t size, const DataNode *data_no
                 pos += snprintf(&resp[pos], size - pos, "%.*f,", data_node->detail,
                         ((float *)array_info->ptr)[i]);
                 break;
+            case TS_T_NODE_ID:
+                sub_node = get_data_node(((uint16_t *)array_info->ptr)[i]);
+                if (sub_node) {
+                    pos += snprintf(&resp[pos], size - pos, "\"%s\",", sub_node->name);
+                }
+                break;
             default:
                 break;
             }
@@ -161,7 +165,7 @@ static int json_serialize_value(char *resp, size_t size, const DataNode *data_no
     }
 }
 
-static int json_serialize_name_value(char *resp, size_t size, const DataNode* data_node)
+int ThingSet::json_serialize_name_value(char *resp, size_t size, const DataNode* data_node)
 {
     size_t pos = snprintf(resp, size, "\"%s\":", data_node->name);
 
@@ -279,7 +283,7 @@ int ThingSet::read_json(int category)
 
         const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start);
+            tokens[tok].end - tokens[tok].start, category);
 
         if (data_node == NULL) {
             return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
@@ -290,10 +294,6 @@ int ThingSet::read_json(int category)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
-        }
-
-        if (!(data_node->parent & category)) {
-            return status_message_json(TS_STATUS_WRONG_CATEGORY);
         }
 
         pos += json_serialize_value((char *)&resp[pos], resp_size - pos, data_node);
@@ -345,7 +345,7 @@ int ThingSet::write_json(int category)
 
         const DataNode* data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start);
+            tokens[tok].end - tokens[tok].start, category);
 
         if (data_node == NULL) {
             return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
@@ -357,10 +357,6 @@ int ThingSet::write_json(int category)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
-        }
-
-        if (data_node->parent != category) {
-            return status_message_json(TS_STATUS_WRONG_CATEGORY);
         }
 
         // extract the value and check buffer lengths
@@ -424,7 +420,7 @@ int ThingSet::write_json(int category)
 
         const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start);
+            tokens[tok].end - tokens[tok].start, category);
 
         // extract the value again (max. size was checked before)
         value_len = tokens[tok+1].end - tokens[tok+1].start;
@@ -514,7 +510,7 @@ int ThingSet::exec_json()
     }
 
     const DataNode *data_node = get_data_node(json_str + tokens[0].start,
-        tokens[0].end - tokens[0].start);
+        tokens[0].end - tokens[0].start, TS_EXEC);
     if (data_node == NULL) {
         return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
     }

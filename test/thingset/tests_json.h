@@ -34,7 +34,8 @@ void json_write_wrong_data_structure()
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf{\"f32\":54.3}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":35 Wrong format.", resp_buf);
+    //TEST_ASSERT_EQUAL_STRING(":35 Wrong format.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":33 Unknown function.", resp_buf);
 }
 
 void json_write_array()
@@ -49,26 +50,26 @@ void json_write_array()
 
 void json_write_readonly()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!info {\"i32_output\" : 52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output {\"i32_output\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
 }
 
-void json_wrong_category()
+void json_write_wrong_path()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!info {\"i32\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":42 Wrong category.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":34 Data node not found for given path.", resp_buf);
 }
 
-void json_write_unknown()
+void json_write_unknown_node()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i3\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":34 Data node not found.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":34 Data node not found for given path.", resp_buf);
 }
 
 void json_read_array()
@@ -264,4 +265,17 @@ void json_pub_enable()
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
     TEST_ASSERT_EQUAL(pub_channels[0].enabled, true);
+}
+
+void json_get_endpoint_node()
+{
+    const DataNode *node;
+
+    node = ts.get_endpoint_node("conf", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(node);
+    TEST_ASSERT_EQUAL(node->id, TS_CONF);
+
+    node = ts.get_endpoint_node("conf/", strlen("conf/"));
+    TEST_ASSERT_NOT_NULL(node);
+    TEST_ASSERT_EQUAL(node->id, TS_CONF);
 }
