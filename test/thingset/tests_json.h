@@ -68,7 +68,7 @@ void json_write_unknown()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i3\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":34 Data object not found.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":34 Data node not found.", resp_buf);
 }
 
 void json_read_array()

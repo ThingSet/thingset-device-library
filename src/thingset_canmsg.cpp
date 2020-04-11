@@ -21,7 +21,7 @@
 #define CAN_TS_T_FLOAT32 30
 #define CAN_TS_T_DECFRAC 36
 
-int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
+int ThingSet::encode_msg_can(const DataNode& data_node, uint8_t can_node_id,
                                 unsigned int& msg_id, uint8_t (&msg_data)[8])
 {
     int msg_len = -1;
@@ -32,7 +32,7 @@ int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
 
     msg_id = msg_priority << 26
         | (1U << 24) | (1U << 25)   // identify as publication message
-        | data_obj.id << 8
+        | data_node.id << 8
         | can_node_id;
 
     // first byte: TinyTP-header or data type for single frame message
@@ -43,20 +43,20 @@ int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
     uint32_t value_abs;
 
     // CBOR byte order: most significant byte first
-    switch (data_obj.type) {
+    switch (data_node.type) {
         case TS_T_FLOAT32:
             msg_len = 5;
             msg_data[0] |= CAN_TS_T_FLOAT32;
-            f2b.f = *((float*)data_obj.data);
+            f2b.f = *((float*)data_node.data);
             msg_data[1] = f2b.b[3];
             msg_data[2] = f2b.b[2];
             msg_data[3] = f2b.b[1];
             msg_data[4] = f2b.b[0];
             break;
         case TS_T_INT32:
-            if (data_obj.detail == 0) {
+            if (data_node.detail == 0) {
                     msg_len = 5;
-                    value = *((int*)data_obj.data);
+                    value = *((int*)data_node.data);
                     if (value >= 0) {
                         msg_data[0] |= CAN_TS_T_POS_INT32;
                         value_abs = abs(value);
@@ -76,16 +76,16 @@ int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
                 msg_data[1] = 0x82;     // array of length 2
 
                 // detail in single byte value, valid: -24 ... 23
-                uint8_t exponent_abs = abs(data_obj.detail);
-                if (data_obj.detail >= 0 && data_obj.detail <= 23) {
+                uint8_t exponent_abs = abs(data_node.detail);
+                if (data_node.detail >= 0 && data_node.detail <= 23) {
                     msg_data[2] = exponent_abs;
                 }
-                else if (data_obj.detail < 0 && data_obj.detail > -24) {
+                else if (data_node.detail < 0 && data_node.detail > -24) {
                     msg_data[2] = (exponent_abs - 1) | 0x20;      // negative uint8
                 }
 
                 // value as positive or negative uint32
-                value = *((int*)data_obj.data);
+                value = *((int*)data_node.data);
                 if (value >= 0) {
                     msg_data[3] = 0x1a;     // positive int32
                     value_abs = abs(value);
@@ -102,7 +102,7 @@ int ThingSet::encode_msg_can(const data_object_t& data_obj, uint8_t can_node_id,
             break;
         case TS_T_BOOL:
             msg_len = 1;
-            if (*((bool*)data_obj.data) == true) {
+            if (*((bool*)data_node.data) == true) {
                 msg_data[0] = CAN_TS_T_TRUE;     // simple type: true
             }
             else {

@@ -26,8 +26,8 @@ int ThingSet::status_message_json(int code)
     case TS_STATUS_UNKNOWN_FUNCTION:
         pos = snprintf((char *)resp, resp_size, ":%d Unknown function.", code);
         break;
-    case TS_STATUS_UNKNOWN_DATA_OBJ:
-        pos = snprintf((char *)resp, resp_size, ":%d Data object not found.", code);
+    case TS_STATUS_UNKNOWN_DATA_NODE:
+        pos = snprintf((char *)resp, resp_size, ":%d Data node not found.", code);
         break;
     case TS_STATUS_WRONG_FORMAT:
         pos = snprintf((char *)resp, resp_size, ":%d Wrong format.", code);
@@ -72,44 +72,44 @@ int ThingSet::status_message_json(int code)
         return 0;
 }
 
-static int json_serialize_value(char *resp, size_t size, const data_object_t *data_obj)
+static int json_serialize_value(char *resp, size_t size, const DataNode *data_node)
 {
     size_t pos = 0;
 
-    switch (data_obj->type) {
+    switch (data_node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)data_node->data));
         break;
     case TS_T_INT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi64 ",", *((int64_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi64 ",", *((int64_t *)data_node->data));
         break;
 #endif
     case TS_T_UINT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)data_node->data));
         break;
     case TS_T_INT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi32 ",", *((int32_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi32 ",", *((int32_t *)data_node->data));
         break;
     case TS_T_UINT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)data_node->data));
         break;
     case TS_T_INT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t *)data_node->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail,
-                *((float *)data_obj->data));
+        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_node->detail,
+                *((float *)data_node->data));
         break;
     case TS_T_BOOL:
         pos = snprintf(&resp[pos], size - pos, "%s,",
-                (*((bool *)data_obj->data) == true ? "true" : "false"));
+                (*((bool *)data_node->data) == true ? "true" : "false"));
         break;
     case TS_T_STRING:
-        pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_obj->data);
+        pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_node->data);
         break;
     case TS_T_ARRAY:
-        ArrayInfo *array_info = (ArrayInfo *)data_obj->data;
+        ArrayInfo *array_info = (ArrayInfo *)data_node->data;
         if (!array_info) {
             return 0;
         }
@@ -141,7 +141,7 @@ static int json_serialize_value(char *resp, size_t size, const data_object_t *da
                         ((int16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_FLOAT32:
-                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_obj->detail,
+                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_node->detail,
                         ((float *)array_info->ptr)[i]);
                 break;
             default:
@@ -161,12 +161,12 @@ static int json_serialize_value(char *resp, size_t size, const data_object_t *da
     }
 }
 
-static int json_serialize_name_value(char *resp, size_t size, const data_object_t* data_obj)
+static int json_serialize_name_value(char *resp, size_t size, const DataNode* data_node)
 {
-    size_t pos = snprintf(resp, size, "\"%s\":", data_obj->name);
+    size_t pos = snprintf(resp, size, "\"%s\":", data_node->name);
 
     if (pos < size) {
-        return pos + json_serialize_value(&resp[pos], size - pos, data_obj);
+        return pos + json_serialize_value(&resp[pos], size - pos, data_node);
     }
     else {
         return 0;
@@ -245,26 +245,26 @@ int ThingSet::read_json(int category)
             return status_message_json(TS_STATUS_WRONG_FORMAT);
         }
 
-        const data_object_t *data_obj = get_data_object(
+        const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start);
 
-        if (data_obj == NULL) {
-            return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
+        if (data_node == NULL) {
+            return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
         }
-        if (!( ((data_obj->access & TS_READ_MASK) == TS_READ_ALL) ||
-               (((data_obj->access & TS_READ_MASK) == TS_READ_USER) && user_authorized) ||
-               (((data_obj->access & TS_READ_MASK) == TS_READ_MAKER) && maker_authorized)
+        if (!( ((data_node->access & TS_READ_MASK) == TS_READ_ALL) ||
+               (((data_node->access & TS_READ_MASK) == TS_READ_USER) && user_authorized) ||
+               (((data_node->access & TS_READ_MASK) == TS_READ_MAKER) && maker_authorized)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
 
-        if (!(data_obj->category & category)) {
+        if (!(data_node->parent & category)) {
             return status_message_json(TS_STATUS_WRONG_CATEGORY);
         }
 
-        pos += json_serialize_value((char *)&resp[pos], resp_size - pos, data_obj);
+        pos += json_serialize_value((char *)&resp[pos], resp_size - pos, data_node);
 
         if (pos >= resp_size - 2) {
             return status_message_json(TS_STATUS_RESPONSE_TOO_LONG);
@@ -287,7 +287,7 @@ int ThingSet::write_json(int category)
 {
     int tok = 0;       // current token
 
-    // buffer for data object value (largest negative 64bit integer has 20 digits)
+    // buffer for data node value (largest negative 64bit integer has 20 digits)
     char value_buf[21];
     size_t value_len;   // length of value in buffer
 
@@ -311,30 +311,30 @@ int ThingSet::write_json(int category)
             return status_message_json(TS_STATUS_WRONG_FORMAT);
         }
 
-        const data_object_t* data_obj = get_data_object(
+        const DataNode* data_node = get_data_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start);
 
-        if (data_obj == NULL) {
-            return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
+        if (data_node == NULL) {
+            return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
         }
 
-        if (!( ((data_obj->access & TS_WRITE_MASK) == TS_WRITE_ALL) ||
-               (((data_obj->access & TS_WRITE_MASK) == TS_WRITE_USER) && user_authorized) ||
-               (((data_obj->access & TS_WRITE_MASK) == TS_WRITE_MAKER) && maker_authorized)
+        if (!( ((data_node->access & TS_WRITE_MASK) == TS_WRITE_ALL) ||
+               (((data_node->access & TS_WRITE_MASK) == TS_WRITE_USER) && user_authorized) ||
+               (((data_node->access & TS_WRITE_MASK) == TS_WRITE_MAKER) && maker_authorized)
            ))
         {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
 
-        if (data_obj->category != category) {
+        if (data_node->parent != category) {
             return status_message_json(TS_STATUS_WRONG_CATEGORY);
         }
 
         // extract the value and check buffer lengths
         value_len = tokens[tok+1].end - tokens[tok+1].start;
-        if ((data_obj->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
-            (data_obj->type == TS_T_STRING && value_len >= (size_t)data_obj->detail)) {
+        if ((data_node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
+            (data_node->type == TS_T_STRING && value_len >= (size_t)data_node->detail)) {
             return status_message_json(TS_STATUS_INVALID_VALUE);
         } else {
             strncpy(value_buf, &json_str[tokens[tok+1].start], value_len);
@@ -342,13 +342,13 @@ int ThingSet::write_json(int category)
         }
 
         errno = 0;
-        if (data_obj->type == TS_T_STRING) {
+        if (data_node->type == TS_T_STRING) {
             if (tokens[tok+1].type != JSMN_STRING) {
                 return status_message_json(TS_STATUS_WRONG_TYPE);
             }
-            // data object buffer length already checked above
+            // data node buffer length already checked above
         }
-        else if (data_obj->type == TS_T_BOOL) {
+        else if (data_node->type == TS_T_BOOL) {
             if (!(value_buf[0] == 't' || value_buf[0] == '1' || value_buf[0] == 'f' ||
                 value_buf[0] == '0'))
             {
@@ -359,19 +359,19 @@ int ThingSet::write_json(int category)
             if (tokens[tok+1].type != JSMN_PRIMITIVE) {
                 return status_message_json(TS_STATUS_WRONG_TYPE);
             }
-            if (data_obj->type == TS_T_FLOAT32) {
+            if (data_node->type == TS_T_FLOAT32) {
                 strtod(value_buf, NULL);
             }
-            else if (data_obj->type == TS_T_UINT32 || data_obj->type == TS_T_UINT16) {
+            else if (data_node->type == TS_T_UINT32 || data_node->type == TS_T_UINT16) {
                 strtoul(value_buf, NULL, 0);
             }
-            else if (data_obj->type == TS_T_INT32 || data_obj->type == TS_T_INT16) {
+            else if (data_node->type == TS_T_INT32 || data_node->type == TS_T_INT16) {
                 strtol(value_buf, NULL, 0);
             }
-            else if (data_obj->type == TS_T_UINT64) {
+            else if (data_node->type == TS_T_UINT64) {
                 strtoull(value_buf, NULL, 0);
             }
-            else if (data_obj->type == TS_T_INT64) {
+            else if (data_node->type == TS_T_INT64) {
                 strtoll(value_buf, NULL, 0);
             }
 
@@ -390,7 +390,7 @@ int ThingSet::write_json(int category)
     // actually write data
     while (tok + 1 < tok_count) {
 
-        const data_object_t *data_obj = get_data_object(
+        const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start);
 
@@ -401,39 +401,39 @@ int ThingSet::write_json(int category)
             value_buf[value_len] = '\0';
         }
 
-        switch (data_obj->type) {
+        switch (data_node->type) {
         case TS_T_FLOAT32:
-            *((float*)data_obj->data) = strtod(value_buf, NULL);
+            *((float*)data_node->data) = strtod(value_buf, NULL);
             break;
         case TS_T_UINT64:
-            *((uint64_t*)data_obj->data) = strtoull(value_buf, NULL, 0);
+            *((uint64_t*)data_node->data) = strtoull(value_buf, NULL, 0);
             break;
         case TS_T_INT64:
-            *((int64_t*)data_obj->data) = strtoll(value_buf, NULL, 0);
+            *((int64_t*)data_node->data) = strtoll(value_buf, NULL, 0);
             break;
         case TS_T_UINT32:
-            *((uint32_t*)data_obj->data) = strtoul(value_buf, NULL, 0);
+            *((uint32_t*)data_node->data) = strtoul(value_buf, NULL, 0);
             break;
         case TS_T_INT32:
-            *((int32_t*)data_obj->data) = strtol(value_buf, NULL, 0);
+            *((int32_t*)data_node->data) = strtol(value_buf, NULL, 0);
             break;
         case TS_T_UINT16:
-            *((uint16_t*)data_obj->data) = strtoul(value_buf, NULL, 0);
+            *((uint16_t*)data_node->data) = strtoul(value_buf, NULL, 0);
             break;
         case TS_T_INT16:
-            *((uint16_t*)data_obj->data) = strtol(value_buf, NULL, 0);
+            *((uint16_t*)data_node->data) = strtol(value_buf, NULL, 0);
             break;
         case TS_T_BOOL:
             if (value_buf[0] == 't' || value_buf[0] == '1') {
-                *((bool*)data_obj->data) = true;
+                *((bool*)data_node->data) = true;
             }
             else if (value_buf[0] == 'f' || value_buf[0] == '0') {
-                *((bool*)data_obj->data) = false;
+                *((bool*)data_node->data) = false;
             }
             break;
         case TS_T_STRING:
-            strncpy((char*)data_obj->data, &json_str[tokens[tok+1].start], value_len);
-            ((char*)data_obj->data)[value_len] = '\0';
+            strncpy((char*)data_node->data, &json_str[tokens[tok+1].start], value_len);
+            ((char*)data_node->data)[value_len] = '\0';
             break;
         }
         tok += 2;   // map expected --> always one string + one value
@@ -449,18 +449,18 @@ int ThingSet::list_json(int category, bool values)
 
     len += sprintf((char *)&resp[len], values ? " {" : " [");
 
-    for (unsigned int i = 0; i < num_objects; i++) {
-        if ((data_objects[i].access & TS_READ_ALL) &&
-            (data_objects[i].category == category))
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if ((data_nodes[i].access & TS_READ_ALL) &&
+            (data_nodes[i].parent == category))
         {
             if (values) {
                 len += json_serialize_name_value((char *)&resp[len], resp_size - len,
-                    &data_objects[i]);
+                    &data_nodes[i]);
             }
             else {
                 len += snprintf((char *)&resp[len],
                     resp_size - len,
-                    "\"%s\",", data_objects[i].name);
+                    "\"%s\",", data_nodes[i].name);
             }
 
             if (len >= resp_size - 1) {
@@ -481,21 +481,21 @@ int ThingSet::exec_json()
         return status_message_json(TS_STATUS_WRONG_FORMAT);
     }
 
-    const data_object_t *data_obj = get_data_object(json_str + tokens[0].start,
+    const DataNode *data_node = get_data_node(json_str + tokens[0].start,
         tokens[0].end - tokens[0].start);
-    if (data_obj == NULL) {
-        return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
+    if (data_node == NULL) {
+        return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
     }
-    if (!( ((data_obj->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
-            (((data_obj->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
-            (((data_obj->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
+    if (!( ((data_node->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
+            (((data_node->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
+            (((data_node->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
         ))
     {
         return status_message_json(TS_STATUS_UNAUTHORIZED);
     }
 
     // create function pointer and call function
-    void (*fun)(void) = reinterpret_cast<void(*)()>(data_obj->data);
+    void (*fun)(void) = reinterpret_cast<void(*)()>(data_node->data);
     fun();
 
     return status_message_json(TS_STATUS_SUCCESS);
@@ -512,12 +512,12 @@ int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
 
     for (unsigned int element = 0; element < pub_channels[channel].num; element++) {
 
-        const data_object_t* data_obj = get_data_object(pub_channels[channel].object_ids[element]);
-        if (data_obj == NULL || !(data_obj->access & TS_READ_ALL)) {
+        const DataNode* data_node = get_data_node(pub_channels[channel].object_ids[element]);
+        if (data_node == NULL || !(data_node->access & TS_READ_ALL)) {
             continue;
         }
 
-        len += json_serialize_name_value(&msg_buf[len], size - len, data_obj);
+        len += json_serialize_name_value(&msg_buf[len], size - len, data_node);
 
         if (len >= size - 1) {
             return 0;
@@ -617,7 +617,7 @@ int ThingSet::pub_json()
             tokens[1].end - tokens[1].start);
 
         if (pub_ch == NULL) {
-            return status_message_json(TS_STATUS_UNKNOWN_DATA_OBJ);
+            return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
         }
 
         if (tokens[2].type == JSMN_PRIMITIVE) {

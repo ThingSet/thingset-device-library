@@ -16,14 +16,13 @@
 /*
  * Protocol functions / categories
  */
-// function + data object category
+// function + data node category
 #define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
 #define TS_CONF     0x02       // configurable settings
 #define TS_INPUT    0x03       // input data (e.g. set-points)
 #define TS_OUTPUT   0x04       // output data (e.g. measurement values)
 #define TS_REC      0x05       // recorded data (history-dependent)
 #define TS_CAL      0x06       // calibration
-#define TS_ANY      0x09       // any of above non-exec categories 0x01-0x08
 #define TS_EXEC     0x0B       // RPC / function call
 // function only
 #define TS_NAME     0x0E
@@ -38,7 +37,7 @@
 #define TS_STATUS_SUCCESS            0
 #define TS_STATUS_ERROR             32
 #define TS_STATUS_UNKNOWN_FUNCTION  33    // Function ID unknown
-#define TS_STATUS_UNKNOWN_DATA_OBJ  34    // Data Object ID unknown
+#define TS_STATUS_UNKNOWN_DATA_NODE 34    // Data node ID unknown
 #define TS_STATUS_WRONG_FORMAT      35
 #define TS_STATUS_WRONG_TYPE        36    // Data type not supported
 #define TS_STATUS_DEVICE_BUSY       37    // Device busy
@@ -64,7 +63,8 @@ enum ts_type {
     TS_T_FLOAT32,
     TS_T_STRING,
     TS_T_ARRAY,
-    TS_T_DECFRAC       // CBOR decimal fraction
+    TS_T_DECFRAC,       // CBOR decimal fraction
+    TS_T_PATH           // internal node to describe URI path
 };
 
 /**
@@ -78,58 +78,124 @@ typedef struct {
 } ArrayInfo;
 
 /*
- * Functions to generate data_object map and make compiler complain if wrong
+ * Functions to generate data_node map and make compiler complain if wrong
  * type is passed
  */
 
-#define TS_DATA_OBJ_ID_CHECK(_id) TS_DATA_OBJ_ID_TEMP_##_id
+#define TS_DATA_NODE_ID_CHECK(_id) TS_DATA_NODE_ID_TEMP_##_id
 
 static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_BOOL(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_BOOL, 0, _bool_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_BOOL, 0, _bool_to_void(_data_ptr), _name}
 
 static inline void *_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT64(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT64, 0, _uint64_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_UINT64, 0, _uint64_to_void(_data_ptr), _name}
 
 static inline void *_int64_to_void(int64_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT64(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT64, 0, _int64_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_INT64(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_INT64, 0, _int64_to_void(_data_ptr), _name}
 
 static inline void *_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT32(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT32, 0, _uint32_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_UINT32, 0, _uint32_to_void(_data_ptr), _name}
 
 static inline void *_int32_to_void(int32_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT32(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT32, 0, _int32_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_INT32(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_INT32, 0, _int32_to_void(_data_ptr), _name}
 
 static inline void *_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT16(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT16, 0, _uint16_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_UINT16, 0, _uint16_to_void(_data_ptr), _name}
 
 static inline void *_int16_to_void(int16_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT16(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT16, 0, _int16_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_INT16(_id, _name, _data_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_INT16, 0, _int16_to_void(_data_ptr), _name}
 
 static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_FLOAT(_id, _name, _data_ptr, _digits, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_FLOAT32, _digits, _float_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_FLOAT32, _digits, _float_to_void(_data_ptr), _name}
 
 static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_STRING(_id, _name, _data_ptr, _buf_size, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
-#define TS_DATA_OBJ_EXEC(_id, _name, _data_ptr, _acc) \
+#define TS_DATA_NODE_EXEC(_id, _name, _data_ptr, _acc) \
     {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_data_ptr), _name}
 
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
-#define TS_DATA_OBJ_ARRAY(_id, _name, _data_ptr, _digits, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
+#define TS_DATA_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
+
+#define TS_DATA_NODE_PATH(_id, _name, _parent) \
+    {_id, _parent, TS_READ_ALL, TS_T_PATH, 0, NULL, _name}
 
 /*
- * Internal access rights to data objects
+ * This macro should be called first in the data_nodes array
+ */
+#define TS_CATEGORIES_DATA_NODES \
+    TS_DATA_NODE_PATH(TS_INFO,   "info",   0),  \
+    TS_DATA_NODE_PATH(TS_CONF,   "conf",   0),  \
+    TS_DATA_NODE_PATH(TS_INPUT,  "input",  0),  \
+    TS_DATA_NODE_PATH(TS_OUTPUT, "output", 0),  \
+    TS_DATA_NODE_PATH(TS_REC,    "rec",    0),  \
+    TS_DATA_NODE_PATH(TS_CAL,    "cal",    0),  \
+    TS_DATA_NODE_PATH(TS_EXEC,   "exec",   0),  \
+    TS_DATA_NODE_PATH(TS_NAME,   "name",   0),  \
+    TS_DATA_NODE_PATH(TS_AUTH,   "auth",   0),  \
+    TS_DATA_NODE_PATH(TS_LOG,    "log",    0),  \
+    TS_DATA_NODE_PATH(TS_PUB,    "pub",    0)
+
+/*
+ * Deprecate old macros
+ */
+#define TS_DATA_OBJ_BOOL _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_BOOL
+
+#define TS_DATA_OBJ_UINT64 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_UINT64
+
+#define TS_DATA_OBJ_INT64 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_INT64
+
+#define TS_DATA_OBJ_UINT32 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_UINT32
+
+#define TS_DATA_OBJ_INT32 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_INT32
+
+#define TS_DATA_OBJ_UINT16 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_UINT16
+
+#define TS_DATA_OBJ_INT16 _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_INT16
+
+#define TS_DATA_OBJ_FLOAT _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_FLOAT
+
+#define TS_DATA_OBJ_STRING _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_STRING
+
+#define TS_DATA_OBJ_EXEC _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_EXEC
+
+#define TS_DATA_OBJ_ARRAY _Pragma \
+    ("GCC warning \"TS_DATA_NODE_... macros are deprecated. Use TS_DATA_NODE_... instead!\"") \
+    TS_DATA_NODE_ARRAY
+
+/*
+ * Internal access rights to data nodes
  */
 #define TS_READ_ALL     (0x1U << 0)     // read access for all
 #define TS_READ_USER    (0x3U << 0)     // read after authentication as normal user
@@ -154,18 +220,19 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_ACCESS_EXEC          TS_EXEC_ALL
 #define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
 
-/** ThingSet data object struct
+/**
+ * ThingSet data node struct
  */
-typedef struct data_object_t {
+typedef struct DataNode {
     /**
-     * Data Object ID
+     * Data node ID
      */
     const uint16_t id;
 
     /**
-     * One of TS_INFO, TS_CONF, ...
+     * ID of parent node
      */
-    const uint16_t category;
+    const uint16_t parent;
 
     /**
      * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
@@ -191,17 +258,20 @@ typedef struct data_object_t {
     void *data;
 
     /**
-     * Data Object name
+     * Data Nnode name
      */
     const char *name;
-} data_object_t;
+} DataNode;
+
+/* old naming convention of structs with _t is deprecated and will be removed in the future */
+__attribute__((deprecated)) typedef DataNode data_object_t;
 
 /**
- * Container for data object publication channel
+ * Container for data node publication channel
  */
 typedef struct {
     const char *name;           ///< Publication channel name
-    const uint16_t *object_ids; ///< Array of data object IDs
+    const uint16_t *object_ids; ///< Array of data node IDs
     const size_t num;           ///< Number of objects
     bool enabled;               ///< Enabled/disabled status
 } ts_pub_channel_t;
@@ -210,8 +280,8 @@ typedef struct {
 class ThingSet
 {
 public:
-    ThingSet(const data_object_t *data, size_t num);
-    ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch);
+    ThingSet(const DataNode *data, size_t num);
+    ThingSet(const DataNode *data, size_t num_nd, ts_pub_channel_t *channels, size_t num_ch);
     ~ThingSet();
 
     /**
@@ -263,11 +333,11 @@ public:
     int pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel);
 
     /**
-     * Generates a publication message in CBOR format for supplied list of data object IDs
+     * Generates a publication message in CBOR format for supplied list of data node IDs
      *
      * @param msg_buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param pub_list Array of data object IDs to be published
+     * @param pub_list Array of data node IDs to be published
      * @param num_elements Number of elements in the pub_list array
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
@@ -275,21 +345,21 @@ public:
     int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
 
     /**
-     * Encodes a publication message in CAN message format for supplied data object
+     * Encodes a publication message in CAN message format for supplied data node
      *
      * @param can_node_id id of the can node
      * @param msg_id reference to can message id storage
-     * @param data_object reference to data object to be published
+     * @param data_node reference to data node to be published
      * @param msg_data reference to the buffer where the publication message should be stored
      *
      * @returns Actual length of the message_data, or -1 if not encodable / in case of error,
      *          message length otherwise. msg_len 0 is valid, just the id is transmitted
      */
-    int encode_msg_can(const data_object_t& object, uint8_t can_node_id, unsigned int& msg_id,
+    int encode_msg_can(const DataNode& object, uint8_t can_node_id, unsigned int& msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
-     * Initialize data objects based on values stored in EEPROM
+     * Initialize data nodes based on values stored in EEPROM
      *
      * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data
      *                  objects
@@ -300,19 +370,19 @@ public:
     int init_cbor(uint8_t *cbor_data, size_t len);
 
     /**
-     * Set function to be called when data objects of conf category were changed
+     * Set function to be called when data nodes of conf category were changed
      */
     void set_conf_callback(void (*callback)(void));
 
     /**
-     * Get data object by ID
+     * Get data node by ID
      */
-    const data_object_t *get_data_object(uint16_t id);
+    const DataNode *get_data_node(uint16_t id);
 
     /**
-     * Get data object by name
+     * Get data node by name
      */
-    const data_object_t *get_data_object(char *name, size_t len);
+    const DataNode *get_data_node(char *name, size_t len);
 
     /** Get pub channel by name
      */
@@ -328,47 +398,47 @@ public:
 
 private:
     /**
-     * Parser preparation and calling of the different data object access functions read/write/list
+     * Parser preparation and calling of the different data node access functions read/write/list
      */
     int access_json(int category, size_t pos);
 
     /**
-     * List data objects in text mode (function called with empty argument)
+     * List data nodes in text mode (function called with empty argument)
      */
     int list_json(int category, bool values = false);
 
     /**
-     * List data objects in binary mode (function called with empty argument)
+     * List data nodes in binary mode (function called with empty argument)
      */
     int list_cbor(int category, bool values = false, bool ids_only = true);
 
     /**
-     * Read data object values in text mode (function called with an array as argument)
+     * Read data node values in text mode (function called with an array as argument)
      */
     int read_json(int category);
 
     /**
-     * Read data object values in binary mode (function called with an array as argument)
+     * Read data node values in binary mode (function called with an array as argument)
      */
     int read_cbor(int category);
 
     /**
-     * Write data object values in text mode (function called with a map as argument)
+     * Write data node values in text mode (function called with a map as argument)
      */
     int write_json(int category);
 
     /**
-     * Write data object values in binary mode (function called with a map as argument)
+     * Write data node values in binary mode (function called with a map as argument)
      */
     int write_cbor(int category, bool ignore_access);
 
     /**
-     * Execute command in text mode (function called with a single data object name as argument)
+     * Execute command in text mode (function called with a single data node name as argument)
      */
     int exec_json();
 
     /**
-     * Execute command in binary mode (function called with a single data object name/id as argument)
+     * Execute command in binary mode (function called with a single data node name/id as argument)
      */
     int exec_cbor();
 
@@ -400,8 +470,8 @@ private:
      */
     int status_message_cbor(uint8_t code);
 
-    const data_object_t *data_objects;
-    size_t num_objects;
+    const DataNode *data_nodes;
+    size_t num_nodes;
 
     ts_pub_channel_t *pub_channels;
     size_t num_channels;

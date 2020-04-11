@@ -364,7 +364,7 @@ void cbor_exec()
 
     req_buf[0] = TS_EXEC;     // function ID for exec
     req_buf[1] = 0x19;     // uint16 follows
-    req_buf[2] = 0x50;     // data object ID 0x5001
+    req_buf[2] = 0x50;     // data node ID 0x5001
     req_buf[3] = 0x01;
 
     ts.process(req_buf, 4, resp_buf, TS_RESP_BUFFER_LEN);
@@ -411,7 +411,7 @@ void cbor_serialize_long_string()
 
 
 /*
-void cbor_get_data_object_name()
+void cbor_get_data_node_name()
 {
     char req[3] = { TS_OBJ_NAME, 0x01, 0x00 };   // Obj ID 1
     char resp[100];

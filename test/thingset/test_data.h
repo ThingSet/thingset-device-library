@@ -4,8 +4,8 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#ifndef DATA_OBJECTS_H
-#define DATA_OBJECTS_H
+#ifndef TEST_DATA_H
+#define TEST_DATA_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -87,55 +87,58 @@ ArrayInfo float32_array = {B, 0, 0, 0};
 
 void dummy(void);
 
-static const data_object_t dataObjects[] = {
+static const DataNode data_nodes[] = {
+
+    // generates the parent nodes for subsequent data nodes
+    TS_CATEGORIES_DATA_NODES,
 
     // info
 
-    TS_DATA_OBJ_STRING(0x1001, "manufacturer", manufacturer, 0,
+    TS_DATA_NODE_STRING(0x1001, "manufacturer", manufacturer, 0,
         TS_INFO, TS_READ_ALL),
 
     // input data
 
-    TS_DATA_OBJ_BOOL(0x3001, "loadEnTarget", &cal.load_enabled_target,
+    TS_DATA_NODE_BOOL(0x3001, "loadEnTarget", &cal.load_enabled_target,
         TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
 
-    TS_DATA_OBJ_BOOL(0x3002, "usbEnTarget", &cal.usb_enabled_target,
+    TS_DATA_NODE_BOOL(0x3002, "usbEnTarget", &cal.usb_enabled_target,
         TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
 
     // output data
 
-    TS_DATA_OBJ_INT32(0x4001, "i32_output", &i32,
+    TS_DATA_NODE_INT32(0x4001, "i32_output", &i32,
         TS_OUTPUT, TS_READ_ALL),
 
     // rpc / exec
 
-    TS_DATA_OBJ_EXEC(0x5001, "dummy", &dummy, TS_EXEC_ALL),
+    TS_DATA_NODE_EXEC(0x5001, "dummy", &dummy, TS_EXEC_ALL),
 
     // configuration data
 
-    TS_DATA_OBJ_UINT64(0x6001, "ui64", &ui64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_INT64(0x6002, "i64", &i64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_UINT32(0x6003, "ui32", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_INT32(0x6004, "i32", &i32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_UINT16(0x6005, "ui16", &ui16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_INT16(0x6006, "i16", &i16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_FLOAT(0x6007, "f32", &f32, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    TS_DATA_OBJ_BOOL(0x6008, "bool", &b, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT64(0x6001, "ui64", &ui64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_INT64(0x6002, "i64", &i64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT32(0x6003, "ui32", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_INT32(0x6004, "i32", &i32, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT16(0x6005, "ui16", &ui16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_INT16(0x6006, "i16", &i16, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_FLOAT(0x6007, "f32", &f32, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_BOOL(0x6008, "bool", &b, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 
-    TS_DATA_OBJ_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf),
+    TS_DATA_NODE_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf),
         TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 
-    TS_DATA_OBJ_FLOAT(0x600A, "f32_rounded", &f32, 0,
+    TS_DATA_NODE_FLOAT(0x600A, "f32_rounded", &f32, 0,
         TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 
-    TS_DATA_OBJ_UINT32(0x7001, "secret_user", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_USER),
-    TS_DATA_OBJ_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER),
-    TS_DATA_OBJ_ARRAY(0x7003, "arrayi32", &int32_array, 0, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
-    // data_obj->detail will specify the number of decimal places for float
-    TS_DATA_OBJ_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT32(0x7001, "secret_user", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_USER),
+    TS_DATA_NODE_UINT32(0x7002, "secret_maker", &ui32, TS_CONF, TS_READ_ALL | TS_WRITE_MAKER),
+    TS_DATA_NODE_ARRAY(0x7003, "arrayi32", &int32_array, 0, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+    // data_node->detail will specify the number of decimal places for float
+    TS_DATA_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 };
 
-static const uint16_t pub_data_objects[] = {
+static const uint16_t pub_data_nodes[] = {
         #if TS_64BIT_TYPES_SUPPORT
         0x6001,
         0x6002,
@@ -150,7 +153,7 @@ static const uint16_t pub_data_objects[] = {
 };
 
 static ts_pub_channel_t pub_channels[] = {
-    { "Serial_1s", pub_data_objects, sizeof(pub_data_objects)/sizeof(uint16_t), false }
+    { "Serial_1s", pub_data_nodes, sizeof(pub_data_nodes)/sizeof(uint16_t), false }
 };
 
 #endif

@@ -14,29 +14,29 @@
 
 #define DEBUG 0
 
-static void _check_id_duplicates(const data_object_t *data, size_t num)
+static void _check_id_duplicates(const DataNode *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         for (unsigned int j = i + 1; j < num; j++) {
             if (data[i].id == data[j].id) {
-                printf("ThingSet error: Duplicate data object ID 0x%X.\n", data[i].id);
+                printf("ThingSet error: Duplicate data node ID 0x%X.\n", data[i].id);
             }
         }
     }
 }
 
-ThingSet::ThingSet(const data_object_t *data, size_t num)
+ThingSet::ThingSet(const DataNode *data, size_t num)
 {
     _check_id_duplicates(data, num);
-    data_objects = data;
-    num_objects = num;
+    data_nodes = data;
+    num_nodes = num;
 }
 
-ThingSet::ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch)
+ThingSet::ThingSet(const DataNode *data, size_t num_nd, ts_pub_channel_t *channels, size_t num_ch)
 {
-    _check_id_duplicates(data, num_obj);
-    data_objects = data;
-    num_objects = num_obj;
+    _check_id_duplicates(data, num_nd);
+    data_nodes = data;
+    num_nodes = num_nd;
     pub_channels = channels;
     num_channels = num_ch;
 }
@@ -78,7 +78,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
             }
             return len;
         }
-        else {  // array or single data object
+        else {  // array or single data node
             if (req[0] == TS_EXEC) {
                 return exec_cbor();
             }
@@ -138,24 +138,24 @@ void ThingSet::set_conf_callback(void (*callback)(void))
     conf_callback = callback;
 }
 
-const data_object_t* ThingSet::get_data_object(char *str, size_t len)
+const DataNode* ThingSet::get_data_node(char *str, size_t len)
 {
-    //printf("get_data_object(%.*s)\n", len, str);
-    for (unsigned int i = 0; i < num_objects; i++) {
-        //printf("i=%d num_obj=%d name=%s\n", i, num_objects, data_objects[i].name);
-        if (strncmp(data_objects[i].name, str, len) == 0
-            && strlen(data_objects[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
-            return &(data_objects[i]);
+    //printf("get_data_node(%.*s)\n", len, str);
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        //printf("i=%d num_nodes=%d name=%s\n", i, num_nodes, data_nodes[i].name);
+        if (strncmp(data_nodes[i].name, str, len) == 0
+            && strlen(data_nodes[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
+            return &(data_nodes[i]);
         }
     }
     return NULL;
 }
 
-const data_object_t* ThingSet::get_data_object(uint16_t id)
+const DataNode* ThingSet::get_data_node(uint16_t id)
 {
-    for (unsigned int i = 0; i < num_objects; i++) {
-        if (data_objects[i].id == id) {
-            return &(data_objects[i]);
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].id == id) {
+            return &(data_nodes[i]);
         }
     }
     return NULL;

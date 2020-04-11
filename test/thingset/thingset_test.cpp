@@ -27,7 +27,7 @@ uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 #include "tests_cbor.h"
 #include "tests_common.h"
 
-ThingSet ts(dataObjects, sizeof(dataObjects)/sizeof(data_object_t));
+ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
 
 int main()
 {
