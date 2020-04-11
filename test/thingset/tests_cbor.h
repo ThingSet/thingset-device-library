@@ -43,7 +43,7 @@ void cbor_write_array()
 
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
 void cbor_read_array()
@@ -76,11 +76,11 @@ void cbor_read_array()
 
     char cbor_resp_hex[] =
         #if TS_64BIT_TYPES_SUPPORT
-        "80 89 "     // successful response: array with 9 elements
+        "85 89 "     // successful response: array with 9 elements
         "01 "                  // value 1
         "02 "
         #else
-        "80 87 "     // successful response: array with 7 elements
+        "85 87 "     // successful response: array with 7 elements
         #endif
         "03 "
         "04 "
@@ -120,7 +120,7 @@ void cbor_write_int32_array()
 
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
 void cbor_read_int32_array()
@@ -141,7 +141,7 @@ void cbor_read_int32_array()
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "80 "     // successful response:
+        "85 "     // successful response:
         "84 04 02 08 04 ";
 
     uint8_t cbor_resp[100];
@@ -175,7 +175,7 @@ void cbor_write_float_array()
 
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
 void cbor_read_float_array()
@@ -196,7 +196,7 @@ void cbor_read_float_array()
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "80 "     // successful response:
+        "85 "     // successful response:
         "82 FA 40 11 15 40 FA 40 5C 71 E1 ";
 
     uint8_t cbor_resp[100];
@@ -223,7 +223,7 @@ void cbor_read_rounded()
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
 
-    char cbor_resp_hex[] = "80 08 ";
+    char cbor_resp_hex[] = "85 08 ";
 
     uint8_t cbor_resp[100];
     len = strlen(cbor_resp_hex);
@@ -250,7 +250,7 @@ void cbor_write_rounded()
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
 
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
     f32 = tmp;
 }
@@ -263,7 +263,7 @@ void cbor_list_ids_input()
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "80 82 "     // successful response: array with 2 elements
+        "85 82 "     // successful response: array with 2 elements
         "19 30 01 "
         "19 30 02 ";
 
@@ -285,7 +285,7 @@ void cbor_list_names_input()
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "80 82 "     // successful response: array with 2 elements
+        "85 82 "     // successful response: array with 2 elements
         "6C 6C 6F 61 64 45 6E 54 61 72 67 65 74 "
         "6B 75 73 62 45 6E 54 61 72 67 65 74 ";
 
@@ -307,7 +307,7 @@ void cbor_list_names_values_input()
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "80 A2 "     // successful response: map with 2 elements
+        "85 A2 "     // successful response: map with 2 elements
         "6C 6C 6F 61 64 45 6E 54 61 72 67 65 74 "
         "F4 "   // false
         "6B 75 73 62 45 6E 54 61 72 67 65 74 "
@@ -369,7 +369,7 @@ void cbor_exec()
 
     ts.process(req_buf, 4, resp_buf, TS_RESP_BUFFER_LEN);
 
-    TEST_ASSERT_EQUAL(0, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_VALID, resp_buf[0]);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
@@ -450,6 +450,6 @@ void test_list_small_buffer()
 
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL(TS_LIST + 128, resp[0]);
-    TEST_ASSERT_EQUAL(TS_STATUS_RESPONSE_TOO_LONG, resp[1]);
+    TEST_ASSERT_EQUAL(TS_STATUS_RESPONSE_TOO_LARGE, resp[1]);
 }
 */

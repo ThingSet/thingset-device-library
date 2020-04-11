@@ -21,7 +21,7 @@ void _write_json(char const *name, char const *value)
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"%s\":%s}", name, value);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 }
 
 int _read_json(char const *name, char *value_read)
@@ -30,14 +30,15 @@ int _read_json(char const *name, char *value_read)
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
 
+    int pos_dot = strchr((char *)resp_buf, '.') - (char *)resp_buf + 1;
     char buf[100];
-    strncpy(buf, (char *)resp_buf, 11);
-    buf[11] = '\0';
+    strncpy(buf, (char *)resp_buf, pos_dot);
+    buf[pos_dot] = '\0';
     //printf("buf: %s, resp: %s\n", buf, resp_buf);
 
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content.", buf);
 
-    return snprintf(value_read, strlen((char *)resp_buf) - 11, "%s", resp_buf + 12);
+    return snprintf(value_read, strlen((char *)resp_buf) - pos_dot, "%s", resp_buf + pos_dot + 1);
 }
 
 // returns length of read value
@@ -51,7 +52,7 @@ int _read_cbor(uint16_t id, char *value_read)
     size_t req_len = 4;
     ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     //printf("TEST: Read request len: %d, response len: %d, resp code:%d\n", req_len, resp_len, resp_buf[0]);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CONTENT, resp_buf[0]);
     //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp_len);
 
     int value_len = cbor_size((uint8_t*)resp_buf + 1);
@@ -73,7 +74,7 @@ void _write_cbor(uint16_t id, char *value)
     memcpy(req_buf + 5, value, len);
     size_t req_len = len + 5;
     ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_SUCCESS, resp_buf[0] - 0x80);
+    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
 void _json2cbor(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex)

@@ -34,20 +34,31 @@
 /*
  * Status codes
  */
-#define TS_STATUS_SUCCESS            0
-#define TS_STATUS_ERROR             32
-#define TS_STATUS_UNKNOWN_FUNCTION  33    // Function ID unknown
-#define TS_STATUS_UNKNOWN_DATA_NODE 34    // Data node ID unknown
-#define TS_STATUS_WRONG_FORMAT      35
-#define TS_STATUS_WRONG_TYPE        36    // Data type not supported
-#define TS_STATUS_DEVICE_BUSY       37    // Device busy
-#define TS_STATUS_UNAUTHORIZED      38
-#define TS_STATUS_REQUEST_TOO_LONG  39
-#define TS_STATUS_RESPONSE_TOO_LONG 40
-#define TS_STATUS_INVALID_VALUE     41     // value out of allowed range
-#define TS_STATUS_WRONG_CATEGORY    42
-#define TS_STATUS_WRONG_PASSWORD    43
-#define TS_STATUS_UNSUPPORTED       44    // type of request not (yet) supported
+
+// success
+#define TS_STATUS_CREATED               0x81
+#define TS_STATUS_DELETED               0x82
+#define TS_STATUS_VALID                 0x83
+#define TS_STATUS_CHANGED               0x84
+#define TS_STATUS_CONTENT               0x85
+
+// client errors
+#define TS_STATUS_BAD_REQUEST           0xA0
+#define TS_STATUS_UNAUTHORIZED          0xA1        // need to authenticate
+#define TS_STATUS_FORBIDDEN             0xA3        // trying to write read-only value
+#define TS_STATUS_NOT_FOUND             0xA4
+#define TS_STATUS_METHOD_NOT_ALLOWED    0xA5
+#define TS_STATUS_REQUEST_INCOMPLETE    0xA8
+#define TS_STATUS_CONFLICT              0xA9
+#define TS_STATUS_REQUEST_TOO_LARGE     0xAD
+#define TS_STATUS_UNSUPPORTED_FORMAT    0xAF
+
+// server errors
+#define TS_STATUS_INTERNAL_SERVER_ERR   0xC0
+#define TS_STATUS_NOT_IMPLEMENTED       0xC1
+
+// ThingSet specific errors
+#define TS_STATUS_RESPONSE_TOO_LARGE    0xE1
 
 /**
  * Internal C data types (used to cast void* pointers)

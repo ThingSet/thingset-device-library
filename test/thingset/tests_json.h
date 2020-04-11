@@ -21,7 +21,7 @@ void json_wrong_command()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!abcd \"f32\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":33 Unknown function.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
 void json_write_wrong_data_structure()
@@ -29,13 +29,12 @@ void json_write_wrong_data_structure()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\":54.3");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":35 Wrong format.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A0 Bad Request.", resp_buf);
 
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf{\"f32\":54.3}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    //TEST_ASSERT_EQUAL_STRING(":35 Wrong format.", resp_buf);
-    TEST_ASSERT_EQUAL_STRING(":33 Unknown function.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
 void json_write_array()
@@ -43,7 +42,7 @@ void json_write_array()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {    \"f32\" : 52.8,\"i32\":50.6}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
     TEST_ASSERT_EQUAL_FLOAT(52.8, f32);
     TEST_ASSERT_EQUAL(50, i32);
 }
@@ -53,7 +52,7 @@ void json_write_readonly()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output {\"i32_output\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
 void json_write_wrong_path()
@@ -61,7 +60,7 @@ void json_write_wrong_path()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!info {\"i32\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":34 Data node not found for given path.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
 void json_write_unknown_node()
@@ -69,7 +68,7 @@ void json_write_unknown_node()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i3\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":34 Data node not found for given path.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
 void json_read_array()
@@ -78,7 +77,7 @@ void json_read_array()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [52.80,false,50]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [52.80,false,50]", resp_buf);
 }
 
 void json_read_rounded()
@@ -86,7 +85,7 @@ void json_read_rounded()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"f32_rounded\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. 53", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
 }
 
 void json_list_input()
@@ -94,7 +93,7 @@ void json_list_input()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [\"loadEnTarget\",\"usbEnTarget\"]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"loadEnTarget\",\"usbEnTarget\"]", resp_buf);
 }
 
 void json_list_names_values_input()
@@ -102,7 +101,7 @@ void json_list_names_values_input()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input {}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
 }
 
 void json_read_int32_array()
@@ -110,7 +109,7 @@ void json_read_int32_array()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayi32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [[4,2,8,4]]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [[4,2,8,4]]", resp_buf);
 }
 
 void json_read_float_array()
@@ -118,7 +117,7 @@ void json_read_float_array()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayfloat\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [[2.27,3.44]]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [[2.27,3.44]]", resp_buf);
 }
 
 void json_pub_msg()
@@ -137,7 +136,7 @@ void json_exec()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!exec \"dummy\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
@@ -148,14 +147,14 @@ void json_conf_callback()
 
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
     TEST_ASSERT_EQUAL(0, dummy_called_flag);
 
     ts.set_conf_callback(dummy);
 
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
@@ -167,19 +166,19 @@ void json_auth_user()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"user123\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     // write user data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
     // attempt to write admin data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
 void json_auth_root()
@@ -190,19 +189,19 @@ void json_auth_root()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"maker456\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     // write user data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
     // write admin data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 }
 
 void json_auth_failure()
@@ -212,12 +211,12 @@ void json_auth_failure()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"abc\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":43 Wrong password.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A9 Conflict.", resp_buf);
 
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
 void json_auth_long_password()
@@ -225,7 +224,7 @@ void json_auth_long_password()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"012345678901234567890123456789\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":43 Wrong password.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A9 Conflict.", resp_buf);
 
 }
 
@@ -236,17 +235,17 @@ void json_auth_reset()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"pass_user\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":38 Unauthorized.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
 void json_pub_list()
@@ -254,7 +253,7 @@ void json_pub_list()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success. [\"Serial_1s\"]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Serial_1s\"]", resp_buf);
 }
 
 void json_pub_enable()
@@ -263,7 +262,7 @@ void json_pub_enable()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub {\"Serial_1s\":true}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":0 Success.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
     TEST_ASSERT_EQUAL(pub_channels[0].enabled, true);
 }
 

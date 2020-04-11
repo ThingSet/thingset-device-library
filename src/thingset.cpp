@@ -72,7 +72,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("write_cbor\n");
             int len = write_cbor(req[0], false);
-            if ((response[0] - 0x80) == TS_STATUS_SUCCESS &&
+            if (response[0] == TS_STATUS_CHANGED &&
                 req[0] == TS_CONF && conf_callback != NULL) {
                 conf_callback();
             }
@@ -113,7 +113,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
             }
         }
         else {
-            return status_message_json(TS_STATUS_UNKNOWN_FUNCTION);
+            return status_message_json(TS_STATUS_NOT_FOUND);
         }
     }
     else {

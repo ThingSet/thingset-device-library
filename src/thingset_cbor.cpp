@@ -196,7 +196,7 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const DataNode *data_no
 int ThingSet::status_message_cbor(uint8_t code)
 {
     if (resp_size > 0) {
-        resp[0] = 0x80 + code;
+        resp[0] = code;
         return 1;
     }
     else {
@@ -210,11 +210,11 @@ int ThingSet::read_cbor(int category)
     unsigned int len = 0;       // current length of response
     uint16_t num_elements, element = 0;
 
-    len += status_message_cbor(TS_STATUS_SUCCESS);   // init response buffer
+    len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
 
     pos += cbor_num_elements(&req[1], &num_elements);
     if (num_elements != 1 && (req[1] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
     //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -232,13 +232,13 @@ int ThingSet::read_cbor(int category)
         uint16_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
         pos += num_bytes;
 
         const DataNode* data_node = get_data_node(id);
         if (data_node == NULL) {
-            return status_message_cbor(TS_STATUS_UNKNOWN_DATA_NODE);
+            return status_message_cbor(TS_STATUS_NOT_FOUND);
         }
         if (!(data_node->access & TS_READ_ALL)) {
             return status_message_cbor(TS_STATUS_UNAUTHORIZED);
@@ -246,7 +246,7 @@ int ThingSet::read_cbor(int category)
 
         num_bytes = cbor_serialize_data_node(&resp[len], resp_size - len, data_node);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_RESPONSE_TOO_LONG);
+            return status_message_cbor(TS_STATUS_RESPONSE_TOO_LARGE);
         } else {
             len += num_bytes;
         }
@@ -256,7 +256,7 @@ int ThingSet::read_cbor(int category)
     if (element == num_elements) {
         return len;
     } else {
-        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 }
 
@@ -278,7 +278,7 @@ int ThingSet::write_cbor(int category, bool ignore_access)
 
     pos += cbor_num_elements(&req[1], &num_elements);
     if ((req[1] & CBOR_TYPE_MASK) != CBOR_MAP) {
-        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
     //printf("write request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -293,14 +293,14 @@ int ThingSet::write_cbor(int category, bool ignore_access)
         uint16_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
         pos += num_bytes;
 
         const DataNode* data_node = get_data_node(id);
         if (data_node == NULL) {
             if (!ignore_access) {
-                return status_message_cbor(TS_STATUS_UNKNOWN_DATA_NODE);
+                return status_message_cbor(TS_STATUS_NOT_FOUND);
             }
 
             // ignore element
@@ -312,7 +312,7 @@ int ThingSet::write_cbor(int category, bool ignore_access)
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
                 if (data_node->parent != category) {
-                    return status_message_cbor(TS_STATUS_WRONG_CATEGORY);
+                    return status_message_cbor(TS_STATUS_NOT_FOUND);
                 }
             }
 
@@ -320,7 +320,7 @@ int ThingSet::write_cbor(int category, bool ignore_access)
         }
 
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+            return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
         pos += num_bytes;
 
@@ -328,9 +328,9 @@ int ThingSet::write_cbor(int category, bool ignore_access)
     }
 
     if (element == num_elements) {
-        return status_message_cbor(TS_STATUS_SUCCESS);
+        return status_message_cbor(TS_STATUS_CHANGED);
     } else {
-        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 }
 
@@ -340,12 +340,12 @@ int ThingSet::exec_cbor()
     uint16_t id;
     size_t num_bytes = cbor_deserialize_uint16(&req[1], &id);
     if (num_bytes == 0 || req_len > 4) {
-        return status_message_cbor(TS_STATUS_WRONG_FORMAT);
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
     const DataNode* data_node = get_data_node(id);
     if (data_node == NULL) {
-        return status_message_cbor(TS_STATUS_UNKNOWN_DATA_NODE);
+        return status_message_cbor(TS_STATUS_NOT_FOUND);
     }
     if (!(data_node->access & TS_EXEC_ALL)) {
         return status_message_cbor(TS_STATUS_UNAUTHORIZED);
@@ -355,7 +355,7 @@ int ThingSet::exec_cbor()
     void (*fun)(void) = reinterpret_cast<void(*)()>(data_node->data);
     fun();
 
-    return status_message_cbor(TS_STATUS_SUCCESS);
+    return status_message_cbor(TS_STATUS_VALID);
 }
 
 int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel)
@@ -433,7 +433,7 @@ int ThingSet::name_cbor(void)
 int ThingSet::list_cbor(int category, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
-    len += status_message_cbor(TS_STATUS_SUCCESS);   // init response buffer
+    len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
 
     // find out number of elements
     int num_elements = 0;
@@ -471,7 +471,7 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
             }
 
             if (num_bytes == 0) {
-                return status_message_cbor(TS_STATUS_RESPONSE_TOO_LONG);
+                return status_message_cbor(TS_STATUS_RESPONSE_TOO_LARGE);
             } else {
                 len += num_bytes;
             }
