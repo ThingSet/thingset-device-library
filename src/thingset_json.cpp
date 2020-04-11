@@ -103,6 +103,9 @@ int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data
         pos = snprintf(&resp[pos], size - pos, "%s,",
                 (*((bool *)data_node->data) == true ? "true" : "false"));
         break;
+    case TS_T_FUNCTION:
+        pos = snprintf(&resp[pos], size - pos, "null,");
+        break;
     case TS_T_STRING:
         pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_node->data);
         break;

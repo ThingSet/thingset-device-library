@@ -65,7 +65,8 @@ enum ts_type {
     TS_T_ARRAY,
     TS_T_DECFRAC,       // CBOR decimal fraction
     TS_T_PATH,          // internal node to describe URI path
-    TS_T_NODE_ID        // internally equal to uint16_t
+    TS_T_NODE_ID,       // internally equal to uint16_t
+    TS_T_FUNCTION       // for exec data objects
 };
 
 /**
@@ -122,8 +123,8 @@ static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
     {_id, _parent, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
-#define TS_DATA_NODE_EXEC(_id, _name, _function_ptr, _acc) \
-    {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_function_ptr), _name}
+#define TS_DATA_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
+    {_id, _parent, _acc, TS_T_FUNCTION, 0, _function_to_void(_function_ptr), _name}
 
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_DATA_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc) \

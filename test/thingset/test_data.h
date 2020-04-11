@@ -112,7 +112,7 @@ static const DataNode data_nodes[] = {
 
     // rpc / exec
 
-    TS_DATA_NODE_EXEC(0x5001, "dummy", &dummy, TS_EXEC_ALL),
+    TS_DATA_NODE_EXEC(0x5001, "dummy", &dummy, TS_EXEC, TS_EXEC_ALL),
 
     // configuration data
 
