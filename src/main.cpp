@@ -12,23 +12,34 @@
 measurement_data_t meas;
 calibration_data_t cal;
 
-#include <iostream>
-#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "linenoise.h"
 
 int main()
 {
     ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
     uint8_t resp_buf[1000];
 
-    printf("\n----------------- data node tree ---------------------\n");
+    printf("\n----------------- Data node tree ---------------------\n");
 
     ts.dump_json();
 
-    printf("\n------------------------------------------------------\n");
+    printf("\n----------------- ThingSet shell ---------------------\n");
 
-    for (std::string line; std::getline(std::cin, line);) {
-        ts.process((uint8_t *)line.c_str(), line.length(), resp_buf, sizeof(resp_buf));
-        std::cout << resp_buf << std::endl;
+    linenoiseHistoryLoad(".thingset-shell-history.txt"); /* Load the history at startup */
+
+    char *line;
+    while ((line = linenoise("> ")) != NULL) {
+        if (line[0] != '\0') {
+            linenoiseHistoryAdd(line);
+            linenoiseHistorySave(".thingset-shell-history.txt");
+            ts.process((uint8_t *)line, strlen(line), resp_buf, sizeof(resp_buf));
+            printf("%s\n", (char *)resp_buf);
+        }
+        free(line);
     }
     return 0;
 }

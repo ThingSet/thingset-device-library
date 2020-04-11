@@ -35,5 +35,5 @@
 .pio
 .vscode
 html
-lib
 
+.thingset-shell-history.txt
