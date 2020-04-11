@@ -91,7 +91,7 @@ void json_read_rounded()
 
 void json_list_input()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":0 Success. [\"loadEnTarget\",\"usbEnTarget\"]", resp_buf);

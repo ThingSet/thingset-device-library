@@ -228,7 +228,12 @@ int ThingSet::access_json(int function, size_t len_function)
         }
         else if (tok_count == 0) {
             //printf("list_json: %s\n", json_str);
-            return list_json(function);
+            if ((char)req[len_function-1] == '/') {
+                return list_json(function, false);
+            }
+            else {
+                return list_json(function, true);
+            }
         }
         else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
             return list_json(function, true);
@@ -256,7 +261,12 @@ int ThingSet::access_json(int function, size_t len_function)
         }
     }
     else {  // only function without any blank characters --> list
-        return list_json(function);
+        if ((char)req[len_function-1] == '/') {
+            return list_json(function, false);
+        }
+        else {
+            return list_json(function, true);
+        }
     }
 }
 
@@ -287,6 +297,10 @@ int ThingSet::read_json(int category)
 
         if (data_node == NULL) {
             return status_message_json(TS_STATUS_UNKNOWN_DATA_NODE);
+        }
+        else if (data_node->type == TS_T_PATH) {
+            // bad request, as we can't read internal path node's values
+            return status_message_json(TS_STATUS_WRONG_FORMAT);
         }
         if (!( ((data_node->access & TS_READ_MASK) == TS_READ_ALL) ||
                (((data_node->access & TS_READ_MASK) == TS_READ_USER) && user_authorized) ||
@@ -482,6 +496,10 @@ int ThingSet::list_json(int category, bool values)
             (data_nodes[i].parent == category))
         {
             if (values) {
+                if (data_nodes[i].type == TS_T_PATH) {
+                    // bad request, as we can't read internal path node's values
+                    return status_message_json(TS_STATUS_WRONG_FORMAT);
+                }
                 len += json_serialize_name_value((char *)&resp[len], resp_size - len,
                     &data_nodes[i]);
             }
