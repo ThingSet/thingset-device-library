@@ -173,6 +173,38 @@ static int json_serialize_name_value(char *resp, size_t size, const DataNode* da
     }
 }
 
+void ThingSet::dump_json(uint16_t node_id, int level)
+{
+    uint8_t buf[100];
+    bool first = true;
+    for (int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].parent == node_id) {
+            if (!first) {
+                printf(",\n");
+            }
+            else {
+                printf("\n");
+                first = false;
+            }
+            if (data_nodes[i].type == TS_T_PATH) {
+                printf("%*s\"%s\" {", 4 * level, "", data_nodes[i].name);
+                dump_json(data_nodes[i].id, level + 1);
+                printf("\n%*s}", 4 * level, "");
+            }
+            else {
+                int pos = json_serialize_name_value((char *)buf, sizeof(buf), &data_nodes[i]);
+                if (pos > 0) {
+                    buf[pos-1] = '\0';  // remove trailing comma
+                    printf("%*s%s", 4 * level, "", (char *)buf);
+                }
+            }
+        }
+    }
+    if (node_id == 0) {
+        printf("\n");
+    }
+}
+
 int ThingSet::access_json(int function, size_t len_function)
 {
     if (req_len > len_function) {

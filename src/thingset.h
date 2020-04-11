@@ -301,6 +301,17 @@ public:
     void set_pub_channels(ts_pub_channel_t *channels, size_t num);
 
     /**
+     * Plot all data nodes as a structured JSON text to stdout
+     *
+     * WARNING: This is a recursive function and might cause stack overflows if run in constrained
+     *          devices with large data node tree. Use with care and for testing only!
+     *
+     * @param node_id Root node ID where to start with plotting
+     * @param level Indentation level (=depth inside the data node tree)
+     */
+    void dump_json(uint16_t node_id = 0, int level = 0);
+
+    /**
      * Sets password for users
      */
     void set_user_password(const char *password);
@@ -493,7 +504,7 @@ private:
     bool user_authorized = false;
     bool maker_authorized = false;
 
-    void (*conf_callback)(void);
+    void (*conf_callback)(void) = NULL;
 };
 
 #endif
