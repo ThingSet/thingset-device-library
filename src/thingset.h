@@ -16,7 +16,7 @@
 /*
  * Protocol functions / categories
  */
-// function + data node category
+// function + data node parent_id
 #define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
 #define TS_CONF     0x02       // configurable settings
 #define TS_INPUT    0x03       // input data (e.g. set-points)
@@ -394,7 +394,7 @@ public:
     int init_cbor(uint8_t *cbor_data, size_t len);
 
     /**
-     * Set function to be called when data nodes of conf category were changed
+     * Set function to be called when data nodes of conf parent_id were changed
      */
     void set_conf_callback(void (*callback)(void));
 
@@ -431,37 +431,47 @@ private:
     /**
      * Parser preparation and calling of the different data node access functions read/write/list
      */
-    int access_json(int category, size_t pos);
+    int access_json(uint16_t parent_id, size_t pos);
 
     /**
-     * List data nodes in text mode (function called with empty argument)
+     * GET request (text mode)
+     *
+     * List child data nodes (function called without content / parameters)
      */
-    int list_json(int category, bool values = false);
+    int get_json(uint16_t parent_id, bool values = false);
 
     /**
-     * List data nodes in binary mode (function called with empty argument)
+     * GET request (binary mode)
+     *
+     * List child data nodes (function called without content / parameters)
      */
-    int list_cbor(int category, bool values = false, bool ids_only = true);
+    int get_cbor(uint16_t parent_id, bool values = false, bool ids_only = true);
 
     /**
-     * Read data node values in text mode (function called with an array as argument)
+     * FETCH request (text mode)
+     *
+     * Read data node values (function called with an array as argument)
      */
-    int read_json(int category);
+    int fetch_json(uint16_t parent_id);
 
     /**
-     * Read data node values in binary mode (function called with an array as argument)
+     * FETCH request (binary mode)
+     *
+     * Read data node values (function called with an array as argument)
      */
-    int read_cbor(int category);
+    int fetch_cbor(uint16_t parent_id);
 
     /**
+     * PATCH request (text mode)
+     *
      * Write data node values in text mode (function called with a map as argument)
      */
-    int write_json(int category);
+    int patch_json(uint16_t parent_id);
 
     /**
      * Write data node values in binary mode (function called with a map as argument)
      */
-    int write_cbor(int category, bool ignore_access);
+    int patch_cbor(uint16_t parent_id, bool ignore_access);
 
     /**
      * Execute command in text mode (function called with a single data node name as argument)

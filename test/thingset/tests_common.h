@@ -16,7 +16,7 @@ extern ThingSet ts;
 
 //extern ts_buffer_t req, resp;
 
-void _write_json(char const *name, char const *value)
+void _patch_json(char const *name, char const *value)
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"%s\":%s}", name, value);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -24,7 +24,7 @@ void _write_json(char const *name, char const *value)
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 }
 
-int _read_json(char const *name, char *value_read)
+int _fetch_json(char const *name, char *value_read)
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"%s\"", name);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -42,7 +42,7 @@ int _read_json(char const *name, char *value_read)
 }
 
 // returns length of read value
-int _read_cbor(uint16_t id, char *value_read)
+int _fetch_cbor(uint16_t id, char *value_read)
 {
     // generate read request
     req_buf[0] = TS_CONF;
@@ -61,7 +61,7 @@ int _read_cbor(uint16_t id, char *value_read)
 }
 
 // returns length of read value
-void _write_cbor(uint16_t id, char *value)
+void _patch_cbor(uint16_t id, char *value)
 {
     int len = cbor_size((uint8_t*)value);
 
@@ -93,10 +93,10 @@ void _json2cbor(char const *name, char const *json_value, uint16_t id, char cons
 
     //printf("before write: i64 = 0x%" PRIi64 " = %" PRIx64 "\n", i64, i64);
     //printf("before write: i64 = %16.llX = %lli\n", i64, i64);
-    _write_json(name, json_value);
+    _patch_json(name, json_value);
     //printf("after write:  i64 = %16.llX = %lli\n", i64, i64);
     //printf("after write: i64 = %" PRIi64 " = %llx\n", i64, i64);
-    len = _read_cbor(id, buf);
+    len = _fetch_cbor(id, buf);
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_value, buf, len);
 }
@@ -115,13 +115,13 @@ void _cbor2json(char const *name, char const *json_value, uint16_t id, char cons
 
     //printf ("cbor2json(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
-    _write_cbor(id, cbor_value);
-    len = _read_json(name, buf);
+    _patch_cbor(id, cbor_value);
+    len = _fetch_json(name, buf);
 
     TEST_ASSERT_EQUAL_STRING(json_value, buf);
 }
 
-void write_json_read_cbor()
+void patch_json_fetch_cbor()
 {
     // uint16
     _json2cbor("ui16", "0", 0x6005, "00");
@@ -213,7 +213,7 @@ void write_json_read_cbor()
 }
 
 
-void write_cbor_read_json()
+void patch_cbor_fetch_json()
 {
     // uint16
     _cbor2json("ui16", "0", 0x6005, "00");

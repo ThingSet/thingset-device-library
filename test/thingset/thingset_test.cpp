@@ -37,18 +37,18 @@ int main()
     UNITY_BEGIN();
 
     // data conversion tests
-    RUN_TEST(write_json_read_cbor);
-    RUN_TEST(write_cbor_read_json);
+    RUN_TEST(patch_json_fetch_cbor);
+    RUN_TEST(patch_cbor_fetch_json);
 
     // JSON only tests
     RUN_TEST(json_wrong_command);
-    RUN_TEST(json_write_wrong_data_structure);
-    RUN_TEST(json_write_array);
-    RUN_TEST(json_write_readonly);
-    RUN_TEST(json_write_wrong_path);
-    RUN_TEST(json_write_unknown_node);
-    RUN_TEST(json_read_array);
-    RUN_TEST(json_read_rounded);
+    RUN_TEST(json_patch_wrong_data_structure);
+    RUN_TEST(json_patch_array);
+    RUN_TEST(json_patch_readonly);
+    RUN_TEST(json_patch_wrong_path);
+    RUN_TEST(json_patch_unknown_node);
+    RUN_TEST(json_fetch_array);
+    RUN_TEST(json_fetch_rounded);
     RUN_TEST(json_list_input);
     RUN_TEST(json_list_names_values_input);
     RUN_TEST(json_exec);
@@ -64,20 +64,20 @@ int main()
     RUN_TEST(json_get_endpoint_node);
 
     // CBOR only tests
-    RUN_TEST(cbor_write_array);
-    RUN_TEST(cbor_read_array);
-    RUN_TEST(cbor_write_int32_array);
-    RUN_TEST(cbor_read_int32_array);
+    RUN_TEST(cbor_patch_array);
+    RUN_TEST(cbor_fetch_array);
+    RUN_TEST(cbor_patch_int32_array);
+    RUN_TEST(cbor_fetch_int32_array);
 
-    RUN_TEST(json_read_int32_array);
+    RUN_TEST(json_fetch_int32_array);
 
-    RUN_TEST(cbor_write_float_array);
-    RUN_TEST(cbor_read_float_array);
+    RUN_TEST(cbor_patch_float_array);
+    RUN_TEST(cbor_fetch_float_array);
 
-    RUN_TEST(json_read_float_array);
+    RUN_TEST(json_fetch_float_array);
 
-    RUN_TEST(cbor_read_rounded);
-    RUN_TEST(cbor_write_rounded);       // writes an integer to float
+    RUN_TEST(cbor_fetch_rounded);
+    RUN_TEST(cbor_patch_rounded);       // writes an integer to float
     RUN_TEST(cbor_list_ids_input);
     RUN_TEST(cbor_list_names_input);
     RUN_TEST(cbor_list_names_values_input);

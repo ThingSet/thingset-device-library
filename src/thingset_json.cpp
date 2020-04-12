@@ -228,15 +228,15 @@ void ThingSet::dump_json(uint16_t node_id, int level)
     }
 }
 
-int ThingSet::access_json(int function, size_t len_function)
+int ThingSet::access_json(uint16_t parent_id, size_t path_len)
 {
-    if (req_len > len_function) {
+    if (req_len > path_len) {
         jsmn_parser parser;
         jsmn_init(&(parser));
 
-        // +1 because blank is requested between function and JSON data
-        json_str = (char *)req + len_function + 1;
-        tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens,
+        // +1 because blank is requested between path and JSON data
+        json_str = (char *)req + path_len + 1;
+        tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens,
             sizeof(tokens));
 
         if (tok_count == JSMN_ERROR_NOMEM) {
@@ -246,50 +246,50 @@ int ThingSet::access_json(int function, size_t len_function)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
         else if (tok_count == 0) {
-            //printf("list_json: %s\n", json_str);
-            if ((char)req[len_function-1] == '/') {
-                return list_json(function, false);
+            //printf("get_json: %s\n", json_str);
+            if ((char)req[path_len-1] == '/') {
+                return get_json(parent_id, false);
             }
             else {
-                return list_json(function, true);
+                return get_json(parent_id, true);
             }
         }
         else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
-            return list_json(function, true);
+            return get_json(parent_id, true);
         }
         else {
             if (tokens[0].type == JSMN_OBJECT) {
-                //printf("write_json: %s\n", json_str);
-                int len = write_json(function);
+                //printf("patch_json: %s\n", json_str);
+                int len = patch_json(parent_id);
                 if (strncmp((char *)resp, ":84", 3) == 0 && conf_callback != NULL &&
-                    (function == TS_CONF || function == TS_INFO)) {
+                    (parent_id == TS_CONF || parent_id == TS_INFO)) {
                     conf_callback();
                 }
                 return len;
             }
             else {
-                if (function == TS_EXEC) {
+                if (parent_id == TS_EXEC) {
                     //printf("exec_json: %s\n", json_str);
                     return exec_json();
                 }
                 else {
-                    //printf("read_json: %s\n", json_str);
-                    return read_json(function);
+                    //printf("fetch_json: %s\n", json_str);
+                    return fetch_json(parent_id);
                 }
             }
         }
     }
-    else {  // only function without any blank characters --> list
-        if ((char)req[len_function-1] == '/') {
-            return list_json(function, false);
+    else {  // only path without any blank characters --> list
+        if ((char)req[path_len-1] == '/') {
+            return get_json(parent_id, false);
         }
         else {
-            return list_json(function, true);
+            return get_json(parent_id, true);
         }
     }
 }
 
-int ThingSet::read_json(int category)
+int ThingSet::fetch_json(uint16_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
@@ -312,7 +312,7 @@ int ThingSet::read_json(int category)
 
         const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, category);
+            tokens[tok].end - tokens[tok].start, parent_id);
 
         if (data_node == NULL) {
             return status_message_json(TS_STATUS_NOT_FOUND);
@@ -348,7 +348,7 @@ int ThingSet::read_json(int category)
     return pos;
 }
 
-int ThingSet::write_json(int category)
+int ThingSet::patch_json(uint16_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -378,7 +378,7 @@ int ThingSet::write_json(int category)
 
         const DataNode* data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, category);
+            tokens[tok].end - tokens[tok].start, parent_id);
 
         if (data_node == NULL) {
             return status_message_json(TS_STATUS_NOT_FOUND);
@@ -453,7 +453,7 @@ int ThingSet::write_json(int category)
 
         const DataNode *data_node = get_data_node(
             json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, category);
+            tokens[tok].end - tokens[tok].start, parent_id);
 
         // extract the value again (max. size was checked before)
         value_len = tokens[tok+1].end - tokens[tok+1].start;
@@ -503,7 +503,7 @@ int ThingSet::write_json(int category)
     return status_message_json(TS_STATUS_CHANGED);
 }
 
-int ThingSet::list_json(int category, bool values)
+int ThingSet::get_json(uint16_t parent_id, bool values)
 {
     // initialize response with success message
     size_t len = status_message_json(TS_STATUS_CONTENT);
@@ -512,7 +512,7 @@ int ThingSet::list_json(int category, bool values)
 
     for (unsigned int i = 0; i < num_nodes; i++) {
         if ((data_nodes[i].access & TS_READ_ALL) &&
-            (data_nodes[i].parent == category))
+            (data_nodes[i].parent == parent_id))
         {
             if (values) {
                 if (data_nodes[i].type == TS_T_PATH) {
@@ -566,7 +566,6 @@ int ThingSet::exec_json()
     return status_message_json(TS_STATUS_VALID);
 }
 
-
 int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
 {
     unsigned int len = sprintf(msg_buf, "# {");
@@ -595,14 +594,14 @@ int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
 
 int ThingSet::auth_json()
 {
-    const int len_function = 5; // !auth
+    const int path_len = 5; // !auth
     jsmn_parser parser;
     jsmn_init(&(parser));
 
-    json_str = (char *)req + len_function + 1;
-    tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+    json_str = (char *)req + path_len + 1;
+    tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens, sizeof(tokens));
 
-    if (req_len == len_function || tok_count == 0) {   // logout
+    if (req_len == path_len || tok_count == 0) {   // logout
         user_authorized = false;
         maker_authorized = false;
         return status_message_json(TS_STATUS_VALID);
@@ -642,17 +641,17 @@ int ThingSet::auth_json()
 
 int ThingSet::pub_json()
 {
-    const int len_function = 4; // !pub
+    const int path_len = 4; // !pub
     jsmn_parser parser;
     jsmn_init(&(parser));
 
-    json_str = (char *)req + len_function + 1;
-    tok_count = jsmn_parse(&parser, json_str, req_len - (len_function + 1), tokens, sizeof(tokens));
+    json_str = (char *)req + path_len + 1;
+    tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens, sizeof(tokens));
 
     // initialize response with success message
     size_t len = status_message_json(TS_STATUS_CONTENT);
 
-    if (req_len == len_function || tok_count == 0) {
+    if (req_len == path_len || tok_count == 0) {
         // list channels
         len += sprintf((char *)&resp[len], " [");
         for (unsigned int i = 0; i < num_channels; i++) {

@@ -16,7 +16,7 @@ extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
 
-void cbor_write_array()
+void cbor_patch_array()
 {
     char cbor_req_hex[] =
         #if TS_64BIT_TYPES_SUPPORT
@@ -46,7 +46,7 @@ void cbor_write_array()
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
-void cbor_read_array()
+void cbor_fetch_array()
 {
     char cbor_req_hex[] =
         #if TS_64BIT_TYPES_SUPPORT
@@ -100,7 +100,7 @@ void cbor_read_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_write_int32_array()
+void cbor_patch_int32_array()
 {
     // Writing int32 array
     int32_array.type = TS_T_INT32;
@@ -123,7 +123,7 @@ void cbor_write_int32_array()
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
-void cbor_read_int32_array()
+void cbor_fetch_int32_array()
 {
     // Request: Read int32 array
     char cbor_req_hex[] =
@@ -154,7 +154,7 @@ void cbor_read_int32_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_write_float_array()
+void cbor_patch_float_array()
 {
     // Writing float array
     float32_array.type = TS_T_FLOAT32; // Set the array type
@@ -178,7 +178,7 @@ void cbor_write_float_array()
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
-void cbor_read_float_array()
+void cbor_fetch_float_array()
 {
     // Read int32 array
     char cbor_req_hex[] =
@@ -209,7 +209,7 @@ void cbor_read_float_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_read_rounded()
+void cbor_fetch_rounded()
 {
     char cbor_req_hex[] = "01 19 60 0A ";
 
@@ -235,7 +235,7 @@ void cbor_read_rounded()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_write_rounded()
+void cbor_patch_rounded()
 {
     float tmp = f32;
     char cbor_req_hex[] = "02 A1 19 60 0A 05 ";

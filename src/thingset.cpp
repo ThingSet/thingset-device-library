@@ -66,12 +66,12 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
 
     if (req[0] <= TS_EXEC) {          // CBOR list/read/write request
         if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
-            //printf("list_cbor\n");
-            return list_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
+            //printf("get_cbor\n");
+            return get_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
         }
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
-            //printf("write_cbor\n");
-            int len = write_cbor(req[0], false);
+            //printf("patch_cbor\n");
+            int len = patch_cbor(req[0], false);
             if (response[0] == TS_STATUS_CHANGED &&
                 req[0] == TS_CONF && conf_callback != NULL) {
                 conf_callback();
@@ -83,8 +83,8 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
                 return exec_cbor();
             }
             else {
-                //printf("read_cbor\n");
-                return read_cbor(req[0]);
+                //printf("fetch_cbor\n");
+                return fetch_cbor(req[0]);
             }
         }
     }

@@ -24,7 +24,7 @@ void json_wrong_command()
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
-void json_write_wrong_data_structure()
+void json_patch_wrong_data_structure()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\":54.3");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -37,7 +37,7 @@ void json_write_wrong_data_structure()
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
-void json_write_array()
+void json_patch_array()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {    \"f32\" : 52.8,\"i32\":50.6}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -47,7 +47,7 @@ void json_write_array()
     TEST_ASSERT_EQUAL(50, i32);
 }
 
-void json_write_readonly()
+void json_patch_readonly()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output {\"i32_output\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -55,7 +55,7 @@ void json_write_readonly()
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
-void json_write_wrong_path()
+void json_patch_wrong_path()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!info {\"i32\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -63,7 +63,7 @@ void json_write_wrong_path()
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
-void json_write_unknown_node()
+void json_patch_unknown_node()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i3\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -71,7 +71,7 @@ void json_write_unknown_node()
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
-void json_read_array()
+void json_fetch_array()
 {
     //                                                      float        bool         int
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
@@ -80,7 +80,7 @@ void json_read_array()
     TEST_ASSERT_EQUAL_STRING(":85 Content. [52.80,false,50]", resp_buf);
 }
 
-void json_read_rounded()
+void json_fetch_rounded()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"f32_rounded\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -104,7 +104,7 @@ void json_list_names_values_input()
     TEST_ASSERT_EQUAL_STRING(":85 Content. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
 }
 
-void json_read_int32_array()
+void json_fetch_int32_array()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayi32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -112,7 +112,7 @@ void json_read_int32_array()
     TEST_ASSERT_EQUAL_STRING(":85 Content. [[4,2,8,4]]", resp_buf);
 }
 
-void json_read_float_array()
+void json_fetch_float_array()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayfloat\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);

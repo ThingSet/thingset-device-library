@@ -204,7 +204,7 @@ int ThingSet::status_message_cbor(uint8_t code)
     }
 }
 
-int ThingSet::read_cbor(int category)
+int ThingSet::fetch_cbor(uint16_t parent_id)
 {
     unsigned int pos = 1;       // position in request (ignore first byte for function code)
     unsigned int len = 0;       // current length of response
@@ -267,11 +267,11 @@ int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
     req_len = len;
     resp = resp_tmp;
     resp_size = sizeof(resp_tmp);
-    write_cbor(0, true);
+    patch_cbor(0, true);
     return resp[0] - 0x80;
 }
 
-int ThingSet::write_cbor(int category, bool ignore_access)
+int ThingSet::patch_cbor(uint16_t parent_id, bool ignore_access)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     uint16_t num_elements, element = 0;
@@ -311,7 +311,7 @@ int ThingSet::write_cbor(int category, bool ignore_access)
                 if (!(data_node->access & TS_WRITE_ALL)) {
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
-                if (data_node->parent != category) {
+                if (data_node->parent != parent_id) {
                     return status_message_cbor(TS_STATUS_NOT_FOUND);
                 }
             }
@@ -430,7 +430,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::list_cbor(int category, bool values, bool ids_only)
+int ThingSet::get_cbor(uint16_t parent_id, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
     len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
@@ -439,7 +439,7 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
     int num_elements = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].access & TS_READ_ALL
-            && (data_nodes[i].parent == category))
+            && (data_nodes[i].parent == parent_id))
         {
             num_elements++;
         }
@@ -455,7 +455,7 @@ int ThingSet::list_cbor(int category, bool values, bool ids_only)
     // actually write elements
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].access & TS_READ_ALL
-            && (data_nodes[i].parent == category))
+            && (data_nodes[i].parent == parent_id))
         {
             int num_bytes = 0;
             if (ids_only) {
