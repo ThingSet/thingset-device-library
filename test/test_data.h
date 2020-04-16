@@ -33,13 +33,13 @@ static float bat_energy_day = 123;
 static int16_t ambient_temp_max_day = 28;
 
 // pub
-bool pub_serial_enable = true;
+bool pub_serial_enable = false;
 uint16_t pub_serial_interval = 1000;
 uint16_t pub_serial_ids[20] = { 0x1A, 0x71, 0x72, 0x73 };
 ArrayInfo pub_serial_array = { pub_serial_ids, 4,
     TS_T_NODE_ID, sizeof(pub_serial_ids)/sizeof(uint16_t)};
 
-bool pub_can_enable = false;
+bool pub_can_enable = true;
 uint16_t pub_can_interval = 100;
 uint16_t pub_can_ids[20] = { 0x71, 0x72, 0x73 };
 ArrayInfo pub_can_array = { pub_can_ids, 3,
