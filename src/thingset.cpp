@@ -57,9 +57,14 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
         else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
             //printf("patch_cbor\n");
             int len = patch_cbor(req[0], false);
-            if (response[0] == TS_STATUS_CHANGED &&
-                req[0] == TS_CONF && conf_callback != NULL) {
-                conf_callback();
+            if (response[0] == TS_STATUS_CHANGED && req[0] == TS_CONF) {
+                // workaround before CBOR part is also changed
+                const DataNode *node = get_data_node(TS_CONF);
+                if (node != NULL && node->data != NULL) {
+                    // create function pointer and call function
+                    void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
+                    fun();
+                }
             }
             return len;
         }
@@ -81,11 +86,6 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
         response[0] = 0;
         return 0;
     }
-}
-
-void ThingSet::set_conf_callback(void (*callback)(void))
-{
-    conf_callback = callback;
 }
 
 const DataNode* ThingSet::get_data_node(const char *str, size_t len, int32_t parent)

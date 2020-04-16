@@ -273,9 +273,12 @@ int ThingSet::process_json()
         if (tokens[0].type == JSMN_OBJECT) {
             //printf("patch_json: %s\n", json_str);
             int len = patch_json(endpoint->id);
-            if (strncmp((char *)resp, ":84", 3) == 0 && conf_callback != NULL &&
-                (endpoint->id == TS_CONF || endpoint->id == TS_INFO)) {
-                conf_callback();
+
+            // check if endpoint has a callback assigned
+            if (endpoint->data != NULL && strncmp((char *)resp, ":84", 3) == 0) {
+                // create function pointer and call function
+                void (*fun)(void) = reinterpret_cast<void(*)()>(endpoint->data);
+                fun();
             }
             return len;
         }

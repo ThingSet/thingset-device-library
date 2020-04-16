@@ -69,6 +69,11 @@ void auth_function(const char *args)
     printf("Auth function called, password: %s\n", args);
 }
 
+void conf_callback()
+{
+    printf("Conf callback called!\n");
+}
+
 void dummy()
 {
     // do nothing, only used in unit-tests

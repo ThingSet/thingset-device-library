@@ -375,11 +375,6 @@ public:
     int init_cbor(uint8_t *cbor_data, size_t len);
 
     /**
-     * Set function to be called when data nodes of conf parent_id were changed
-     */
-    void set_conf_callback(void (*callback)(void));
-
-    /**
      * Get data node by ID
      */
     const DataNode *get_data_node(uint16_t id);
@@ -524,8 +519,6 @@ private:
 
     bool user_authorized = false;
     bool maker_authorized = false;
-
-    void (*conf_callback)(void) = NULL;
 };
 
 #endif

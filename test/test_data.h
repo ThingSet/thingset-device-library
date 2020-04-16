@@ -78,6 +78,7 @@ float B[100] = {2.27, 3.44};
 ArrayInfo float32_array = {B, 2, TS_T_FLOAT32, sizeof(B)/sizeof(float)};
 
 void dummy(void);
+void conf_callback(void);
 
 static const DataNode data_nodes[] = {
 
@@ -98,7 +99,7 @@ static const DataNode data_nodes[] = {
     // CONFIGURATION //////////////////////////////////////////////////////////
     // using IDs >= 0x30 except for high priority data objects
 
-    TS_DATA_NODE_PATH(TS_CONF, "conf", 0, NULL),
+    TS_DATA_NODE_PATH(TS_CONF, "conf", 0, &conf_callback),
 
     TS_DATA_NODE_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2,
         TS_CONF, TS_READ_ALL | TS_WRITE_ALL),

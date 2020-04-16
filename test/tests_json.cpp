@@ -141,7 +141,12 @@ void json_pub_msg()
         resp_buf);
 }
 
-extern bool dummy_called_flag;
+bool dummy_called_flag;
+
+void dummy(void)
+{
+    dummy_called_flag = 1;
+}
 
 void json_exec()
 {
@@ -154,29 +159,22 @@ void json_exec()
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-bool dummy_called_flag = 0;
+bool conf_callback_called;
 
-void dummy(void)
+void conf_callback(void)        // implement function as defined in test_data.h
 {
-    dummy_called_flag = 1;
+    conf_callback_called = 1;
 }
 
 void json_conf_callback()
 {
-    dummy_called_flag = 0;
+    conf_callback_called = 0;
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i32\":52}");
 
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
-    TEST_ASSERT_EQUAL(0, dummy_called_flag);
-
-    ts.set_conf_callback(dummy);
-
-    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
-    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+    TEST_ASSERT_EQUAL(1, conf_callback_called);
 }
 
 void json_auth_user()
