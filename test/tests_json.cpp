@@ -296,6 +296,42 @@ void json_get_endpoint_node()
     TEST_ASSERT_EQUAL(node->id, TS_CONF);
 }
 
+void json_pub_delete_append_node()
+{
+    // before change
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
+
+    // delete "Ambient_degC"
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "-pub/serial/IDs \"Ambient_degC\"");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":82 Deleted.", resp_buf);
+
+    // check if it was deleted
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]", resp_buf);
+
+    // append "Ambient_degC" again
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "+pub/serial/IDs \"Ambient_degC\"");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":81 Created.", resp_buf);
+
+    // check if it was appended
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
+}
+
 void tests_json()
 {
     UNITY_BEGIN();
@@ -322,6 +358,7 @@ void tests_json()
     */
     RUN_TEST(json_pub_list_channels);
     RUN_TEST(json_pub_enable);
+    RUN_TEST(json_pub_delete_append_node);
     RUN_TEST(json_get_endpoint_node);
 
     RUN_TEST(json_fetch_int32_array);

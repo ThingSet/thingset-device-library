@@ -233,6 +233,9 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_ACCESS_EXEC          TS_EXEC_ALL
 #define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
 
+
+typedef uint16_t ts_node_id_t;
+
 /**
  * ThingSet data node struct
  */
@@ -240,12 +243,12 @@ typedef struct DataNode {
     /**
      * Data node ID
      */
-    const uint16_t id;
+    const ts_node_id_t id;
 
     /**
      * ID of parent node
      */
-    const uint16_t parent;
+    const ts_node_id_t parent;
 
     /**
      * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
@@ -407,8 +410,14 @@ public:
      * Get data node by name
      *
      * As the names are not necessarily unique in the entire data tree, the parent is needed
+     *
+     * @param name node name
+     * @param len length of the node name
+     * @param parent node ID of the parent or -1 for global search
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    const DataNode *get_data_node(const char *name, size_t len, uint16_t parent);
+    const DataNode *get_data_node(const char *name, size_t len, int32_t parent = -1);
 
     /** Get pub channel by name
      */
@@ -474,6 +483,16 @@ private:
      * Write data node values in binary mode (function called with a map as argument)
      */
     int patch_cbor(uint16_t parent_id, bool ignore_access);
+
+    /**
+     * POST request to append data
+     */
+    int append_json(const DataNode *node);
+
+    /**
+     * DELETE request to delete data from node
+     */
+    int delete_json(const DataNode *node);
 
     /**
      * Execute command in text mode (function called with a single data node name as argument)

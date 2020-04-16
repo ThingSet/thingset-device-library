@@ -90,7 +90,7 @@ static const DataNode data_nodes[] = {
         TS_INFO, TS_READ_ALL),
 
     TS_DATA_NODE_UINT32(0x1A, "Timestamp_s", &timestamp,
-        TS_INFO, TS_READ_ALL),
+        TS_INFO, TS_READ_ALL | TS_WRITE_ALL),
 
     TS_DATA_NODE_STRING(0x1B, "DeviceID", strbuf, sizeof(strbuf),
         TS_INFO, TS_READ_ALL | TS_WRITE_MAKER),

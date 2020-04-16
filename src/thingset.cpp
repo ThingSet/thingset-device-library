@@ -103,13 +103,10 @@ void ThingSet::set_conf_callback(void (*callback)(void))
     conf_callback = callback;
 }
 
-const DataNode* ThingSet::get_data_node(const char *str, size_t len, uint16_t parent)
+const DataNode* ThingSet::get_data_node(const char *str, size_t len, int32_t parent)
 {
-    //printf("get_data_node(%.*s) par=%d\n", len, str, parent);
     for (unsigned int i = 0; i < num_nodes; i++) {
-        //printf("i=%d num_nodes=%d name=%s parent=%d\n", i, num_nodes,
-        //    data_nodes[i].name, data_nodes[i].parent);
-        if (data_nodes[i].parent != parent) {
+        if (parent != -1 && data_nodes[i].parent != parent) {
             continue;
         }
         else if (strncmp(data_nodes[i].name, str, len) == 0
