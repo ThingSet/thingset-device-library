@@ -482,6 +482,8 @@ private:
 
     int json_serialize_name_value(char *resp, size_t size, const DataNode* data_node);
 
+    int json_deserialize_value(char *buf, size_t len, int tok, const DataNode *data_node);
+
     /**
      * Fill the resp buffer with a CBOR response status message
      *

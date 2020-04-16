@@ -360,6 +360,65 @@ int ThingSet::fetch_json(uint16_t parent_id)
     return pos;
 }
 
+int ThingSet::json_deserialize_value(char *buf, size_t len, int tok, const DataNode *data_node)
+{
+    if (tokens[tok].type != JSMN_PRIMITIVE && tokens[tok].type != JSMN_STRING) {
+        return 0;
+    }
+
+    errno = 0;
+    switch (data_node->type) {
+        case TS_T_FLOAT32:
+            *((float*)data_node->data) = strtod(buf, NULL);
+            break;
+        case TS_T_UINT64:
+            *((uint64_t*)data_node->data) = strtoull(buf, NULL, 0);
+            break;
+        case TS_T_INT64:
+            *((int64_t*)data_node->data) = strtoll(buf, NULL, 0);
+            break;
+        case TS_T_UINT32:
+            *((uint32_t*)data_node->data) = strtoul(buf, NULL, 0);
+            break;
+        case TS_T_INT32:
+            *((int32_t*)data_node->data) = strtol(buf, NULL, 0);
+            break;
+        case TS_T_UINT16:
+            *((uint16_t*)data_node->data) = strtoul(buf, NULL, 0);
+            break;
+        case TS_T_INT16:
+            *((uint16_t*)data_node->data) = strtol(buf, NULL, 0);
+            break;
+        case TS_T_BOOL:
+            if (buf[0] == 't' || buf[0] == '1') {
+                *((bool*)data_node->data) = true;
+            }
+            else if (buf[0] == 'f' || buf[0] == '0') {
+                *((bool*)data_node->data) = false;
+            }
+            else {
+                return 0;       // error
+            }
+            break;
+        case TS_T_STRING:
+            if (tokens[tok].type != JSMN_STRING) {
+                return 0;
+            }
+            if (data_node->detail != 0) {
+                // data node buffer length already checked before, but dummy node has 0
+                strncpy((char*)data_node->data, buf, len);
+                ((char*)data_node->data)[len] = '\0';
+            }
+            break;
+    }
+
+    if (errno == ERANGE) {
+        return 0;
+    }
+
+    return 1;   // value always contained in one token (arrays not yet supported)
+}
+
 int ThingSet::patch_json(uint16_t parent_id)
 {
     int tok = 0;       // current token
@@ -404,61 +463,36 @@ int ThingSet::patch_json(uint16_t parent_id)
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
 
+        tok++;
+
         // extract the value and check buffer lengths
-        value_len = tokens[tok+1].end - tokens[tok+1].start;
+        value_len = tokens[tok].end - tokens[tok].start;
         if ((data_node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
             (data_node->type == TS_T_STRING && value_len >= (size_t)data_node->detail)) {
             return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-        } else {
-            strncpy(value_buf, &json_str[tokens[tok+1].start], value_len);
+        }
+        else {
+            strncpy(value_buf, &json_str[tokens[tok].start], value_len);
             value_buf[value_len] = '\0';
         }
 
-        errno = 0;
-        if (data_node->type == TS_T_STRING) {
-            if (tokens[tok+1].type != JSMN_STRING) {
-                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-            }
-            // data node buffer length already checked above
-        }
-        else if (data_node->type == TS_T_BOOL) {
-            if (!(value_buf[0] == 't' || value_buf[0] == '1' || value_buf[0] == 'f' ||
-                value_buf[0] == '0'))
-            {
-                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-            }
-        }
-        else {
-            if (tokens[tok+1].type != JSMN_PRIMITIVE) {
-                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-            }
-            if (data_node->type == TS_T_FLOAT32) {
-                strtod(value_buf, NULL);
-            }
-            else if (data_node->type == TS_T_UINT32 || data_node->type == TS_T_UINT16) {
-                strtoul(value_buf, NULL, 0);
-            }
-            else if (data_node->type == TS_T_INT32 || data_node->type == TS_T_INT16) {
-                strtol(value_buf, NULL, 0);
-            }
-            else if (data_node->type == TS_T_UINT64) {
-                strtoull(value_buf, NULL, 0);
-            }
-            else if (data_node->type == TS_T_INT64) {
-                strtoll(value_buf, NULL, 0);
-            }
+        // create dummy node to test formats
+        uint8_t dummy_data[8];          // enough to fit also 64-bit values
+        DataNode dummy_node = {0, 0, 0, data_node->type, 0, (void *) dummy_data, "Dummy"};
 
-            if (errno == ERANGE) {
-                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-            }
+        int res = json_deserialize_value(value_buf, value_len, tok, &dummy_node);
+        if (res == 0) {
+            return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
         }
-        tok += 2;   // map expected --> always one string + one value
+        tok += res;
     }
 
-    if (tokens[0].type == JSMN_OBJECT)
+    if (tokens[0].type == JSMN_OBJECT) {
         tok = 1;
-    else
+    }
+    else {
         tok = 0;
+    }
 
     // actually write data
     while (tok + 1 < tok_count) {
@@ -467,49 +501,16 @@ int ThingSet::patch_json(uint16_t parent_id)
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
+        tok++;
+
         // extract the value again (max. size was checked before)
-        value_len = tokens[tok+1].end - tokens[tok+1].start;
+        value_len = tokens[tok].end - tokens[tok].start;
         if (value_len < sizeof(value_buf)) {
-            strncpy(value_buf, &json_str[tokens[tok+1].start], value_len);
+            strncpy(value_buf, &json_str[tokens[tok].start], value_len);
             value_buf[value_len] = '\0';
         }
 
-        switch (data_node->type) {
-        case TS_T_FLOAT32:
-            *((float*)data_node->data) = strtod(value_buf, NULL);
-            break;
-        case TS_T_UINT64:
-            *((uint64_t*)data_node->data) = strtoull(value_buf, NULL, 0);
-            break;
-        case TS_T_INT64:
-            *((int64_t*)data_node->data) = strtoll(value_buf, NULL, 0);
-            break;
-        case TS_T_UINT32:
-            *((uint32_t*)data_node->data) = strtoul(value_buf, NULL, 0);
-            break;
-        case TS_T_INT32:
-            *((int32_t*)data_node->data) = strtol(value_buf, NULL, 0);
-            break;
-        case TS_T_UINT16:
-            *((uint16_t*)data_node->data) = strtoul(value_buf, NULL, 0);
-            break;
-        case TS_T_INT16:
-            *((uint16_t*)data_node->data) = strtol(value_buf, NULL, 0);
-            break;
-        case TS_T_BOOL:
-            if (value_buf[0] == 't' || value_buf[0] == '1') {
-                *((bool*)data_node->data) = true;
-            }
-            else if (value_buf[0] == 'f' || value_buf[0] == '0') {
-                *((bool*)data_node->data) = false;
-            }
-            break;
-        case TS_T_STRING:
-            strncpy((char*)data_node->data, &json_str[tokens[tok+1].start], value_len);
-            ((char*)data_node->data)[value_len] = '\0';
-            break;
-        }
-        tok += 2;   // map expected --> always one string + one value
+        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tok, data_node);
     }
 
     return status_message_json(TS_STATUS_CHANGED);
