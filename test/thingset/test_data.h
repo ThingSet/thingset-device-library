@@ -14,53 +14,48 @@
 #define TS_REQ_BUFFER_LEN 500
 #define TS_RESP_BUFFER_LEN 500
 
-typedef struct measurement_data_t {
-    float battery_voltage;
-    float battery_voltage_max;  // to be stored in EEPROM
-    float solar_voltage;
-    float solar_voltage_max;    // to be stored in EEPROM
-    float ref_voltage;
-    float dcdc_current;
-    float dcdc_current_max;     // to be stored in EEPROM
-    float dcdc_current_offset;
-    //float input_current;
-    float load_current;
-    float load_current_max;     // to be stored in EEPROM
-    float load_current_offset;
-    float bat_current;
-    float temp_int;             // °C (internal MCU temperature sensor)
-    float temp_int_max;         // °C
-    float temp_mosfets;         // °C
-    float temp_mosfets_max;     // to be stored in EEPROM
-    float temp_battery;         // °C
-    bool load_enabled;
-    float input_Wh_day;
-    float output_Wh_day;
-    float input_Wh_total;
-    float output_Wh_total;
-    int num_full_charges;
-    int num_deep_discharges;
-    int soc;
-} measurement_data_t;
-extern measurement_data_t meas;
+// info
+char manufacturer[] = "Libre Solar";
+static uint32_t timestamp = 12345678;
 
-typedef struct calibration_data_t {
-    float dcdc_current_min;  // A     --> if lower, charger is switched off
-    float dcdc_current_max;
-    float load_current_max;
-    bool load_overcurrent_flag;
-    float solar_voltage_max; // V
-    int32_t dcdc_restart_interval; // s    --> when should we retry to start charging after low solar power cut-off?
-    float solar_voltage_offset_start; // V  charging switched on if Vsolar > Vbat + offset
-    float solar_voltage_offset_stop;  // V  charging switched off if Vsolar < Vbat + offset
-    int32_t thermistor_beta_value;  // typical value for Semitec 103AT-5 thermistor: 3435
-    bool load_enabled_target;
-    bool usb_enabled_target;
-    bool pub_data_enabled;
-} calibration_data_t;
-extern calibration_data_t cal;
+// conf
+static float bat_charging_voltage = 14.4;
+static float load_disconnect_voltage = 10.8;
 
-char manufacturer[] = "LibreSolar";
+// input
+static bool enable_switch = false;
+
+// output
+static float battery_voltage = 14.1;
+static float battery_current = 5.13;
+static int16_t ambient_temp = 22;
+
+// rec
+static float bat_energy_hour = 32.2;
+static float bat_energy_day = 123;
+static int16_t ambient_temp_max_day = 28;
+
+// pub
+bool pub_serial_enable = true;
+uint16_t pub_serial_interval = 1000;
+uint16_t pub_serial_ids[20] = { 0x1A, 0x71, 0x72, 0x73 };
+ArrayInfo pub_serial_array = { pub_serial_ids, 4,
+    TS_T_NODE_ID, sizeof(pub_serial_ids)/sizeof(uint16_t)};
+
+bool pub_can_enable = false;
+uint16_t pub_can_interval = 100;
+uint16_t pub_can_ids[20] = { 0x71, 0x72, 0x73 };
+ArrayInfo pub_can_array = { pub_can_ids, 3,
+    TS_T_NODE_ID, sizeof(pub_can_ids)/sizeof(uint16_t)};
+
+// exec
+void reset_function(void);
+void auth_function(const char *args);
+
+
+static bool load_enabled_target;
+static bool usb_enabled_target;
+
 char strbuf[300];
 
 static float f32;
@@ -89,32 +84,114 @@ void dummy(void);
 
 static const DataNode data_nodes[] = {
 
-    // generates the parent nodes for subsequent data nodes
-    TS_CATEGORIES_DATA_NODES,
+    // DEVICE INFORMATION /////////////////////////////////////////////////////
+    // using IDs >= 0x18
 
-    // info
+    TS_DATA_NODE_PATH(TS_INFO, "info", 0, NULL),
 
-    TS_DATA_NODE_STRING(0x1001, "manufacturer", manufacturer, 0,
+    TS_DATA_NODE_STRING(0x19, "Manufacturer", manufacturer, 0,
         TS_INFO, TS_READ_ALL),
 
-    // input data
+    TS_DATA_NODE_UINT32(0x1A, "Timestamp_s", &timestamp,
+        TS_INFO, TS_READ_ALL),
 
-    TS_DATA_NODE_BOOL(0x3001, "loadEnTarget", &cal.load_enabled_target,
+    TS_DATA_NODE_STRING(0x1B, "DeviceID", strbuf, sizeof(strbuf),
+        TS_INFO, TS_READ_ALL | TS_WRITE_MAKER),
+
+    // CONFIGURATION //////////////////////////////////////////////////////////
+    // using IDs >= 0x30 except for high priority data objects
+
+    TS_DATA_NODE_PATH(TS_CONF, "conf", 0, NULL),
+
+    TS_DATA_NODE_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2,
+        TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_NODE_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2,
+        TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
+
+    // INPUT DATA /////////////////////////////////////////////////////////////
+    // using IDs >= 0x60
+
+    TS_DATA_NODE_PATH(TS_INPUT, "input", 0, NULL),
+
+    TS_DATA_NODE_BOOL(0x61, "EnableCharging", &enable_switch,
         TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
 
-    TS_DATA_NODE_BOOL(0x3002, "usbEnTarget", &cal.usb_enabled_target,
-        TS_INPUT, TS_READ_ALL | TS_WRITE_ALL),
+    // OUTPUT DATA ////////////////////////////////////////////////////////////
+    // using IDs >= 0x70 except for high priority data objects
 
-    // output data
+    TS_DATA_NODE_PATH(TS_OUTPUT, "output", 0, NULL),
 
-    TS_DATA_NODE_INT32(0x4001, "i32_output", &i32,
-        TS_OUTPUT, TS_READ_ALL),
+    TS_DATA_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, TS_OUTPUT, TS_READ_ALL),
+    TS_DATA_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, TS_OUTPUT, TS_READ_ALL),
+    TS_DATA_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, TS_OUTPUT, TS_READ_ALL),
 
-    // rpc / exec
+    // RECORDED DATA ///////////////////////////////////////////////////////
+    // using IDs >= 0xA0
+
+    TS_DATA_NODE_PATH(TS_REC, "rec", 0, NULL),
+
+    TS_DATA_NODE_FLOAT(0xA1, "BatHour_kWh", &battery_voltage, 2, TS_REC, TS_READ_ALL),
+    TS_DATA_NODE_FLOAT(0xA2, "BatDay_kWh", &battery_current, 2, TS_REC, TS_READ_ALL),
+    TS_DATA_NODE_INT16(0xA3, "AmbientMaxDay_degC", &ambient_temp, TS_REC, TS_READ_ALL),
+
+    // CALIBRATION DATA ///////////////////////////////////////////////////////
+    // using IDs >= 0xD0
+
+    TS_DATA_NODE_PATH(TS_CAL, "cal", 0, NULL),
+
+    // FUNCTION CALLS (EXEC) //////////////////////////////////////////////////
+    // using IDs >= 0xE0
+
+    TS_DATA_NODE_PATH(TS_EXEC, "exec", 0, NULL),
+
+    TS_DATA_NODE_EXEC(0xE1, "Reset", &reset_function, TS_EXEC, TS_EXEC_ALL),
+    //TS_DATA_NODE_EXEC(0xE2, "Auth", &reset_function, 0xE0, TS_EXEC_ALL),
+
+    // PUBLICATION DATA ///////////////////////////////////////////////////////
+    // using IDs >= 0xF0
+
+    TS_DATA_NODE_PATH(TS_PUB, "pub", 0, NULL),
+
+    TS_DATA_NODE_PATH(0xF1, "serial", TS_PUB, NULL),
+    TS_DATA_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT16(0xF3, "Interval_ms", &pub_serial_interval, 0xF1, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_ARRAY(0xF4, "IDs", &pub_serial_array, 0, 0xF1, TS_READ_ALL | TS_WRITE_ALL),
+
+    TS_DATA_NODE_PATH(0xF5, "can", TS_PUB, NULL),
+    TS_DATA_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_READ_ALL | TS_WRITE_ALL),
+    TS_DATA_NODE_ARRAY(0xF8, "IDs", &pub_can_array, 0, 0xF5, TS_READ_ALL | TS_WRITE_ALL),
+
+    // LOGGING DATA ///////////////////////////////////////////////////////
+    // using IDs >= 0xF0
+
+    TS_DATA_NODE_PATH(0x100, "log", 0, NULL),
+
+    TS_DATA_NODE_PATH(0x110, "hourly", 0x100, NULL),
+    /*
+        "hourly": {
+            "0h": {"Timestamp_s":23094834,"BatHour_kWh":123},
+            "-1h": {"Timestamp_s":23094834,"BatHour_kWh":123}
+        }
+    */
+
+    TS_DATA_NODE_PATH(0x130, "daily", 0x100, NULL),
+    /*
+        "daily": {
+            "0d": {"Timestamp_s":23094834,"BatDay_kWh":123,"AmbientMaxDay_degC":26},
+            "-1d": {"Timestamp_s":34209348,"BatDay_kWh":151,"AmbientMaxDay_degC":28}
+        },
+    */
+
+    // UNIT TEST DATA ///////////////////////////////////////////////////////
+    // using IDs >= 0x1000
+
+    TS_DATA_NODE_PATH(0x1000, "test", 0, NULL),
+
+    TS_DATA_NODE_INT32(0x4001, "i32_readonly", &i32, 0x1000, TS_READ_ALL),
 
     TS_DATA_NODE_EXEC(0x5001, "dummy", &dummy, TS_EXEC, TS_EXEC_ALL),
-
-    // configuration data
 
     TS_DATA_NODE_UINT64(0x6001, "ui64", &ui64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
     TS_DATA_NODE_INT64(0x6002, "i64", &i64, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),

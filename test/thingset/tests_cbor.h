@@ -255,17 +255,18 @@ void cbor_patch_rounded()
     f32 = tmp;
 }
 
-void cbor_list_ids_input()
+void cbor_list_ids_output()
 {
     // generate list request
-    req_buf[0] = TS_INPUT;
+    req_buf[0] = TS_OUTPUT;
     req_buf[1] = 0xF6;     // nullbyte to get response as numeric IDs
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "85 82 "     // successful response: array with 2 elements
-        "19 30 01 "
-        "19 30 02 ";
+        "85 83 "     // successful response: array with 3 elements
+        "18 71 "
+        "18 72 "
+        "18 73 ";
 
     uint8_t cbor_resp[100];
     int len = strlen(cbor_resp_hex);
@@ -277,17 +278,18 @@ void cbor_list_ids_input()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_list_names_input()
+void cbor_list_names_output()
 {
     // generate list request
-    req_buf[0] = TS_INPUT;
+    req_buf[0] = TS_OUTPUT;
     req_buf[1] = 0x80;     // empty array to get response as names
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "85 82 "     // successful response: array with 2 elements
-        "6C 6C 6F 61 64 45 6E 54 61 72 67 65 74 "
-        "6B 75 73 62 45 6E 54 61 72 67 65 74 ";
+        "85 83 "     // successful response: array with 3 elements
+        "65 42 61 74 5F 56 "
+        "65 42 61 74 5F 41 "
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
 
     uint8_t cbor_resp[100];
     int len = strlen(cbor_resp_hex);
@@ -299,15 +301,16 @@ void cbor_list_names_input()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_list_names_values_input()
+/*
+void cbor_get_names_values_output()
 {
     // generate list request
-    req_buf[0] = TS_INPUT;
+    req_buf[0] = TS_OUTPUT;
     req_buf[1] = 0xA0;     // empty map to get response as names + values
     ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
-        "85 A2 "     // successful response: map with 2 elements
+        "85 A3 "     // successful response: map with 3 elements
         "6C 6C 6F 61 64 45 6E 54 61 72 67 65 74 "
         "F4 "   // false
         "6B 75 73 62 45 6E 54 61 72 67 65 74 "
@@ -322,7 +325,7 @@ void cbor_list_names_values_input()
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
-
+*/
 
 void cbor_pub_msg()
 {

@@ -9,9 +9,6 @@
 #include "thingset.h"
 #include "../test/thingset/test_data.h"
 
-measurement_data_t meas;
-calibration_data_t cal;
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,9 +41,19 @@ int main()
     return 0;
 }
 
+void reset_function()
+{
+    printf("Reset function called!\n");
+}
+
+void auth_function(const char *args)
+{
+    printf("Auth function called, password: %s\n", args);
+}
+
 void dummy()
 {
-    ;
+    // do nothing, only used in unit-tests
 }
 
 #endif

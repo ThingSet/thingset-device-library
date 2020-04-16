@@ -49,7 +49,7 @@ void json_patch_array()
 
 void json_patch_readonly()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output {\"i32_output\" : 52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!test {\"i32_readonly\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
@@ -88,20 +88,20 @@ void json_fetch_rounded()
     TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
 }
 
-void json_list_input()
+void json_list_output()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input/");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"loadEnTarget\",\"usbEnTarget\"]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
 }
 
-void json_list_names_values_input()
+void json_get_output()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!input {}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. {\"loadEnTarget\":false,\"usbEnTarget\":false}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}", resp_buf);
 }
 
 void json_fetch_int32_array()
