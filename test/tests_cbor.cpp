@@ -4,9 +4,10 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#include "thingset.h"
-#include "test_data.h"
+#include "tests.h"
 #include "unity.h"
+
+#include "thingset.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -15,6 +16,11 @@
 extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
+
+extern float f32;
+extern int32_t i32;
+extern ArrayInfo int32_array;
+extern ArrayInfo float32_array;
 
 void cbor_patch_array()
 {
@@ -456,3 +462,31 @@ void test_list_small_buffer()
     TEST_ASSERT_EQUAL(TS_STATUS_RESPONSE_TOO_LARGE, resp[1]);
 }
 */
+
+void tests_cbor()
+{
+    UNITY_BEGIN();
+
+    RUN_TEST(cbor_patch_array);
+    RUN_TEST(cbor_fetch_array);
+    RUN_TEST(cbor_patch_int32_array);
+    RUN_TEST(cbor_fetch_int32_array);
+
+    RUN_TEST(cbor_patch_float_array);
+    RUN_TEST(cbor_fetch_float_array);
+
+    RUN_TEST(cbor_fetch_rounded);
+    RUN_TEST(cbor_patch_rounded);       // writes an integer to float
+    RUN_TEST(cbor_list_ids_output);
+    RUN_TEST(cbor_list_names_output);
+    //RUN_TEST(cbor_get_names_values_output);
+    RUN_TEST(cbor_pub_msg);
+    RUN_TEST(cbor_exec);
+    RUN_TEST(cbor_num_elem);
+    RUN_TEST(cbor_serialize_long_string);
+    //RUN_TEST(cbor_auth);
+    //RUN_TEST(cbor_auth_failure);
+    //RUN_TEST(cbor_auth_reset);
+
+    UNITY_END();
+}

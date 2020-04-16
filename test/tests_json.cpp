@@ -4,9 +4,10 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#include "thingset.h"
-#include "test_data.h"
+#include "tests.h"
 #include "unity.h"
+
+#include "thingset.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -15,6 +16,13 @@
 extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
+
+extern float f32;
+extern int32_t i32;
+extern ArrayInfo int32_array;
+extern ArrayInfo float32_array;
+extern ts_pub_channel_t pub_channels[];
+extern bool b;
 
 void json_wrong_command()
 {
@@ -73,6 +81,7 @@ void json_patch_unknown_node()
 
 void json_fetch_array()
 {
+    b = false;
     //                                                      float        bool         int
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -138,6 +147,13 @@ void json_exec()
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
+}
+
+bool dummy_called_flag = 0;
+
+void dummy(void)
+{
+    dummy_called_flag = 1;
 }
 
 void json_conf_callback()
@@ -277,4 +293,39 @@ void json_get_endpoint_node()
     node = ts.get_endpoint_node("conf/", strlen("conf/"));
     TEST_ASSERT_NOT_NULL(node);
     TEST_ASSERT_EQUAL(node->id, TS_CONF);
+}
+
+
+void tests_json()
+{
+    UNITY_BEGIN();
+
+    RUN_TEST(json_wrong_command);
+    RUN_TEST(json_patch_wrong_data_structure);
+    RUN_TEST(json_patch_array);
+    RUN_TEST(json_patch_readonly);
+    RUN_TEST(json_patch_wrong_path);
+    RUN_TEST(json_patch_unknown_node);
+    RUN_TEST(json_fetch_array);
+    RUN_TEST(json_fetch_rounded);
+    RUN_TEST(json_list_output);
+    RUN_TEST(json_get_output);
+    RUN_TEST(json_exec);
+    RUN_TEST(json_pub_msg);
+    RUN_TEST(json_conf_callback);
+    /* temporarily disabled
+    RUN_TEST(json_auth_user);
+    RUN_TEST(json_auth_root);
+    RUN_TEST(json_auth_long_password);
+    RUN_TEST(json_auth_failure);
+    RUN_TEST(json_auth_reset);
+    */
+    RUN_TEST(json_pub_list);
+    RUN_TEST(json_pub_enable);
+    RUN_TEST(json_get_endpoint_node);
+
+    RUN_TEST(json_fetch_int32_array);
+    RUN_TEST(json_fetch_float_array);
+
+    UNITY_END();
 }

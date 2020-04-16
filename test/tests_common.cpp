@@ -4,17 +4,18 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
+#include "tests.h"
+#include "unity.h"
+
 #include "thingset.h"
 #include "cbor.h"
-#include "test_data.h"
-#include "unity.h"
+
 #include <inttypes.h>
+#include <stdio.h>
 
 extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
-
-//extern ts_buffer_t req, resp;
 
 void _patch_json(char const *name, char const *value)
 {
@@ -303,4 +304,15 @@ void patch_cbor_fetch_json()
     // string
     _cbor2json("strbuf", "\"Test\"",  0x6009, "64 54 65 73 74");
     _cbor2json("strbuf", "\"Hello World!\"",  0x6009, "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
+}
+
+void tests_common()
+{
+    UNITY_BEGIN();
+
+    // data conversion tests
+    RUN_TEST(patch_json_fetch_cbor);
+    RUN_TEST(patch_cbor_fetch_json);
+
+    UNITY_END();
 }

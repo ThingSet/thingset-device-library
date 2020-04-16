@@ -7,7 +7,7 @@
 #if defined(NATIVE_BUILD) && !defined(UNIT_TEST)
 
 #include "thingset.h"
-#include "../test/thingset/test_data.h"
+#include "../test/test_data.h"
 
 #include <stdio.h>
 #include <stdlib.h>

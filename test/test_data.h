@@ -11,9 +11,6 @@
 #include <stdbool.h>
 #include "thingset.h"
 
-#define TS_REQ_BUFFER_LEN 500
-#define TS_RESP_BUFFER_LEN 500
-
 // info
 char manufacturer[] = "Libre Solar";
 static uint32_t timestamp = 12345678;
@@ -58,27 +55,27 @@ static bool usb_enabled_target;
 
 char strbuf[300];
 
-static float f32;
+float f32;
 
 static uint64_t ui64;
 static int64_t i64;
 
 static uint32_t ui32;
-static int32_t i32;
+int32_t i32;
 
 static uint16_t ui16;
 static int16_t i16;
 
-static bool b;
+bool b;
 
 static uint32_t secret_user = 1;
 static uint32_t secret_maker = 2;
 
-int A[100];
-ArrayInfo int32_array = {A, 0, 0, 0};
+int A[100] = {4, 2, 8, 4};
+ArrayInfo int32_array = {A, 4, TS_T_INT32, sizeof(A)/sizeof(int)};
 
-float B[100];
-ArrayInfo float32_array = {B, 0, 0, 0};
+float B[100] = {2.27, 3.44};
+ArrayInfo float32_array = {B, 2, TS_T_FLOAT32, sizeof(B)/sizeof(float)};
 
 void dummy(void);
 
@@ -215,7 +212,7 @@ static const DataNode data_nodes[] = {
     TS_DATA_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 };
 
-static const uint16_t pub_data_nodes[] = {
+const uint16_t pub_data_nodes[] = {
         #if TS_64BIT_TYPES_SUPPORT
         0x6001,
         0x6002,
@@ -229,7 +226,7 @@ static const uint16_t pub_data_nodes[] = {
         0x6009
 };
 
-static ts_pub_channel_t pub_channels[] = {
+ts_pub_channel_t pub_channels[] = {
     { "Serial_1s", pub_data_nodes, sizeof(pub_data_nodes)/sizeof(uint16_t), false }
 };
 
