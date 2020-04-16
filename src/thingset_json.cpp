@@ -228,63 +228,64 @@ void ThingSet::dump_json(uint16_t node_id, int level)
     }
 }
 
-int ThingSet::access_json(uint16_t parent_id, size_t path_len)
+int ThingSet::process_json()
 {
-    if (req_len > path_len) {
-        jsmn_parser parser;
-        jsmn_init(&(parser));
+    int path_len = req_len;
+    char *path_end = strchr((char *)req + 1, ' ');
+    if (path_end) {
+        path_len = (uint8_t *)path_end - req;
+    }
 
-        // +1 because blank is requested between path and JSON data
-        json_str = (char *)req + path_len + 1;
-        tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens,
-            sizeof(tokens));
+    const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len - 1);
+    if (!endpoint) {
+        return status_message_json(TS_STATUS_NOT_FOUND);
+    }
 
-        if (tok_count == JSMN_ERROR_NOMEM) {
-            return status_message_json(TS_STATUS_REQUEST_TOO_LARGE);
-        }
-        else if (tok_count < 0) {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
-        }
-        else if (tok_count == 0) {
-            //printf("get_json: %s\n", json_str);
-            if ((char)req[path_len-1] == '/') {
-                return get_json(parent_id, false);
-            }
-            else {
-                return get_json(parent_id, true);
-            }
-        }
-        else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
-            return get_json(parent_id, true);
+    jsmn_parser parser;
+    jsmn_init(&parser);
+
+    json_str = (char *)req + path_len;
+    tok_count = jsmn_parse(&parser, json_str, req_len - path_len, tokens, sizeof(tokens));
+
+    if (tok_count == JSMN_ERROR_NOMEM) {
+        return status_message_json(TS_STATUS_REQUEST_TOO_LARGE);
+    }
+    else if (tok_count < 0) {
+        // other parsing error
+        return status_message_json(TS_STATUS_BAD_REQUEST);
+    }
+    else if (tok_count == 0) {
+        // no payload data
+        if ((char)req[path_len-1] == '/') {
+            return get_json(endpoint, false);
         }
         else {
-            if (tokens[0].type == JSMN_OBJECT) {
-                //printf("patch_json: %s\n", json_str);
-                int len = patch_json(parent_id);
-                if (strncmp((char *)resp, ":84", 3) == 0 && conf_callback != NULL &&
-                    (parent_id == TS_CONF || parent_id == TS_INFO)) {
-                    conf_callback();
-                }
-                return len;
-            }
-            else {
-                if (parent_id == TS_EXEC) {
-                    //printf("exec_json: %s\n", json_str);
-                    return exec_json();
-                }
-                else {
-                    //printf("fetch_json: %s\n", json_str);
-                    return fetch_json(parent_id);
-                }
-            }
+            return get_json(endpoint, true);
         }
     }
-    else {  // only path without any blank characters --> list
-        if ((char)req[path_len-1] == '/') {
-            return get_json(parent_id, false);
+    else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
+        // legacy function to get all sub-nodes of a node by passing empty map
+        return get_json(endpoint, true);
+    }
+    else {
+        if (tokens[0].type == JSMN_OBJECT) {
+            //printf("patch_json: %s\n", json_str);
+            int len = patch_json(endpoint->id);
+            if (strncmp((char *)resp, ":84", 3) == 0 && conf_callback != NULL &&
+                (endpoint->id == TS_CONF || endpoint->id == TS_INFO)) {
+                conf_callback();
+            }
+            return len;
         }
         else {
-            return get_json(parent_id, true);
+            if (endpoint->id == TS_EXEC) {
+                //printf("exec_json: %s\n", json_str);
+                return exec_json();
+            }
+            else {
+                //printf("fetch_json: %s\n", json_str);
+                return fetch_json(endpoint->id);
+            }
         }
     }
 }
@@ -503,18 +504,26 @@ int ThingSet::patch_json(uint16_t parent_id)
     return status_message_json(TS_STATUS_CHANGED);
 }
 
-int ThingSet::get_json(uint16_t parent_id, bool values)
+int ThingSet::get_json(const DataNode *parent_node, bool include_values)
 {
     // initialize response with success message
     size_t len = status_message_json(TS_STATUS_CONTENT);
 
-    len += sprintf((char *)&resp[len], values ? " {" : " [");
+    if (parent_node->type != TS_T_PATH) {
+        // get value of data node
+        resp[len++] = ' ';
+        len += json_serialize_value((char *)&resp[len], resp_size - len, parent_node);
+        resp[--len] = '\0';     // remove trailing comma again
+        return len;
+    }
 
+    len += sprintf((char *)&resp[len], include_values ? " {" : " [");
+    int nodes_found = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
         if ((data_nodes[i].access & TS_READ_ALL) &&
-            (data_nodes[i].parent == parent_id))
+            (data_nodes[i].parent == parent_node->id))
         {
-            if (values) {
+            if (include_values) {
                 if (data_nodes[i].type == TS_T_PATH) {
                     // bad request, as we can't read internal path node's values
                     return status_message_json(TS_STATUS_BAD_REQUEST);
@@ -527,6 +536,7 @@ int ThingSet::get_json(uint16_t parent_id, bool values)
                     resp_size - len,
                     "\"%s\",", data_nodes[i].name);
             }
+            nodes_found++;
 
             if (len >= resp_size - 1) {
                 return status_message_json(TS_STATUS_RESPONSE_TOO_LARGE);
@@ -535,7 +545,11 @@ int ThingSet::get_json(uint16_t parent_id, bool values)
     }
 
     // remove trailing comma and add closing bracket
-    resp[len-1] = values ? '}' : ']';
+    if (nodes_found == 0) {
+        len++;
+    }
+    resp[len-1] = include_values ? '}' : ']';
+    resp[len] = '\0';
 
     return len;
 }

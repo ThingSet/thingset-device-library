@@ -88,33 +88,8 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
             }
         }
     }
-    // JSON request
-    else if (req[0] == '!') {
-
-        int path_len = req_len;
-        char *path_end = strchr((char *)req + 1, ' ');
-        if (path_end) {
-            path_len = (uint8_t *)path_end - req;
-        }
-        const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len - 1);
-
-        //printf("path = %.*s\n", path_len - 1, (char *)req + 1);
-
-        if (endpoint) {
-            //printf("endpoint: %s\n", endpoint->name);
-            if (endpoint->id == TS_AUTH) {
-                return auth_json();
-            }
-            else if (endpoint->id == TS_PUB) {
-                return pub_json();
-            }
-            else {
-                return access_json(endpoint->id, path_len);
-            }
-        }
-        else {
-            return status_message_json(TS_STATUS_NOT_FOUND);
-        }
+    else if (req[0] == '?' || req[0] == '=' || req[0] == '+' || req[0] == '-' || req[0] == '!') {
+        return process_json();
     }
     else {
         // not a thingset command --> ignore and set response to empty string

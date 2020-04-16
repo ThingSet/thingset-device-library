@@ -23,6 +23,7 @@ extern ArrayInfo int32_array;
 extern ArrayInfo float32_array;
 extern ts_pub_channel_t pub_channels[];
 extern bool b;
+extern bool pub_serial_enable;
 
 void json_wrong_command()
 {
@@ -264,22 +265,22 @@ void json_auth_reset()
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
-void json_pub_list()
+void json_pub_list_channels()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Serial_1s\"]", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"serial\",\"can\"]", resp_buf);
 }
 
 void json_pub_enable()
 {
-    pub_channels[0].enabled = false;
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub {\"Serial_1s\":true}");
+    pub_serial_enable = false;
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub/serial {\"Enable\":true}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
-    TEST_ASSERT_EQUAL(pub_channels[0].enabled, true);
+    TEST_ASSERT_EQUAL(pub_serial_enable, true);
 }
 
 void json_get_endpoint_node()
@@ -294,7 +295,6 @@ void json_get_endpoint_node()
     TEST_ASSERT_NOT_NULL(node);
     TEST_ASSERT_EQUAL(node->id, TS_CONF);
 }
-
 
 void tests_json()
 {
@@ -320,7 +320,7 @@ void tests_json()
     RUN_TEST(json_auth_failure);
     RUN_TEST(json_auth_reset);
     */
-    RUN_TEST(json_pub_list);
+    RUN_TEST(json_pub_list_channels);
     RUN_TEST(json_pub_enable);
     RUN_TEST(json_get_endpoint_node);
 

@@ -431,14 +431,14 @@ private:
     /**
      * Parser preparation and calling of the different data node access functions read/write/list
      */
-    int access_json(uint16_t parent_id, size_t pos);
+    int process_json();
 
     /**
      * GET request (text mode)
      *
      * List child data nodes (function called without content / parameters)
      */
-    int get_json(uint16_t parent_id, bool values = false);
+    int get_json(const DataNode *parent_node, bool include_values = false);
 
     /**
      * GET request (binary mode)
@@ -469,6 +469,8 @@ private:
     int patch_json(uint16_t parent_id);
 
     /**
+     * PATCH request (binary mode)
+     *
      * Write data node values in binary mode (function called with a map as argument)
      */
     int patch_cbor(uint16_t parent_id, bool ignore_access);
@@ -492,8 +494,6 @@ private:
      * Authentication command in text mode (user or root level)
      */
     int auth_json();
-
-    //int auth_cbor();
 
     /**
      * Fill the resp buffer with a JSON response status message
@@ -527,9 +527,19 @@ private:
     uint8_t *resp;              ///< Response buffer
     size_t resp_size;           ///< Size of response buffer (i.e. maximum length)
 
-    // parsed JSON data of request
-    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+    /**
+     * Pointer to the start of JSON payload in the request
+     */
     char *json_str;
+
+    /**
+     * JSON tokes in json_str parsed by JSMN
+     */
+    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+
+    /**
+     * Number of JSON tokens parsed by JSMN
+     */
     int tok_count;
 
     const char *user_pass = NULL;
