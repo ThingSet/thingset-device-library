@@ -27,8 +27,6 @@ ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
 
 int main()
 {
-    ts.set_pub_channels(pub_channels, sizeof(pub_channels)/sizeof(ts_pub_channel_t));
-
     tests_common();
     tests_json();
     tests_cbor();

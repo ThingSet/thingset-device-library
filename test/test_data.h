@@ -212,22 +212,4 @@ static const DataNode data_nodes[] = {
     TS_DATA_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, TS_CONF, TS_READ_ALL | TS_WRITE_ALL),
 };
 
-const uint16_t pub_data_nodes[] = {
-        #if TS_64BIT_TYPES_SUPPORT
-        0x6001,
-        0x6002,
-        #endif
-        0x6003,
-        0x6004,
-        0x6005,
-        0x6006,
-        0x6007,
-        0x6008,
-        0x6009
-};
-
-ts_pub_channel_t pub_channels[] = {
-    { "Serial_1s", pub_data_nodes, sizeof(pub_data_nodes)/sizeof(uint16_t), false }
-};
-
 #endif

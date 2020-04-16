@@ -21,9 +21,10 @@ extern float f32;
 extern int32_t i32;
 extern ArrayInfo int32_array;
 extern ArrayInfo float32_array;
-extern ts_pub_channel_t pub_channels[];
 extern bool b;
+
 extern bool pub_serial_enable;
+extern ArrayInfo pub_serial_array;
 
 void json_wrong_command()
 {
@@ -132,9 +133,12 @@ void json_fetch_float_array()
 
 void json_pub_msg()
 {
-    int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN, 0);
+    int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN,
+        (ts_node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING("# {\"ui32\":4294967295,\"i32\":50,\"ui16\":65535,\"i16\":-32768,\"f32\":52.80,\"bool\":false,\"strbuf\":\"Hello World!\"}", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(
+        "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}",
+        resp_buf);
 }
 
 extern bool dummy_called_flag;

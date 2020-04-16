@@ -22,6 +22,8 @@ extern int32_t i32;
 extern ArrayInfo int32_array;
 extern ArrayInfo float32_array;
 
+extern ArrayInfo pub_serial_array;
+
 void cbor_patch_array()
 {
     char cbor_req_hex[] =
@@ -335,25 +337,17 @@ void cbor_get_names_values_output()
 
 void cbor_pub_msg()
 {
-    ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN, 0);
+    ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN,
+        (ts_node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
 
     TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, resp_buf[0]);
 
     char cbor_resp_hex[] =
-        #if TS_64BIT_TYPES_SUPPORT
-        "1f A9 "     // map with 9 elements
-        "19 60 01 01 "                  // value 1
-        "19 60 02 02 "
-        #else
-        "1f A7 "     // map with 7 elements
-        #endif
-        "19 60 03 03 "
-        "19 60 04 04 "
-        "19 60 05 05 "
-        "19 60 06 06 "
-        "19 60 07 fa 40 fc 7a e1 "      // float32 7.89
-        "19 60 08 f5 "                  // true
-        "19 60 09 64 74 65 73 74 ";     // string "test"
+        "1F A4 "     // map with 4 elements
+        "18 1A 1A 00 BC 61 4E "     // int 12345678
+        "18 71 FA 41 61 99 9a "     // float 14.10
+        "18 72 FA 40 a4 28 f6 "     // float 5.13
+        "18 73 16 ";                // int 22
 
     uint8_t cbor_resp[100];
     int len = strlen(cbor_resp_hex);

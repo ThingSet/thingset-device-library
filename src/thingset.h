@@ -282,22 +282,12 @@ typedef struct DataNode {
 /* old naming convention of structs with _t is deprecated and will be removed in the future */
 __attribute__((deprecated)) typedef DataNode data_object_t;
 
-/**
- * Container for data node publication channel
- */
-typedef struct {
-    const char *name;           ///< Publication channel name
-    const uint16_t *object_ids; ///< Array of data node IDs
-    const size_t num;           ///< Number of objects
-    bool enabled;               ///< Enabled/disabled status
-} ts_pub_channel_t;
-
 
 class ThingSet
 {
 public:
     ThingSet(const DataNode *data, size_t num);
-    ThingSet(const DataNode *data, size_t num_nd, ts_pub_channel_t *channels, size_t num_ch);
+
     ~ThingSet();
 
     /**
@@ -313,8 +303,6 @@ public:
      * @returns Actual length of the response written to the buffer or 0 in case of error
      */
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
-
-    void set_pub_channels(ts_pub_channel_t *channels, size_t num);
 
     /**
      * Plot all data nodes as a structured JSON text to stdout
@@ -338,38 +326,28 @@ public:
     void set_maker_password(const char *password);
 
     /**
-     * Generates a publication message in JSON format for a defined channel
+     * Generate publication message in JSON format for supplied list of data node IDs
      *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param channel Number/ID of the publication channel
+     * @param node_ids Array of data node IDs to be published
+     * @param num_ids Number of elements in the nodes array
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_json(char *msg_buf, size_t size, unsigned int channel);
+    int pub_msg_json(char *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids);
 
     /**
-     * Generates a publication message in CBOR format for a defined channel
+     * Generate publication message in CBOR format for supplied list of data node IDs
      *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param channel Number/ID of the publication channel
+     * @param node_ids Array of data node IDs to be published
+     * @param num_ids Number of elements in the nodes array
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel);
-
-    /**
-     * Generates a publication message in CBOR format for supplied list of data node IDs
-     *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
-     * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param pub_list Array of data node IDs to be published
-     * @param num_elements Number of elements in the pub_list array
-     *
-     * @returns Actual length of the message written to the buffer or 0 in case of error
-     */
-    int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
+    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids);
 
     /**
      * Encodes a publication message in CAN message format for supplied data node
@@ -418,18 +396,6 @@ public:
      * @returns Pointer to data node or NULL if node is not found
      */
     const DataNode *get_data_node(const char *name, size_t len, int32_t parent = -1);
-
-    /** Get pub channel by name
-     */
-    ts_pub_channel_t *get_pub_channel(const char *name, size_t len);
-
-    /**
-     * Get pub channel by id
-     */
-    inline ts_pub_channel_t *get_pub_channel(unsigned int id)
-    {
-        return id < num_channels ? &pub_channels[id] : NULL;
-    }
 
     /**
      * Get the endpoint node of a provided path, e.g. "conf"
@@ -505,11 +471,6 @@ private:
     int exec_cbor();
 
     /**
-     * Publication control function in text mode
-     */
-    int pub_json();
-
-    /**
      * Authentication command in text mode (user or root level)
      */
     int auth_json();
@@ -536,9 +497,6 @@ private:
 
     const DataNode *data_nodes;
     size_t num_nodes;
-
-    ts_pub_channel_t *pub_channels;
-    size_t num_channels;
 
     uint8_t *req;               ///< Request buffer
     size_t req_len;             ///< Length of request

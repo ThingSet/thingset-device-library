@@ -358,36 +358,27 @@ int ThingSet::exec_cbor()
     return status_message_cbor(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel)
+int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const ts_node_id_t node_ids[],
+    size_t num_ids)
 {
-    if (channel >= num_channels) {
-        return 0;      // unknown channel
-    }
-
-    return pub_msg_cbor(msg_buf, size, pub_channels[channel].object_ids, pub_channels[channel].num);
-}
-
-int ThingSet::pub_msg_cbor(uint8_t *msg_buf, size_t size, const uint16_t pub_list[],
-    size_t num_elements)
-{
-    msg_buf[0] = TS_PUBMSG;
+    buf[0] = TS_PUBMSG;
     int len = 1;
 
-    if (num_elements > 1) {
-        len += cbor_serialize_map(&msg_buf[len], num_elements, size - len);
+    if (num_ids > 1) {
+        len += cbor_serialize_map(&buf[len], num_ids, buf_size - len);
     }
 
-    for (unsigned int element = 0; element < num_elements; element++) {
+    for (unsigned int i = 0; i < num_ids; i++) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        const DataNode* data_node = get_data_node(pub_list[element]);
+        const DataNode* data_node = get_data_node(node_ids[i]);
         if (data_node == NULL || !(data_node->access & TS_READ_ALL)) {
             continue;
         }
 
-        len += cbor_serialize_uint(&msg_buf[len], data_node->id, size - len);
-        num_bytes += cbor_serialize_data_node(&msg_buf[len], size - len, data_node);
+        len += cbor_serialize_uint(&buf[len], data_node->id, buf_size - len);
+        num_bytes += cbor_serialize_data_node(&buf[len], buf_size - len, data_node);
 
         if (num_bytes == 0) {
             return 0;

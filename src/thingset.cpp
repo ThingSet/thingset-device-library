@@ -32,24 +32,9 @@ ThingSet::ThingSet(const DataNode *data, size_t num)
     num_nodes = num;
 }
 
-ThingSet::ThingSet(const DataNode *data, size_t num_nd, ts_pub_channel_t *channels, size_t num_ch)
-{
-    _check_id_duplicates(data, num_nd);
-    data_nodes = data;
-    num_nodes = num_nd;
-    pub_channels = channels;
-    num_channels = num_ch;
-}
-
 ThingSet::~ThingSet()
 {
 
-}
-
-void ThingSet::set_pub_channels(ts_pub_channel_t *channels, size_t num)
-{
-    pub_channels = channels;
-    num_channels = num;
 }
 
 int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
@@ -123,17 +108,6 @@ const DataNode* ThingSet::get_data_node(uint16_t id)
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].id == id) {
             return &(data_nodes[i]);
-        }
-    }
-    return NULL;
-}
-
-ts_pub_channel_t *ThingSet::get_pub_channel(const char *name, size_t len)
-{
-    for (unsigned int i = 0; i < num_channels; i++) {
-        if (strncmp(pub_channels[i].name, name, len) == 0
-            && strlen(pub_channels[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
-            return &(pub_channels[i]);
         }
     }
     return NULL;

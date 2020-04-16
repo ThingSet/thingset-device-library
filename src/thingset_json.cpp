@@ -664,28 +664,24 @@ int ThingSet::exec_json()
     return status_message_json(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_json(char *msg_buf, size_t size, unsigned int channel)
+int ThingSet::pub_msg_json(char *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids)
 {
-    unsigned int len = sprintf(msg_buf, "# {");
+    unsigned int len = sprintf(buf, "# {");
 
-    if (num_channels < channel) {   // unknown channel
-        return 0;
-    }
+    for (unsigned int i = 0; i < num_ids; i++) {
 
-    for (unsigned int element = 0; element < pub_channels[channel].num; element++) {
-
-        const DataNode* data_node = get_data_node(pub_channels[channel].object_ids[element]);
-        if (data_node == NULL || !(data_node->access & TS_READ_ALL)) {
+        const DataNode* node = get_data_node(node_ids[i]);
+        if (node == NULL || !(node->access & TS_READ_ALL)) {
             continue;
         }
 
-        len += json_serialize_name_value(&msg_buf[len], size - len, data_node);
+        len += json_serialize_name_value(&buf[len], buf_size - len, node);
 
-        if (len >= size - 1) {
+        if (len >= buf_size - 1) {
             return 0;
         }
     }
-    msg_buf[len-1] = '}';    // overwrite comma
+    buf[len-1] = '}';    // overwrite comma
 
     return len;
 }
@@ -735,68 +731,4 @@ int ThingSet::auth_json()
     }
 
     return 0;
-}
-
-int ThingSet::pub_json()
-{
-    const int path_len = 4; // !pub
-    jsmn_parser parser;
-    jsmn_init(&(parser));
-
-    json_str = (char *)req + path_len + 1;
-    tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens, sizeof(tokens));
-
-    // initialize response with success message
-    size_t len = status_message_json(TS_STATUS_CONTENT);
-
-    if (req_len == path_len || tok_count == 0) {
-        // list channels
-        len += sprintf((char *)&resp[len], " [");
-        for (unsigned int i = 0; i < num_channels; i++) {
-            len += snprintf((char *)&resp[len], resp_size - len, "\"%s\",", pub_channels[i].name);
-            if (len >= resp_size - 1) {
-                return status_message_json(TS_STATUS_RESPONSE_TOO_LARGE);
-            }
-        }
-        // remove trailing comma and add closing bracket
-        resp[len-1] = ']';
-        return len;
-    }
-    else if (tok_count == 1) {
-        // can be:
-        // - true/false to globally enable/disable publication messages
-        // - a string to list elements of that channel
-        return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
-    }
-    else if (tok_count >= 3) {   // map with at least one key/value pair
-        // change channel setting
-        if (tokens[0].type != JSMN_OBJECT && tokens[1].type != JSMN_STRING) {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
-        }
-
-        ts_pub_channel_t* pub_ch = get_pub_channel(
-            json_str + tokens[1].start,
-            tokens[1].end - tokens[1].start);
-
-        if (pub_ch == NULL) {
-            return status_message_json(TS_STATUS_NOT_FOUND);
-        }
-
-        if (tokens[2].type == JSMN_PRIMITIVE) {
-            if (json_str[tokens[2].start] == 't' || json_str[tokens[2].start] == '1') {
-                pub_ch->enabled = true;
-            }
-            else if (json_str[tokens[2].start] == 'f' || json_str[tokens[2].start] == '0') {
-                pub_ch->enabled = false;
-            }
-            else {
-                return status_message_json(TS_STATUS_BAD_REQUEST);
-            }
-            return status_message_json(TS_STATUS_CHANGED);
-        }
-        return status_message_json(TS_STATUS_BAD_REQUEST);
-    }
-    else {
-        return status_message_json(TS_STATUS_BAD_REQUEST);
-    }
 }
