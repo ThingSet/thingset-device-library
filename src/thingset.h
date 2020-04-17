@@ -448,7 +448,7 @@ private:
     /**
      * POST request to append data
      */
-    int append_json(const DataNode *node);
+    int create_json(const DataNode *node);
 
     /**
      * DELETE request to delete data from node
@@ -458,7 +458,7 @@ private:
     /**
      * Execute command in text mode (function called with a single data node name as argument)
      */
-    int exec_json();
+    int exec_json(const DataNode *node);
 
     /**
      * Execute command in binary mode (function called with a single data node name/id as argument)

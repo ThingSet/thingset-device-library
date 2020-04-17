@@ -93,7 +93,7 @@ void json_fetch_array()
 
 void json_fetch_rounded()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"f32_rounded\"");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"f32_rounded\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
@@ -101,7 +101,7 @@ void json_fetch_rounded()
 
 void json_list_output()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output/");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
@@ -109,7 +109,7 @@ void json_list_output()
 
 void json_get_output()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!output");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}", resp_buf);
@@ -117,7 +117,7 @@ void json_get_output()
 
 void json_fetch_int32_array()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayi32\"]");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayi32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. [[4,2,8,4]]", resp_buf);
@@ -125,7 +125,7 @@ void json_fetch_int32_array()
 
 void json_fetch_float_array()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"arrayfloat\"]");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayfloat\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. [[2.27,3.44]]", resp_buf);
@@ -152,7 +152,7 @@ void json_exec()
 {
     dummy_called_flag = 0;
 
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!exec \"dummy\"");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!exec/dummy");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
@@ -269,7 +269,7 @@ void json_auth_reset()
 
 void json_pub_list_channels()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub/");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. [\"serial\",\"can\"]", resp_buf);
@@ -278,7 +278,7 @@ void json_pub_list_channels()
 void json_pub_enable()
 {
     pub_serial_enable = false;
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!pub/serial {\"Enable\":true}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=pub/serial {\"Enable\":true}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);

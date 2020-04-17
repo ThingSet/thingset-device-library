@@ -232,22 +232,27 @@ void ThingSet::dump_json(uint16_t node_id, int level)
 
 int ThingSet::process_json()
 {
-    int path_len = req_len;
+    int path_len = req_len - 1;
     char *path_end = strchr((char *)req + 1, ' ');
     if (path_end) {
-        path_len = (uint8_t *)path_end - req;
+        path_len = (uint8_t *)path_end - req - 1;
     }
 
-    const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len - 1);
+    const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len);
     if (!endpoint) {
-        return status_message_json(TS_STATUS_NOT_FOUND);
+        if (req[0] == '?' && req[1] == '/' && path_len == 1) {
+            return get_json(NULL, false);
+        }
+        else {
+            return status_message_json(TS_STATUS_NOT_FOUND);
+        }
     }
 
     jsmn_parser parser;
     jsmn_init(&parser);
 
-    json_str = (char *)req + path_len;
-    tok_count = jsmn_parse(&parser, json_str, req_len - path_len, tokens, sizeof(tokens));
+    json_str = (char *)req + 1 + path_len;
+    tok_count = jsmn_parse(&parser, json_str, req_len - path_len - 1, tokens, sizeof(tokens));
 
     if (tok_count == JSMN_ERROR_NOMEM) {
         return status_message_json(TS_STATUS_REQUEST_TOO_LARGE);
@@ -257,12 +262,23 @@ int ThingSet::process_json()
         return status_message_json(TS_STATUS_BAD_REQUEST);
     }
     else if (tok_count == 0) {
-        // no payload data
-        if ((char)req[path_len-1] == '/') {
-            return get_json(endpoint, false);
+        if (req[0] == '?') {
+            // no payload data
+            if ((char)req[path_len] == '/') {
+                if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_FUNCTION) {
+                    return get_json(endpoint, false);
+                }
+                else {
+                    // device discovery is only allowed for internal nodes
+                    return status_message_json(TS_STATUS_BAD_REQUEST);
+                }
+            }
+            else {
+                return get_json(endpoint, true);
+            }
         }
-        else {
-            return get_json(endpoint, true);
+        else if (req[0] == '!') {
+            return exec_json(endpoint);
         }
     }
     else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
@@ -283,12 +299,12 @@ int ThingSet::process_json()
             return len;
         }
         else {
-            if (endpoint->id == TS_EXEC) {
+            if (req[0] == '!' && endpoint->type == TS_T_FUNCTION) {
                 //printf("exec_json: %s\n", json_str);
-                return exec_json();
+                return exec_json(endpoint);
             }
             else if (req[0] == '+') {
-                return append_json(endpoint);
+                return create_json(endpoint);
             }
             else if (req[0] == '-') {
                 return delete_json(endpoint);
@@ -299,6 +315,7 @@ int ThingSet::process_json()
             }
         }
     }
+    return status_message_json(TS_STATUS_BAD_REQUEST);
 }
 
 int ThingSet::fetch_json(uint16_t parent_id)
@@ -521,7 +538,9 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     // initialize response with success message
     size_t len = status_message_json(TS_STATUS_CONTENT);
 
-    if (parent_node->type != TS_T_PATH) {
+    ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
+
+    if (parent_node != NULL && parent_node->type != TS_T_PATH && parent_node->type != TS_T_FUNCTION) {
         // get value of data node
         resp[len++] = ' ';
         len += json_serialize_value((char *)&resp[len], resp_size - len, parent_node);
@@ -529,15 +548,20 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
         return len;
     }
 
+    if (parent_node != NULL && parent_node->type == TS_T_FUNCTION && include_values) {
+        // bad request, as we can't read exec node's values
+        return status_message_json(TS_STATUS_BAD_REQUEST);
+    }
+
     len += sprintf((char *)&resp[len], include_values ? " {" : " [");
     int nodes_found = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
-        if ((data_nodes[i].access & TS_READ_ALL) &&
-            (data_nodes[i].parent == parent_node->id))
+        if ((data_nodes[i].access & (TS_READ_ALL | TS_EXEC_ALL)) &&
+            (data_nodes[i].parent == parent_node_id))
         {
             if (include_values) {
                 if (data_nodes[i].type == TS_T_PATH) {
-                    // bad request, as we can't read internal path node's values
+                    // bad request, as we can't read nternal path node's values
                     return status_message_json(TS_STATUS_BAD_REQUEST);
                 }
                 len += json_serialize_name_value((char *)&resp[len], resp_size - len,
@@ -566,7 +590,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     return len;
 }
 
-int ThingSet::append_json(const DataNode *node)
+int ThingSet::create_json(const DataNode *node)
 {
     if (node->type != TS_T_ARRAY) {
         return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
@@ -577,10 +601,14 @@ int ThingSet::append_json(const DataNode *node)
     }
 
     ArrayInfo *arr_info = (ArrayInfo *)node->data;
+
     if (arr_info->num_elements < arr_info->max_elements) {
+
         if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
+
             const DataNode *new_node = get_data_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
+
             if (new_node != NULL) {
                 ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
                 // check if node is already existing in array
@@ -642,27 +670,47 @@ int ThingSet::delete_json(const DataNode *node)
     }
 }
 
-int ThingSet::exec_json()
+int ThingSet::exec_json(const DataNode *node)
 {
-    if (tokens[0].type != JSMN_STRING) {
+    int tok = 0;            // current token
+    int nodes_found = 0;    // number of child nodes found
+
+    if (tok_count > 0 && tokens[tok].type == JSMN_ARRAY) {
+        tok++;      // go to first element of array
+    }
+
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].parent == node->id) {
+            if (tok >= tok_count) {
+                // more child nodes found than parameters were passed
+                return status_message_json(TS_STATUS_BAD_REQUEST);
+            }
+            int res = json_deserialize_value(json_str + tokens[tok].start,
+                tokens[tok].end - tokens[tok].start, tok, &data_nodes[i]);
+            if (res == 0) {
+                // deserializing the value was not successful
+                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
+            }
+            tok += res;
+            nodes_found++;
+        }
+    }
+
+    if (tok_count > tok) {
+        // more parameters passed than child nodes found
         return status_message_json(TS_STATUS_BAD_REQUEST);
     }
 
-    const DataNode *data_node = get_data_node(json_str + tokens[0].start,
-        tokens[0].end - tokens[0].start, TS_EXEC);
-    if (data_node == NULL) {
-        return status_message_json(TS_STATUS_NOT_FOUND);
-    }
-    if (!( ((data_node->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
-            (((data_node->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
-            (((data_node->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
+    if (!( ((node->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
+            (((node->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
+            (((node->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
         ))
     {
         return status_message_json(TS_STATUS_UNAUTHORIZED);
     }
 
-    // create function pointer and call function
-    void (*fun)(void) = reinterpret_cast<void(*)()>(data_node->data);
+    // if we got here, finally create function pointer and call function
+    void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
     fun();
 
     return status_message_json(TS_STATUS_VALID);

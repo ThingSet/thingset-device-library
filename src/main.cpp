@@ -64,9 +64,9 @@ void reset_function()
     printf("Reset function called!\n");
 }
 
-void auth_function(const char *args)
+void auth_function()
 {
-    printf("Auth function called, password: %s\n", args);
+    printf("Auth function called, password: %s\n", auth_password);
 }
 
 void conf_callback()

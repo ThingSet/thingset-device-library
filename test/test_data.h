@@ -47,11 +47,9 @@ ArrayInfo pub_can_array = { pub_can_ids, 3,
 
 // exec
 void reset_function(void);
-void auth_function(const char *args);
+void auth_function(void);
+char auth_password[11];
 
-
-static bool load_enabled_target;
-static bool usb_enabled_target;
 
 char strbuf[300];
 
@@ -143,8 +141,10 @@ static const DataNode data_nodes[] = {
 
     TS_DATA_NODE_PATH(TS_EXEC, "exec", 0, NULL),
 
-    TS_DATA_NODE_EXEC(0xE1, "Reset", &reset_function, TS_EXEC, TS_EXEC_ALL),
-    //TS_DATA_NODE_EXEC(0xE2, "Auth", &reset_function, 0xE0, TS_EXEC_ALL),
+    TS_DATA_NODE_EXEC(0xE1, "reset", &reset_function, TS_EXEC, TS_EXEC_ALL),
+
+    TS_DATA_NODE_EXEC(0xE2, "auth", &auth_function, 0, TS_EXEC_ALL),
+    TS_DATA_NODE_STRING(0xE3, "Password", auth_password, sizeof(auth_password), 0xE2, TS_EXEC_ALL),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xF0
