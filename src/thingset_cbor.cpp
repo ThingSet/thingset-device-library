@@ -204,7 +204,7 @@ int ThingSet::status_message_cbor(uint8_t code)
     }
 }
 
-int ThingSet::fetch_cbor(uint16_t parent_id)
+int ThingSet::fetch_cbor(node_id_t parent_id)
 {
     unsigned int pos = 1;       // position in request (ignore first byte for function code)
     unsigned int len = 0;       // current length of response
@@ -229,7 +229,7 @@ int ThingSet::fetch_cbor(uint16_t parent_id)
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        uint16_t id;
+        node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_BAD_REQUEST);
@@ -271,7 +271,7 @@ int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
     return resp[0] - 0x80;
 }
 
-int ThingSet::patch_cbor(uint16_t parent_id, bool ignore_access)
+int ThingSet::patch_cbor(node_id_t parent_id, bool ignore_access)
 {
     unsigned int pos = 1;       // ignore first byte for function code in request
     uint16_t num_elements, element = 0;
@@ -290,7 +290,7 @@ int ThingSet::patch_cbor(uint16_t parent_id, bool ignore_access)
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        uint16_t id;
+        node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos], &id);
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_BAD_REQUEST);
@@ -337,7 +337,7 @@ int ThingSet::patch_cbor(uint16_t parent_id, bool ignore_access)
 int ThingSet::exec_cbor()
 {
     // only a single function call allowed (no array of data nodes)
-    uint16_t id;
+    node_id_t id;
     size_t num_bytes = cbor_deserialize_uint16(&req[1], &id);
     if (num_bytes == 0 || req_len > 4) {
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
@@ -358,7 +358,7 @@ int ThingSet::exec_cbor()
     return status_message_cbor(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const ts_node_id_t node_ids[],
+int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const node_id_t node_ids[],
     size_t num_ids)
 {
     buf[0] = TS_PUBMSG;
@@ -421,7 +421,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::get_cbor(uint16_t parent_id, bool values, bool ids_only)
+int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
     len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer

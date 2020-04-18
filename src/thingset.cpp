@@ -103,7 +103,7 @@ const DataNode* ThingSet::get_data_node(const char *str, size_t len, int32_t par
     return NULL;
 }
 
-const DataNode* ThingSet::get_data_node(uint16_t id)
+const DataNode* ThingSet::get_data_node(node_id_t id)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].id == id) {

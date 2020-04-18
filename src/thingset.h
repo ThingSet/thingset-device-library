@@ -63,7 +63,7 @@
 /**
  * Internal C data types (used to cast void* pointers)
  */
-enum ts_type {
+enum TsType {
     TS_T_BOOL,
     TS_T_UINT64,
     TS_T_INT64,
@@ -81,21 +81,19 @@ enum ts_type {
 };
 
 /**
- * Data structure to store the array pointer, length, and its type
+ * Data structure to specify an array data node
  */
 typedef struct {
-    void *ptr;          ///< Pointer to the array
-    int num_elements;   ///< Number of elements in the array. For eg, sizeof(data)/sizeof(data[0]);
-    uint8_t type;       ///< Type of the array
-    int max_elements;   ///< The maximum number of elements in the array
+    void *ptr;                  ///< Pointer to the array
+    uint16_t max_elements;      ///< Maximum number of elements in the array
+    uint16_t num_elements;      ///< Actual number of elements in the array
+    uint8_t type;               ///< Type of the array elements
 } ArrayInfo;
 
 /*
  * Functions to generate data_node map and make compiler complain if wrong
  * type is passed
  */
-
-#define TS_DATA_NODE_ID_CHECK(_id) TS_DATA_NODE_ID_TEMP_##_id
 
 static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
 #define TS_DATA_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc) \
@@ -234,7 +232,7 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
 
 
-typedef uint16_t ts_node_id_t;
+typedef uint16_t node_id_t;
 
 /**
  * ThingSet data node struct
@@ -243,12 +241,12 @@ typedef struct DataNode {
     /**
      * Data node ID
      */
-    const ts_node_id_t id;
+    const node_id_t id;
 
     /**
      * ID of parent node
      */
-    const ts_node_id_t parent;
+    const node_id_t parent;
 
     /**
      * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
@@ -274,7 +272,7 @@ typedef struct DataNode {
     void *data;
 
     /**
-     * Data Nnode name
+     * Data Node name
      */
     const char *name;
 } DataNode;
@@ -313,7 +311,7 @@ public:
      * @param node_id Root node ID where to start with plotting
      * @param level Indentation level (=depth inside the data node tree)
      */
-    void dump_json(uint16_t node_id = 0, int level = 0);
+    void dump_json(node_id_t node_id = 0, int level = 0);
 
     /**
      * Sets password for users
@@ -335,7 +333,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_json(char *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids);
+    int pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids);
 
     /**
      * Generate publication message in CBOR format for supplied list of data node IDs
@@ -347,7 +345,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids);
+    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids);
 
     /**
      * Encodes a publication message in CAN message format for supplied data node
@@ -377,7 +375,7 @@ public:
     /**
      * Get data node by ID
      */
-    const DataNode *get_data_node(uint16_t id);
+    const DataNode *get_data_node(node_id_t id);
 
     /**
      * Get data node by name
@@ -415,35 +413,35 @@ private:
      *
      * List child data nodes (function called without content / parameters)
      */
-    int get_cbor(uint16_t parent_id, bool values = false, bool ids_only = true);
+    int get_cbor(node_id_t parent_id, bool values = false, bool ids_only = true);
 
     /**
      * FETCH request (text mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int fetch_json(uint16_t parent_id);
+    int fetch_json(node_id_t parent_id);
 
     /**
      * FETCH request (binary mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int fetch_cbor(uint16_t parent_id);
+    int fetch_cbor(node_id_t parent_id);
 
     /**
      * PATCH request (text mode)
      *
      * Write data node values in text mode (function called with a map as argument)
      */
-    int patch_json(uint16_t parent_id);
+    int patch_json(node_id_t parent_id);
 
     /**
      * PATCH request (binary mode)
      *
      * Write data node values in binary mode (function called with a map as argument)
      */
-    int patch_cbor(uint16_t parent_id, bool ignore_access);
+    int patch_cbor(node_id_t parent_id, bool ignore_access);
 
     /**
      * POST request to append data

@@ -198,7 +198,7 @@ int ThingSet::json_serialize_name_value(char *resp, size_t size, const DataNode*
     }
 }
 
-void ThingSet::dump_json(uint16_t node_id, int level)
+void ThingSet::dump_json(node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
@@ -318,7 +318,7 @@ int ThingSet::process_json()
     return status_message_json(TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::fetch_json(uint16_t parent_id)
+int ThingSet::fetch_json(node_id_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
@@ -436,7 +436,7 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, int tok, const DataN
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ThingSet::patch_json(uint16_t parent_id)
+int ThingSet::patch_json(node_id_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -538,7 +538,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     // initialize response with success message
     size_t len = status_message_json(TS_STATUS_CONTENT);
 
-    ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
+    node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
     if (parent_node != NULL && parent_node->type != TS_T_PATH && parent_node->type != TS_T_FUNCTION) {
         // get value of data node
@@ -610,7 +610,7 @@ int ThingSet::create_json(const DataNode *node)
                 tokens[0].end - tokens[0].start);
 
             if (new_node != NULL) {
-                ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
+                node_id_t *node_ids = (node_id_t *)arr_info->ptr;
                 // check if node is already existing in array
                 for (int i = 0; i < arr_info->num_elements; i++) {
                     if (node_ids[i] == new_node->id) {
@@ -651,7 +651,7 @@ int ThingSet::delete_json(const DataNode *node)
             tokens[0].end - tokens[0].start);
         if (del_node != NULL) {
             // node found in node database, now look for same ID in the array
-            ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
+            node_id_t *node_ids = (node_id_t *)arr_info->ptr;
             for (int i = 0; i < arr_info->num_elements; i++) {
                 if (node_ids[i] == del_node->id) {
                     // node also found in array, shift all remaining elements
@@ -716,7 +716,7 @@ int ThingSet::exec_json(const DataNode *node)
     return status_message_json(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_json(char *buf, size_t buf_size, const ts_node_id_t node_ids[], size_t num_ids)
+int ThingSet::pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids)
 {
     unsigned int len = sprintf(buf, "# {");
 

@@ -35,15 +35,14 @@ static int16_t ambient_temp_max_day = 28;
 // pub
 bool pub_serial_enable = false;
 uint16_t pub_serial_interval = 1000;
-uint16_t pub_serial_ids[20] = { 0x1A, 0x71, 0x72, 0x73 };
-ArrayInfo pub_serial_array = { pub_serial_ids, 4,
-    TS_T_NODE_ID, sizeof(pub_serial_ids)/sizeof(uint16_t)};
+node_id_t pub_serial_ids[20] = { 0x1A, 0x71, 0x72, 0x73 };
+ArrayInfo pub_serial_array = { pub_serial_ids, sizeof(pub_serial_ids)/sizeof(node_id_t), 4,
+    TS_T_NODE_ID};
 
 bool pub_can_enable = true;
 uint16_t pub_can_interval = 100;
-uint16_t pub_can_ids[20] = { 0x71, 0x72, 0x73 };
-ArrayInfo pub_can_array = { pub_can_ids, 3,
-    TS_T_NODE_ID, sizeof(pub_can_ids)/sizeof(uint16_t)};
+node_id_t pub_can_ids[20] = { 0x71, 0x72, 0x73 };
+ArrayInfo pub_can_array = { pub_can_ids, sizeof(pub_can_ids)/sizeof(node_id_t), 3, TS_T_NODE_ID};
 
 // exec
 void reset_function(void);
@@ -69,11 +68,11 @@ bool b;
 static uint32_t secret_user = 1;
 static uint32_t secret_maker = 2;
 
-int A[100] = {4, 2, 8, 4};
-ArrayInfo int32_array = {A, 4, TS_T_INT32, sizeof(A)/sizeof(int)};
+int32_t A[100] = {4, 2, 8, 4};
+ArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
 
 float B[100] = {2.27, 3.44};
-ArrayInfo float32_array = {B, 2, TS_T_FLOAT32, sizeof(B)/sizeof(float)};
+ArrayInfo float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
 
 void dummy(void);
 void conf_callback(void);
