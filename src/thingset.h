@@ -140,7 +140,7 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
     {_id, _parent, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
 
 #define TS_DATA_NODE_PATH(_id, _name, _parent, _callback) \
-    {_id, _parent, TS_READ_ALL, TS_T_PATH, 0, _function_to_void(_callback), _name}
+    {_id, _parent, TS_READ_MASK, TS_T_PATH, 0, _function_to_void(_callback), _name}
 
 /*
  * This macro should be called first in the data_nodes array
@@ -208,28 +208,39 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 /*
  * Internal access rights to data nodes
  */
-#define TS_READ_ALL     (0x1U << 0)     // read access for all
-#define TS_READ_USER    (0x3U << 0)     // read after authentication as normal user
-#define TS_READ_MAKER   (0x7U << 0)     // read after authentication as manufacturer, e.g. for factory calibration
-#define TS_READ_MASK    TS_READ_MAKER   // maker has all 3 bits set
+#define TS_ROLE_USR     (1U << 0)       // normal user
+#define TS_ROLE_EXP     (1U << 1)       // expert user
+#define TS_ROLE_MKR     (1U << 2)       // maker
+#define TS_ROLE_NVM     (1U << 3)       // internal (for non-volatile memory storage)
 
-#define TS_WRITE_ALL    (0x1U << 3)     // write access for all
-#define TS_WRITE_USER   (0x3U << 3)     // write after authentication as normal user
-#define TS_WRITE_MAKER  (0x7U << 3)     // write after authentication as manufacturer, e.g. for factory calibration
-#define TS_WRITE_MASK   TS_WRITE_MAKER
+#define TS_READ_MASK    0x0F            // read flags stored in 4 least-significant bits
+#define TS_WRITE_MASK   0xF0            // write flags stored in 4 most-significant bits
 
-#define TS_EXEC_ALL     (0x1U << 6)     // execute access for all (only for RPC)
-#define TS_EXEC_USER    (0x3U << 6)     // execute after authentication as normal user
-#define TS_EXEC_MAKER   (0x7U << 6)     // execute after authentication as manufacturer, e.g. for factory calibration
-#define TS_EXEC_MASK    TS_EXEC_MAKER
+#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR)
+#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP)
+#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR)
+#define TS_NVM_MASK     (TS_ROLE_NVM << 4 | TS_ROLE_NVM)
 
-// legacy names
-#define TS_ACCESS_READ          TS_READ_ALL
-#define TS_ACCESS_READ_AUTH     TS_READ_USER
-#define TS_ACCESS_WRITE         TS_WRITE_ALL
-#define TS_ACCESS_WRITE_AUTH    TS_WRITE_USER
-#define TS_ACCESS_EXEC          TS_EXEC_ALL
-#define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
+#define TS_READ(roles)          ((roles) & TS_READ_MASK)
+#define TS_WRITE(roles)         (((roles) << 4) & TS_WRITE_MASK)
+#define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
+
+#define TS_USR_R        TS_READ(TS_ROLE_USR)
+#define TS_EXP_R        TS_READ(TS_ROLE_EXP)
+#define TS_MKR_R        TS_READ(TS_ROLE_MKR)
+#define TS_ANY_R        (TS_USR_R | TS_EXP_R | TS_MKR_R)
+
+#define TS_USR_W        TS_WRITE(TS_ROLE_USR)
+#define TS_EXP_W        TS_WRITE(TS_ROLE_EXP)
+#define TS_MKR_W        TS_WRITE(TS_ROLE_MKR)
+#define TS_ANY_W        (TS_USR_W | TS_EXP_W | TS_MKR_W)
+
+#define TS_USR_RW       TS_READ_WRITE(TS_ROLE_USR)
+#define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP)
+#define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR)
+#define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW)
+
+#define TS_NVM          TS_READ_WRITE(TS_ROLE_NVM)
 
 
 typedef uint16_t node_id_t;
@@ -314,14 +325,17 @@ public:
     void dump_json(node_id_t node_id = 0, int level = 0);
 
     /**
-     * Sets password for users
+     * Sets current authentication level
+     *
+     * The authentication flags must match with access flags specified in DataNode to allow
+     * read/write access to a data node.
+     *
+     * @param flags
      */
-    void set_user_password(const char *password);
-
-    /**
-     * Sets password for maker/manufacturer
-     */
-    void set_maker_password(const char *password);
+    void set_authentication(uint8_t flags)
+    {
+        auth_flags = flags;
+    }
 
     /**
      * Generate publication message in JSON format for supplied list of data node IDs
@@ -464,11 +478,6 @@ private:
     int exec_cbor();
 
     /**
-     * Authentication command in text mode (user or root level)
-     */
-    int auth_json();
-
-    /**
      * Fill the resp buffer with a JSON response status message
      *
      * @param code Status code
@@ -514,11 +523,7 @@ private:
      */
     int tok_count;
 
-    const char *user_pass = NULL;
-    const char *maker_pass = NULL;
-
-    bool user_authorized = false;
-    bool maker_authorized = false;
+    uint8_t auth_flags = TS_USR_MASK;
 };
 
 #endif

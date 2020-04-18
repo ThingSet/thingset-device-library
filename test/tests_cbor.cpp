@@ -478,9 +478,6 @@ void tests_cbor()
     RUN_TEST(cbor_exec);
     RUN_TEST(cbor_num_elem);
     RUN_TEST(cbor_serialize_long_string);
-    //RUN_TEST(cbor_auth);
-    //RUN_TEST(cbor_auth_failure);
-    //RUN_TEST(cbor_auth_reset);
 
     UNITY_END();
 }

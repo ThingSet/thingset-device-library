@@ -8,9 +8,8 @@
 #include "unity.h"
 
 #include "test_data.h"
+#include "test_functions.h"
 #include "tests.h"
-
-#include <stdio.h>
 
 #ifdef __WIN32__
 
@@ -30,14 +29,4 @@ int main()
     tests_common();
     tests_json();
     tests_cbor();
-}
-
-void reset_function()
-{
-    printf("Reset function called!\n");
-}
-
-void auth_function()
-{
-    printf("Auth function called, password: %s\n", auth_password);
 }

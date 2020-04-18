@@ -8,6 +8,7 @@
 
 #include "thingset.h"
 #include "../test/test_data.h"
+#include "../test/test_functions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,16 +58,6 @@ int main()
         free(line);
     }
     return 0;
-}
-
-void reset_function()
-{
-    printf("Reset function called!\n");
-}
-
-void auth_function()
-{
-    printf("Auth function called, password: %s\n", auth_password);
 }
 
 void conf_callback()

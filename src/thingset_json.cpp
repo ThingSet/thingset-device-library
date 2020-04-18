@@ -339,26 +339,28 @@ int ThingSet::fetch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode *data_node = get_data_node(
+        const DataNode *node = get_data_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
-        if (data_node == NULL) {
+        if (node == NULL) {
             return status_message_json(TS_STATUS_NOT_FOUND);
         }
-        else if (data_node->type == TS_T_PATH) {
+        else if (node->type == TS_T_PATH) {
             // bad request, as we can't read internal path node's values
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
-        if (!( ((data_node->access & TS_READ_MASK) == TS_READ_ALL) ||
-               (((data_node->access & TS_READ_MASK) == TS_READ_USER) && user_authorized) ||
-               (((data_node->access & TS_READ_MASK) == TS_READ_MAKER) && maker_authorized)
-           ))
-        {
-            return status_message_json(TS_STATUS_UNAUTHORIZED);
+
+        if ((node->access & TS_READ_MASK & auth_flags) == 0) {
+            if (node->access & TS_READ_MASK) {
+                return status_message_json(TS_STATUS_UNAUTHORIZED);
+            }
+            else {
+                return status_message_json(TS_STATUS_FORBIDDEN);
+            }
         }
 
-        pos += json_serialize_value((char *)&resp[pos], resp_size - pos, data_node);
+        pos += json_serialize_value((char *)&resp[pos], resp_size - pos, node);
 
         if (pos >= resp_size - 2) {
             return status_message_json(TS_STATUS_RESPONSE_TOO_LARGE);
@@ -418,11 +420,10 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, int tok, const DataN
             }
             break;
         case TS_T_STRING:
-            if (tokens[tok].type != JSMN_STRING) {
+            if (tokens[tok].type != JSMN_STRING || data_node->detail <= len) {
                 return 0;
             }
-            if (data_node->detail != 0) {
-                // data node buffer length already checked before, but dummy node has 0
+            else if (data_node->id != 0) {     // dummy node has id = 0
                 strncpy((char*)data_node->data, buf, len);
                 ((char*)data_node->data)[len] = '\0';
             }
@@ -464,28 +465,30 @@ int ThingSet::patch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode* data_node = get_data_node(
+        const DataNode* node = get_data_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
-        if (data_node == NULL) {
+        if (node == NULL) {
             return status_message_json(TS_STATUS_NOT_FOUND);
         }
 
-        if (!( ((data_node->access & TS_WRITE_MASK) == TS_WRITE_ALL) ||
-               (((data_node->access & TS_WRITE_MASK) == TS_WRITE_USER) && user_authorized) ||
-               (((data_node->access & TS_WRITE_MASK) == TS_WRITE_MAKER) && maker_authorized)
-           ))
-        {
-            return status_message_json(TS_STATUS_UNAUTHORIZED);
+        if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
+            if (node->access & TS_WRITE_MASK) {
+                return status_message_json(TS_STATUS_UNAUTHORIZED);
+            }
+            else {
+                return status_message_json(TS_STATUS_FORBIDDEN);
+            }
         }
 
         tok++;
 
         // extract the value and check buffer lengths
         value_len = tokens[tok].end - tokens[tok].start;
-        if ((data_node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
-            (data_node->type == TS_T_STRING && value_len >= (size_t)data_node->detail)) {
+        if ((node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
+            (node->type == TS_T_STRING && value_len >= (size_t)node->detail))
+        {
             return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
         }
         else {
@@ -495,7 +498,7 @@ int ThingSet::patch_json(node_id_t parent_id)
 
         // create dummy node to test formats
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
-        DataNode dummy_node = {0, 0, 0, data_node->type, 0, (void *) dummy_data, "Dummy"};
+        DataNode dummy_node = {0, 0, 0, node->type, node->detail, (void *) dummy_data, "Dummy"};
 
         int res = json_deserialize_value(value_buf, value_len, tok, &dummy_node);
         if (res == 0) {
@@ -514,8 +517,7 @@ int ThingSet::patch_json(node_id_t parent_id)
     // actually write data
     while (tok + 1 < tok_count) {
 
-        const DataNode *data_node = get_data_node(
-            json_str + tokens[tok].start,
+        const DataNode *node = get_data_node(json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
         tok++;
@@ -527,7 +529,7 @@ int ThingSet::patch_json(node_id_t parent_id)
             value_buf[value_len] = '\0';
         }
 
-        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tok, data_node);
+        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tok, node);
     }
 
     return status_message_json(TS_STATUS_CHANGED);
@@ -540,7 +542,9 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
 
     node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
-    if (parent_node != NULL && parent_node->type != TS_T_PATH && parent_node->type != TS_T_FUNCTION) {
+    if (parent_node != NULL && parent_node->type != TS_T_PATH &&
+        parent_node->type != TS_T_FUNCTION)
+    {
         // get value of data node
         resp[len++] = ' ';
         len += json_serialize_value((char *)&resp[len], resp_size - len, parent_node);
@@ -556,7 +560,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     len += sprintf((char *)&resp[len], include_values ? " {" : " [");
     int nodes_found = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
-        if ((data_nodes[i].access & (TS_READ_ALL | TS_EXEC_ALL)) &&
+        if ((data_nodes[i].access & TS_READ_MASK) &&
             (data_nodes[i].parent == parent_node_id))
         {
             if (include_values) {
@@ -679,6 +683,16 @@ int ThingSet::exec_json(const DataNode *node)
         tok++;      // go to first element of array
     }
 
+    if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_FUNCTION)) {
+        // node is generally executable, but are we authorized?
+        if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
+            return status_message_json(TS_STATUS_UNAUTHORIZED);
+        }
+    }
+    else {
+        return status_message_json(TS_STATUS_FORBIDDEN);
+    }
+
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].parent == node->id) {
             if (tok >= tok_count) {
@@ -701,14 +715,6 @@ int ThingSet::exec_json(const DataNode *node)
         return status_message_json(TS_STATUS_BAD_REQUEST);
     }
 
-    if (!( ((node->access & TS_EXEC_MASK) == TS_EXEC_ALL) ||
-            (((node->access & TS_EXEC_MASK) == TS_EXEC_USER) && user_authorized) ||
-            (((node->access & TS_EXEC_MASK) == TS_EXEC_MAKER) && maker_authorized)
-        ))
-    {
-        return status_message_json(TS_STATUS_UNAUTHORIZED);
-    }
-
     // if we got here, finally create function pointer and call function
     void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
     fun();
@@ -723,7 +729,7 @@ int ThingSet::pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[
     for (unsigned int i = 0; i < num_ids; i++) {
 
         const DataNode* node = get_data_node(node_ids[i]);
-        if (node == NULL || !(node->access & TS_READ_ALL)) {
+        if (node == NULL || !(node->access & TS_READ_MASK)) {
             continue;
         }
 
@@ -736,51 +742,4 @@ int ThingSet::pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[
     buf[len-1] = '}';    // overwrite comma
 
     return len;
-}
-
-int ThingSet::auth_json()
-{
-    const int path_len = 5; // !auth
-    jsmn_parser parser;
-    jsmn_init(&(parser));
-
-    json_str = (char *)req + path_len + 1;
-    tok_count = jsmn_parse(&parser, json_str, req_len - (path_len + 1), tokens, sizeof(tokens));
-
-    if (req_len == path_len || tok_count == 0) {   // logout
-        user_authorized = false;
-        maker_authorized = false;
-        return status_message_json(TS_STATUS_VALID);
-    }
-    else if (tok_count == 1) {
-        if (tokens[0].type != JSMN_STRING) {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
-        }
-
-        if (user_pass != NULL &&
-            tokens[0].end - tokens[0].start == (int)strlen(user_pass) &&
-            strncmp(json_str + tokens[0].start, user_pass, strlen(user_pass)) == 0)
-        {
-            user_authorized = true;
-            return status_message_json(TS_STATUS_VALID);
-        }
-        else if (maker_pass != NULL &&
-            tokens[0].end - tokens[0].start == (int)strlen(maker_pass) &&
-            strncmp(json_str + tokens[0].start, maker_pass, strlen(maker_pass)) == 0)
-        {
-            user_authorized = true;     // authorize maker also for user access
-            maker_authorized = true;
-            return status_message_json(TS_STATUS_VALID);
-        }
-        else {
-            user_authorized = false;
-            maker_authorized = false;
-            return status_message_json(TS_STATUS_CONFLICT);
-        }
-    }
-    else {
-        return status_message_json(TS_STATUS_BAD_REQUEST);
-    }
-
-    return 0;
 }

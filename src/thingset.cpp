@@ -143,13 +143,3 @@ const DataNode *ThingSet::get_endpoint_node(const char *path, size_t len)
     }
     return NULL;
 }
-
-void ThingSet::set_user_password(const char *password)
-{
-    user_pass = password;
-}
-
-void ThingSet::set_maker_password(const char *password)
-{
-    maker_pass = password;
-}

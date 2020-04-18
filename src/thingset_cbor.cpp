@@ -240,7 +240,7 @@ int ThingSet::fetch_cbor(node_id_t parent_id)
         if (data_node == NULL) {
             return status_message_cbor(TS_STATUS_NOT_FOUND);
         }
-        if (!(data_node->access & TS_READ_ALL)) {
+        if (!(data_node->access & TS_READ_MASK)) {
             return status_message_cbor(TS_STATUS_UNAUTHORIZED);
         }
 
@@ -308,7 +308,7 @@ int ThingSet::patch_cbor(node_id_t parent_id, bool ignore_access)
         }
         else {
             if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
-                if (!(data_node->access & TS_WRITE_ALL)) {
+                if (!(data_node->access & TS_WRITE_MASK)) {
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
                 if (data_node->parent != parent_id) {
@@ -347,8 +347,8 @@ int ThingSet::exec_cbor()
     if (data_node == NULL) {
         return status_message_cbor(TS_STATUS_NOT_FOUND);
     }
-    if (!(data_node->access & TS_EXEC_ALL)) {
-        return status_message_cbor(TS_STATUS_UNAUTHORIZED);
+    if (!(data_node->access & TS_WRITE_MASK)) {
+        return status_message_cbor(TS_STATUS_FORBIDDEN);
     }
 
     // create function pointer and call function
@@ -373,7 +373,7 @@ int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const node_id_t node_i
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
         const DataNode* data_node = get_data_node(node_ids[i]);
-        if (data_node == NULL || !(data_node->access & TS_READ_ALL)) {
+        if (data_node == NULL || !(data_node->access & TS_READ_MASK)) {
             continue;
         }
 
@@ -429,7 +429,7 @@ int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
     // find out number of elements
     int num_elements = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
-        if (data_nodes[i].access & TS_READ_ALL
+        if (data_nodes[i].access & TS_READ_MASK
             && (data_nodes[i].parent == parent_id))
         {
             num_elements++;
@@ -443,9 +443,8 @@ int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
         len += cbor_serialize_array(&resp[len], num_elements, resp_size - len);
     }
 
-    // actually write elements
     for (unsigned int i = 0; i < num_nodes; i++) {
-        if (data_nodes[i].access & TS_READ_ALL
+        if (data_nodes[i].access & TS_READ_MASK
             && (data_nodes[i].parent == parent_id))
         {
             int num_bytes = 0;

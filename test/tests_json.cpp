@@ -62,7 +62,7 @@ void json_patch_readonly()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!test {\"i32_readonly\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":A3 Forbidden.", resp_buf);
 }
 
 void json_patch_wrong_path()
@@ -179,21 +179,19 @@ void json_conf_callback()
 
 void json_auth_user()
 {
-    ts.set_user_password("user123");
-
-    // authorize as user
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"user123\"");
+    // authorize as expert user
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"expert123\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    // write user data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    // write expert user data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
-    // attempt to write admin data
+    // attempt to write maker data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
@@ -202,21 +200,19 @@ void json_auth_user()
 
 void json_auth_root()
 {
-    ts.set_maker_password("maker456");
-
-    // authorize as root
+    // authorize as maker
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"maker456\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    // write user data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    // write expert user data
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
-    // write admin data
+    // write maker data
     req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
@@ -225,14 +221,12 @@ void json_auth_root()
 
 void json_auth_failure()
 {
-    ts.set_user_password("pass_user");
-
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"abc\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":A9 Conflict.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
@@ -243,24 +237,22 @@ void json_auth_long_password()
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"012345678901234567890123456789\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":A9 Conflict.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":AF Unsupported Content-Format.", resp_buf);
 }
 
 void json_auth_reset()
 {
-    ts.set_user_password("pass_user");
-
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"pass_user\"");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"expert123\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"wrong\"");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_user\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
@@ -350,13 +342,13 @@ void tests_json()
     RUN_TEST(json_exec);
     RUN_TEST(json_pub_msg);
     RUN_TEST(json_conf_callback);
-    /* temporarily disabled
+
     RUN_TEST(json_auth_user);
     RUN_TEST(json_auth_root);
     RUN_TEST(json_auth_long_password);
     RUN_TEST(json_auth_failure);
     RUN_TEST(json_auth_reset);
-    */
+
     RUN_TEST(json_pub_list_channels);
     RUN_TEST(json_pub_enable);
     RUN_TEST(json_pub_delete_append_node);
