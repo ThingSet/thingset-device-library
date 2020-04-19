@@ -14,6 +14,15 @@
 #include <stdbool.h>
 
 /*
+ * Protocol function codes (same as CoAP)
+ */
+#define TS_GET      0x01
+#define TS_POST     0x02
+#define TS_DELETE   0x04
+#define TS_FETCH    0x05
+#define TS_PATCH    0x07        // it's actually iPATCH
+
+/*
  * Protocol functions / categories
  */
 // function + data node parent_id
@@ -414,6 +423,11 @@ private:
      * Parser preparation and calling of the different data node access functions read/write/list
      */
     int process_json();
+
+    /**
+     * Calling of the different data node access functions read/write/list
+     */
+    int process_cbor();
 
     /**
      * GET request (text mode)

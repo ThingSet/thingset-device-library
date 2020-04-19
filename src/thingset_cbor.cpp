@@ -192,7 +192,6 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const DataNode *data_no
     return pos;
 }
 
-
 int ThingSet::status_message_cbor(uint8_t code)
 {
     if (resp_size > 0) {
@@ -201,6 +200,37 @@ int ThingSet::status_message_cbor(uint8_t code)
     }
     else {
         return 0;
+    }
+}
+
+int ThingSet::process_cbor()
+{
+    if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
+        //printf("get_cbor\n");
+        return get_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
+    }
+    else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
+        //printf("patch_cbor\n");
+        int len = patch_cbor(req[0], false);
+        if (resp[0] == TS_STATUS_CHANGED && req[0] == TS_CONF) {
+            // workaround before CBOR part is also changed
+            const DataNode *node = get_data_node(TS_CONF);
+            if (node != NULL && node->data != NULL) {
+                // create function pointer and call function
+                void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
+                fun();
+            }
+        }
+        return len;
+    }
+    else {  // array or single data node
+        if (req[0] == TS_EXEC) {
+            return exec_cbor();
+        }
+        else {
+            //printf("fetch_cbor\n");
+            return fetch_cbor(req[0]);
+        }
     }
 }
 
