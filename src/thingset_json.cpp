@@ -119,7 +119,7 @@ int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data
         pos = snprintf(&resp[pos], size - pos, "%s,",
                 (*((bool *)data_node->data) == true ? "true" : "false"));
         break;
-    case TS_T_FUNCTION:
+    case TS_T_EXEC:
         pos = snprintf(&resp[pos], size - pos, "null,");
         break;
     case TS_T_STRING:
@@ -265,7 +265,7 @@ int ThingSet::process_json()
         if (req[0] == '?') {
             // no payload data
             if ((char)req[path_len] == '/') {
-                if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_FUNCTION) {
+                if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
                     return get_json(endpoint, false);
                 }
                 else {
@@ -299,7 +299,7 @@ int ThingSet::process_json()
             return len;
         }
         else {
-            if (req[0] == '!' && endpoint->type == TS_T_FUNCTION) {
+            if (req[0] == '!' && endpoint->type == TS_T_EXEC) {
                 //printf("exec_json: %s\n", json_str);
                 return exec_json(endpoint);
             }
@@ -543,7 +543,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
     if (parent_node != NULL && parent_node->type != TS_T_PATH &&
-        parent_node->type != TS_T_FUNCTION)
+        parent_node->type != TS_T_EXEC)
     {
         // get value of data node
         resp[len++] = ' ';
@@ -552,7 +552,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
         return len;
     }
 
-    if (parent_node != NULL && parent_node->type == TS_T_FUNCTION && include_values) {
+    if (parent_node != NULL && parent_node->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec node's values
         return status_message_json(TS_STATUS_BAD_REQUEST);
     }
@@ -683,7 +683,7 @@ int ThingSet::exec_json(const DataNode *node)
         tok++;      // go to first element of array
     }
 
-    if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_FUNCTION)) {
+    if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
         if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
