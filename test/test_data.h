@@ -68,9 +68,6 @@ static int16_t i16;
 
 bool b;
 
-static uint32_t secret_user = 1;
-static uint32_t secret_maker = 2;
-
 int32_t A[100] = {4, 2, 8, 4};
 ArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
 
@@ -120,9 +117,9 @@ static const DataNode data_nodes[] = {
 
     TS_NODE_PATH(TS_REC, "rec", 0, NULL),
 
-    TS_NODE_FLOAT(0xA1, "BatHour_kWh", &battery_voltage, 2, TS_REC, TS_ANY_R),
-    TS_NODE_FLOAT(0xA2, "BatDay_kWh", &battery_current, 2, TS_REC, TS_ANY_R),
-    TS_NODE_INT16(0xA3, "AmbientMaxDay_degC", &ambient_temp, TS_REC, TS_ANY_R),
+    TS_NODE_FLOAT(0xA1, "BatHour_kWh", &bat_energy_hour, 2, TS_REC, TS_ANY_R),
+    TS_NODE_FLOAT(0xA2, "BatDay_kWh", &bat_energy_day, 2, TS_REC, TS_ANY_R),
+    TS_NODE_INT16(0xA3, "AmbientMaxDay_degC", &ambient_temp_max_day, TS_REC, TS_ANY_R),
 
     // CALIBRATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xD0

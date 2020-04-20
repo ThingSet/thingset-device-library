@@ -133,7 +133,7 @@ const DataNode *ThingSet::get_endpoint_node(const char *path, size_t len)
     // maximum depth of 10 assumed
     for (int i = 0; i < 10; i++) {
         if (end != NULL) {
-            if (end - path != len - 1) {
+            if (end - path != (int)len - 1) {
                 node = get_data_node(start, end - start, parent);
                 if (!node) {
                     return NULL;

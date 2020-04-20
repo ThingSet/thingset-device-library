@@ -64,7 +64,7 @@ int _fetch_cbor(uint16_t id, char *value_read)
 // returns length of read value
 void _patch_cbor(uint16_t id, char *value)
 {
-    int len = cbor_size((uint8_t*)value);
+    unsigned int len = cbor_size((uint8_t*)value);
 
     uint8_t req[100] = {
         TS_PATCH,

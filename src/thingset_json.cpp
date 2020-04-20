@@ -202,7 +202,7 @@ void ThingSet::dump_json(node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
-    for (int i = 0; i < num_nodes; i++) {
+    for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].parent == node_id) {
             if (!first) {
                 printf(",\n");
@@ -420,7 +420,7 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, int tok, const DataN
             }
             break;
         case TS_T_STRING:
-            if (tokens[tok].type != JSMN_STRING || data_node->detail <= len) {
+            if (tokens[tok].type != JSMN_STRING || (unsigned int)data_node->detail <= len) {
                 return 0;
             }
             else if (data_node->id != 0) {     // dummy node has id = 0

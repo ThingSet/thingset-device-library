@@ -26,7 +26,7 @@ void pub_thread()
 
     while (1) {
         if (pub_serial_enable) {
-            int len = ts.pub_msg_json(pub_msg, sizeof(pub_msg), pub_serial_ids, pub_serial_array.num_elements);
+            ts.pub_msg_json(pub_msg, sizeof(pub_msg), pub_serial_ids, pub_serial_array.num_elements);
             printf("%s\r\n", pub_msg);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(pub_serial_interval));
