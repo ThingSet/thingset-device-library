@@ -1,32 +1,75 @@
 # C++ library for the ThingSet Protocol
 
-![Travis CI build badge](https://travis-ci.com/ThingSet/thingset-cpp.svg?branch=master)
+![Travis CI build badge](https://travis-ci.com/LibreSolar/thingset-device-library.svg?branch=master)
 
-This C++ implementation is used by the LibreSolar devices' firmware.
+The ThingSet protocol provides a consistent, standardized way to configure, monitor and control ressource-constrained devices via different communication interfaces.
+
+Protocol specification: [libre.solar/thingset](https://libre.solar/thingset/)
+
+The specification is developed in an open source way and still in progress. You can contribute ideas for improvement.
+
+This library is used in Libre Solar devices and implements v0.3 of the specification.
 
 The implementation is tested vs. newlib-nano and the default newlib provided by GNU C++ compiler.
 
-## Text-based protocol
+## Usage of the library
+
+An example program is implemented in `src/main.cpp`, which provides a shell to access the data via ThingSet protocol if run on a computer.
+
+Most important is the setup of the data node tree in `test/test_data.h`.
+
+Assuming the data is stored in a static array `data_nodes` as in the example, a ThingSet object is created by:
+
+```C++
+ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+```
+
+Afterwards, it can be used with any communication interface using the `process` function:
+
+```C++
+uint8_t req_buf[500];        // buffer to store incoming data
+uint8_t resp_buf[500];       // buffer to store ThingSet response
+
+/*
+ * Listen to a communication interface (e.g. UART) and store
+ * incoming data in the request buffer.
+ *
+ * After receiving a new-line character, process the request.
+ */
+
+int req_len = strlen((char *)req_buf);  // only works for text mode
+
+ts.process(req_buf, req_len, resp_buf, sizeof(resp_buf));
+
+/*
+ * The response including the requested data is now in the response_buffer
+ * and can be sent back to the communication interface.
+ */
+```
+
+## Implemented features
+
+### Text mode
 
 The following ThingSet functions are fully implemented:
 
-- Data abject access functions for all categories (!info, !conf, ...)
-- Execution of functions (!exec)
+- GET and FETCH requests (first byte '?')
+- PATCH request (first byte '=')
+- POST request (first byte '!' or '+')
+- DELETE request (first byte '-')
+- Execution of functions via callbacks to certain paths or via executable nodes
+- Authentication via callback to 'auth' node
 - Sending of publication messages (# {...})
-- Authentication (!auth) with 3 different levels
-    - All: no password
-    - User password: Can be used for battery config, etc.
-    - Maker password: Admin/root password for manufacturer, e.g. for calibration settings. Maker authorization level also has all rights of "all" and "user" levels.
-- Publication message (!pub): List and enable/disable channels implemented, changing of channel data objects per channel still to be done.
+- Setup of publication channels (enable/disable, configure data nodes to be published, change interval)
 
 In order to reduce code size, verbose status messages can be turned off using the TS_VERBOSE_STATUS_MESSAGES = 0 in ts_config.h.
 
-## Binary protocol
+### Binary mode
 
 The following functions are fully implemented:
 
-- Data abject access functions for all categories (0x01, 0x02, ...)
-- Execution of functions (0x0B)
+- GET and FETCH requests (function codes 0x01 and 0x05)
+- PATCH request (function code 0x07)
 - Sending of publication messages (0x1F)
 
 For an efficient implementation, only the most important CBOR data types will be supported:
@@ -37,6 +80,7 @@ For an efficient implementation, only the most important CBOR data types will be
 - Binary data of up to 2^16-1 bytes
 - Float 32 and 64 bit
 - Simple values true and false
+- Arrays of above types
 
 Currently, following data types are still missing in the implementation.
 
