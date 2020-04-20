@@ -99,6 +99,12 @@ typedef struct {
     uint8_t type;               ///< Type of the array elements
 } ArrayInfo;
 
+/**
+ * If TS_AUTODETECT_ARRLEN is assigned to num_elements, the number of elements in the array is
+ * detected in the constructor by counting downwards till the first non-zero element is found.
+ */
+#define TS_AUTODETECT_ARRLEN    UINT16_MAX
+
 /*
  * Functions to generate data_node map and make compiler complain if wrong
  * type is passed

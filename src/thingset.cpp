@@ -25,9 +25,43 @@ static void _check_id_duplicates(const DataNode *data, size_t num)
     }
 }
 
+/*
+ * Counts the number of elements in an an array of node IDs by looking for the first non-zero
+ * elements starting from the back.
+ *
+ * Currently only supporting uint16_t (node_id_t) arrays as we need the size of each element
+ * to iterate through the array.
+ */
+static void _count_array_elements(const DataNode *data, size_t num)
+{
+    for (unsigned int i = 0; i < num; i++) {
+        if (data[i].type == TS_T_ARRAY) {
+            ArrayInfo *arr = (ArrayInfo *)data[i].data;
+            if (arr->num_elements == TS_AUTODETECT_ARRLEN) {
+                arr->num_elements = 0;  // set to safe default
+                if (arr->type == TS_T_NODE_ID) {
+                    for (int elem = arr->max_elements - 1; elem >= 0; elem--) {
+                        if (((node_id_t *)arr->ptr)[elem] != 0) {
+                            arr->num_elements = elem + 1;
+                            //printf("%s num elements: %d\n", data[i].name, arr->num_elements);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    printf("Autodetecting array length of node 0x%X not possible.\n", data[i].id);
+                }
+            }
+        }
+    }
+}
+
 ThingSet::ThingSet(const DataNode *data, size_t num)
 {
     _check_id_duplicates(data, num);
+
+    _count_array_elements(data, num);
+
     data_nodes = data;
     num_nodes = num;
 }
