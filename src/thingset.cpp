@@ -49,36 +49,12 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     resp = response;
     resp_size = response_size;
 
-    if (req[0] <= TS_EXEC) {          // CBOR list/read/write request
-        if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
-            //printf("get_cbor\n");
-            return get_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
-        }
-        else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
-            //printf("patch_cbor\n");
-            int len = patch_cbor(req[0], false);
-            if (response[0] == TS_STATUS_CHANGED && req[0] == TS_CONF) {
-                // workaround before CBOR part is also changed
-                const DataNode *node = get_data_node(TS_CONF);
-                if (node != NULL && node->data != NULL) {
-                    // create function pointer and call function
-                    void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
-                    fun();
-                }
-            }
-            return len;
-        }
-        else {  // array or single data node
-            if (req[0] == TS_EXEC) {
-                return exec_cbor();
-            }
-            else {
-                //printf("fetch_cbor\n");
-                return fetch_cbor(req[0]);
-            }
-        }
+    if (req[0] < 0x20) {
+        // binary mode request
+        return process_cbor();
     }
     else if (req[0] == '?' || req[0] == '=' || req[0] == '+' || req[0] == '-' || req[0] == '!') {
+        // text mode request
         return process_json();
     }
     else {

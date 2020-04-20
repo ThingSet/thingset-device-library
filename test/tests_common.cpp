@@ -12,6 +12,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
@@ -45,16 +46,15 @@ int _fetch_json(char const *name, char *value_read)
 // returns length of read value
 int _fetch_cbor(uint16_t id, char *value_read)
 {
-    // generate read request
-    req_buf[0] = TS_CONF;
-    req_buf[1] = 0x19;     // uint16 follows
-    req_buf[2] = id >> 8;
-    req_buf[3] = (uint8_t)id;
-    size_t req_len = 4;
-    ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t req[] = {
+        TS_FETCH,
+        0x18, TS_CONF,
+        0x19, (uint8_t)(id >> 8), (uint8_t)id
+    };
+
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
     //printf("TEST: Read request len: %d, response len: %d, resp code:%d\n", req_len, resp_len, resp_buf[0]);
     TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CONTENT, resp_buf[0]);
-    //printf("TEST: Read request len: %d, response len: %d\n", req.pos, resp_len);
 
     int value_len = cbor_size((uint8_t*)resp_buf + 1);
     memcpy(value_read, resp_buf + 1, value_len);
@@ -66,16 +66,17 @@ void _patch_cbor(uint16_t id, char *value)
 {
     int len = cbor_size((uint8_t*)value);
 
-    // generate write request
-    req_buf[0] = TS_CONF;
-    req_buf[1] = 0xA1;     // map with 1 element
-    req_buf[2] = 0x19;     // uint16 follows
-    req_buf[3] = id >> 8;
-    req_buf[4] = (uint8_t)id;
-    memcpy(req_buf + 5, value, len);
-    size_t req_len = len + 5;
-    ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
+    uint8_t req[100] = {
+        TS_PATCH,
+        0x18, TS_CONF,
+        0xA1,
+        0x19, (uint8_t)(id >> 8), (uint8_t)id
+    };
+
+    TEST_ASSERT(len + 7 < sizeof(req));
+    memcpy(req + 7, value, len);
+    ts.process(req, len + 7, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
 void _json2cbor(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex)
@@ -90,13 +91,9 @@ void _json2cbor(char const *name, char const *json_value, uint16_t id, char cons
         cbor_value[pos++] = (char)strtoul(&cbor_value_hex[i], NULL, 16);
     }
 
-    //printf ("json2cbor(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
+    //printf("json2cbor(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
-    //printf("before write: i64 = 0x%" PRIi64 " = %" PRIx64 "\n", i64, i64);
-    //printf("before write: i64 = %16.llX = %lli\n", i64, i64);
     _patch_json(name, json_value);
-    //printf("after write:  i64 = %16.llX = %lli\n", i64, i64);
-    //printf("after write: i64 = %" PRIi64 " = %llx\n", i64, i64);
     len = _fetch_cbor(id, buf);
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_value, buf, len);
@@ -114,7 +111,7 @@ void _cbor2json(char const *name, char const *json_value, uint16_t id, char cons
         cbor_value[pos++] = (char)strtoul(&cbor_value_hex[i], NULL, 16);
     }
 
-    //printf ("cbor2json(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
+    //printf("cbor2json(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
     _patch_cbor(id, cbor_value);
     len = _fetch_json(name, buf);

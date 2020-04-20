@@ -205,66 +205,86 @@ int ThingSet::status_message_cbor(uint8_t code)
 
 int ThingSet::process_cbor()
 {
-    if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
-        //printf("get_cbor\n");
-        return get_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
-    }
-    else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
-        //printf("patch_cbor\n");
-        int len = patch_cbor(req[0], false);
-        if (resp[0] == TS_STATUS_CHANGED && req[0] == TS_CONF) {
-            // workaround before CBOR part is also changed
-            const DataNode *node = get_data_node(TS_CONF);
-            if (node != NULL && node->data != NULL) {
-                // create function pointer and call function
-                void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
-                fun();
-            }
-        }
-        return len;
-    }
-    else {  // array or single data node
-        if (req[0] == TS_EXEC) {
-            return exec_cbor();
-        }
-        else {
-            //printf("fetch_cbor\n");
-            return fetch_cbor(req[0]);
-        }
-    }
-}
+    int pos = 1;    // current position during data processing
 
-int ThingSet::fetch_cbor(node_id_t parent_id)
-{
-    unsigned int pos = 1;       // position in request (ignore first byte for function code)
-    unsigned int len = 0;       // current length of response
-    uint16_t num_elements, element = 0;
-
-    len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
-
-    pos += cbor_num_elements(&req[1], &num_elements);
-    if (num_elements != 1 && (req[1] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
+    // get endpoint (first parameter of the request)
+    const DataNode *endpoint = NULL;
+    if ((req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
+        uint16_t path_len;
+        pos += cbor_num_elements(&req[pos], &path_len);
+        endpoint = get_endpoint_node((char *)req + pos, path_len);
+    }
+    else if ((req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
+        node_id_t id = 0;
+        pos += cbor_deserialize_uint16(&req[pos], &id);
+        endpoint = get_data_node(id);
+    }
+    else if (req[pos] == CBOR_UNDEFINED) {
+        pos++;
+    }
+    else {
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
-    //printf("read request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
-    //    req[pos], req[pos+1], req[pos+2], req[pos+3],
-    //    req[pos+4], req[pos+5], req[pos+6], req[pos+7]);
+    // process data
+    if (req[0] == TS_GET && endpoint) {
+        return get_cbor(endpoint, req[pos] == 0xA0, req[pos] == 0xF7);
+    }
+    else if (req[0] == TS_FETCH) {
+        return fetch_cbor(endpoint, pos);
+    }
+    else if (req[0] == TS_PATCH && endpoint) {
+        return patch_cbor(endpoint, pos, false);
 
-    if (num_elements > 1) {
-        len += cbor_serialize_array(&resp[len], num_elements, resp_size - len);
+        // check if endpoint has a callback assigned
+        if (endpoint->data != NULL && resp[0] == TS_STATUS_CHANGED) {
+            // create function pointer and call function
+            void (*fun)(void) = reinterpret_cast<void(*)()>(endpoint->data);
+            fun();
+        }
+
+    }
+    else if (req[0] == TS_EXEC) {
+        return exec_cbor();
+    }
+    return status_message_cbor(TS_STATUS_BAD_REQUEST);
+}
+
+int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
+{
+    /*
+     * Remark: the parent node is currently still ignored. Any found data object is fetched.
+     */
+
+    unsigned int pos_req = pos_payload;
+    unsigned int pos_resp = 0;
+    uint16_t num_elements, element = 0;
+
+    pos_resp += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
+
+    pos_req += cbor_num_elements(&req[pos_req], &num_elements);
+    if (num_elements != 1 && (req[pos_payload] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
-    while (pos + 1 < req_len && element < num_elements) {
+    //printf("fetch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //    req[pos_req], req[pos_req+1], req[pos_req+2], req[pos_req+3],
+    //    req[pos_req+4], req[pos_req+5], req[pos_req+6], req[pos_req+7]);
+
+    if (num_elements > 1) {
+        pos_resp += cbor_serialize_array(&resp[pos_resp], num_elements, resp_size - pos_resp);
+    }
+
+    while (pos_req + 1 < req_len && element < num_elements) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
         node_id_t id;
-        num_bytes = cbor_deserialize_uint16(&req[pos], &id);
+        num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
-        pos += num_bytes;
+        pos_req += num_bytes;
 
         const DataNode* data_node = get_data_node(id);
         if (data_node == NULL) {
@@ -274,18 +294,18 @@ int ThingSet::fetch_cbor(node_id_t parent_id)
             return status_message_cbor(TS_STATUS_UNAUTHORIZED);
         }
 
-        num_bytes = cbor_serialize_data_node(&resp[len], resp_size - len, data_node);
+        num_bytes = cbor_serialize_data_node(&resp[pos_resp], resp_size - pos_resp, data_node);
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_RESPONSE_TOO_LARGE);
-        } else {
-            len += num_bytes;
         }
+        pos_resp += num_bytes;
         element++;
     }
 
     if (element == num_elements) {
-        return len;
-    } else {
+        return pos_resp;
+    }
+    else {
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 }
@@ -297,35 +317,35 @@ int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
     req_len = len;
     resp = resp_tmp;
     resp_size = sizeof(resp_tmp);
-    patch_cbor(0, true);
+    //patch_cbor(0, true);                  // TODO!!
     return resp[0] - 0x80;
 }
 
-int ThingSet::patch_cbor(node_id_t parent_id, bool ignore_access)
+int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, bool ignore_access)
 {
-    unsigned int pos = 1;       // ignore first byte for function code in request
+    unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
 
-    pos += cbor_num_elements(&req[1], &num_elements);
-    if ((req[1] & CBOR_TYPE_MASK) != CBOR_MAP) {
+    if ((req[pos_req] & CBOR_TYPE_MASK) != CBOR_MAP) {
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
+    pos_req += cbor_num_elements(&req[pos_req], &num_elements);
 
-    //printf("write request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
-    //    req[pos], req[pos+1], req[pos+2], req[pos+3],
-    //    req[pos+4], req[pos+5], req[pos+6], req[pos+7]);
+    //printf("patch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //    req[pos_req], req[pos_req+1], req[pos_req+2], req[pos_req+3],
+    //    req[pos_req+4], req[pos_req+5], req[pos_req+6], req[pos_req+7]);
 
     // loop through all elements to check if request is valid
-    while (pos < req_len && element < num_elements) {
+    while (pos_req < req_len && element < num_elements) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
         node_id_t id;
-        num_bytes = cbor_deserialize_uint16(&req[pos], &id);
+        num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
-        pos += num_bytes;
+        pos_req += num_bytes;
 
         const DataNode* data_node = get_data_node(id);
         if (data_node == NULL) {
@@ -334,25 +354,25 @@ int ThingSet::patch_cbor(node_id_t parent_id, bool ignore_access)
             }
 
             // ignore element
-            num_bytes = cbor_size(&req[pos]);
+            num_bytes = cbor_size(&req[pos_req]);
         }
         else {
             if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
                 if (!(data_node->access & TS_WRITE_MASK)) {
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
-                if (data_node->parent != parent_id) {
+                if (data_node->parent != parent->id) {
                     return status_message_cbor(TS_STATUS_NOT_FOUND);
                 }
             }
 
-            num_bytes = cbor_deserialize_data_node(&req[pos], data_node);
+            num_bytes = cbor_deserialize_data_node(&req[pos_req], data_node);
         }
 
         if (num_bytes == 0) {
             return status_message_cbor(TS_STATUS_BAD_REQUEST);
         }
-        pos += num_bytes;
+        pos_req += num_bytes;
 
         element++;
     }
@@ -451,7 +471,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
+int ThingSet::get_cbor(const DataNode *parent, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
     len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
@@ -460,7 +480,7 @@ int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
     int num_elements = 0;
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].access & TS_READ_MASK
-            && (data_nodes[i].parent == parent_id))
+            && (data_nodes[i].parent == parent->id))
         {
             num_elements++;
         }
@@ -475,7 +495,7 @@ int ThingSet::get_cbor(node_id_t parent_id, bool values, bool ids_only)
 
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].access & TS_READ_MASK
-            && (data_nodes[i].parent == parent_id))
+            && (data_nodes[i].parent == parent->id))
         {
             int num_bytes = 0;
             if (ids_only) {

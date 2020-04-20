@@ -8,6 +8,7 @@
 #include "unity.h"
 
 #include "thingset.h"
+#include "cbor.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -24,15 +25,16 @@ extern ArrayInfo float32_array;
 
 extern ArrayInfo pub_serial_array;
 
-void cbor_patch_array()
+void cbor_patch_multiple_nodes()
 {
     char cbor_req_hex[] =
+        "07 02 "
         #if TS_64BIT_TYPES_SUPPORT
-        "02 A9 "      // write map with 9 elements
+        "A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
         "19 60 02 02 "
         #else
-        "02 A7 "      // write map with 7 elements
+        "A7 "      // write map with 7 elements
         #endif
         "19 60 03 03 "
         "19 60 04 04 "
@@ -51,18 +53,21 @@ void cbor_patch_array()
 
     memcpy(req_buf, cbor_req, pos);
     ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
-void cbor_fetch_array()
+void cbor_fetch_multiple_nodes()
 {
+    f32 = 7.89;
+
     char cbor_req_hex[] =
+        "05 18 70 "
         #if TS_64BIT_TYPES_SUPPORT
-        "01 89 "      // read array with 9 elements
+        "89 "      // read array with 9 elements
         "19 60 01 "
         "19 60 02 "
         #else
-        "01 87 "      // read array with 7 elements
+        "87 "      // read array with 7 elements
         #endif
         "19 60 03 "
         "19 60 04 "
@@ -108,167 +113,97 @@ void cbor_fetch_array()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_patch_int32_array()
-{
-    // Writing int32 array
-    int32_array.type = TS_T_INT32;
-    int32_array.num_elements = 4;
-    int32_array.max_elements = 100; // Maximum length of the array
-
-    char cbor_req_hex[] =
-        "02 A1 "    // write map
-        "19 70 03 84 04 02 08 04 ";        // Array [4, 2, 8, 4]
-
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
-
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
-}
-
-void cbor_fetch_int32_array()
-{
-    // Request: Read int32 array
-    char cbor_req_hex[] =
-        "01 81 "      // read array
-        "19 70 03 ";
-
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
-
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-
-    char cbor_resp_hex[] =
-        "85 "     // successful response:
-        "84 04 02 08 04 ";
-
-    uint8_t cbor_resp[100];
-    len = strlen(cbor_resp_hex);
-    pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
-}
-
 void cbor_patch_float_array()
 {
-    // Writing float array
-    float32_array.type = TS_T_FLOAT32; // Set the array type
-    float32_array.num_elements = 2; // Length of the array
-    float32_array.max_elements = 100; // Maximum length of the array
+    float *arr = (float *)float32_array.ptr;
+    arr[0] = 0;
+    arr[1] = 0;
 
-    // {28676: [2.27, 3.44]}
-    char cbor_req_hex_float[] =
-        "02 A1 "    // write map
-        "19 70 04 82 FA 40 11 15 40 FA 40 5C 71 E1 "; // Array
+    uint8_t req[] = {
+        TS_PATCH,
+        0x18, TS_CONF,
+        0xA1,
+            0x19, 0x70, 0x04,
+            0x82,
+                0xFA, 0x40, 0x11, 0x47, 0xAE,       // 2.27
+                0xFA, 0x40, 0x5C, 0x28, 0xF6        // 3.44
+    };
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex_float);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex_float[i], NULL, 16);
-    }
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
+    TEST_ASSERT_EQUAL_FLOAT(2.27, arr[0]);
+    TEST_ASSERT_EQUAL_FLOAT(3.44, arr[1]);
 }
 
 void cbor_fetch_float_array()
 {
-    // Read int32 array
-    char cbor_req_hex[] =
-        "01 81 "      // read array
-        "19 70 04 ";
+    float *arr = (float *)float32_array.ptr;
+    arr[0] = 2.27;
+    arr[1] = 3.44;
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req[] = {
+        TS_FETCH,
+        0x18, TS_CONF,
+        0x19, 0x70, 0x04
+    };
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp_expected[] = {
+        TS_STATUS_CONTENT,
+        0x82,
+        0xFA, 0x40, 0x11, 0x47, 0xAE,
+        0xFA, 0x40, 0x5C, 0x28, 0xF6
+    };
 
-    char cbor_resp_hex[] =
-        "85 "     // successful response:
-        "82 FA 40 11 15 40 FA 40 5C 71 E1 ";
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
-    uint8_t cbor_resp[100];
-    len = strlen(cbor_resp_hex);
-    pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp_buf, sizeof(resp_expected));
 }
 
-void cbor_fetch_rounded()
+void cbor_fetch_rounded_float()
 {
-    char cbor_req_hex[] = "01 19 60 0A ";
+    f32 = 8.4;
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req[] = {
+        TS_FETCH,
+        0x18, TS_CONF,
+        0x19, 0x60, 0x0A
+    };
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp_expected[] = {
+        TS_STATUS_CONTENT,
+        0x08
+    };
 
-    char cbor_resp_hex[] = "85 08 ";
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
 
-    uint8_t cbor_resp[100];
-    len = strlen(cbor_resp_hex);
-    pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, sizeof(resp_expected));
 }
 
-void cbor_patch_rounded()
+void cbor_patch_rounded_float()
 {
-    float tmp = f32;
-    char cbor_req_hex[] = "02 A1 19 60 0A 05 ";
+    f32 = 0;
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req[] = {
+        TS_PATCH,
+        0x18, TS_CONF,
+        0xA1,
+            0x19, 0x60, 0x0A,
+            0x05
+    };
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp[1];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
 
-    TEST_ASSERT_EQUAL_UINT8(TS_STATUS_CHANGED, resp_buf[0]);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp[0]);
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
-    f32 = tmp;
 }
 
-void cbor_list_ids_output()
+void cbor_get_output_ids()
 {
-    // generate list request
-    req_buf[0] = TS_OUTPUT;
-    req_buf[1] = 0xF6;     // nullbyte to get response as numeric IDs
-    ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0xF7 };
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
@@ -286,12 +221,10 @@ void cbor_list_ids_output()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_list_names_output()
+void cbor_get_output_names()
 {
-    // generate list request
-    req_buf[0] = TS_OUTPUT;
-    req_buf[1] = 0x80;     // empty array to get response as names
-    ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0x80 };
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
@@ -309,20 +242,22 @@ void cbor_list_names_output()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-/*
 void cbor_get_names_values_output()
 {
+    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0xA0 };
     // generate list request
     req_buf[0] = TS_OUTPUT;
     req_buf[1] = 0xA0;     // empty map to get response as names + values
-    ts.process(req_buf, 2, resp_buf, TS_RESP_BUFFER_LEN);
+    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
         "85 A3 "     // successful response: map with 3 elements
-        "6C 6C 6F 61 64 45 6E 54 61 72 67 65 74 "
-        "F4 "   // false
-        "6B 75 73 62 45 6E 54 61 72 67 65 74 "
-        "F4 ";   // false
+        "65 42 61 74 5F 56 "
+        "FA 41 61 99 9A "        // 14.1
+        "65 42 61 74 5F 41 "
+        "FA 40 A4 28 F6 "        // 5.13
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
+        "16";
 
     uint8_t cbor_resp[100];
     int len = strlen(cbor_resp_hex);
@@ -333,7 +268,6 @@ void cbor_get_names_values_output()
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
-*/
 
 void cbor_pub_msg()
 {
@@ -376,8 +310,6 @@ void cbor_exec()
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-#include "cbor.h"
-
 void cbor_num_elem()
 {
     char cbor_req_hex[] = "B9 F0 00 ";
@@ -412,70 +344,24 @@ void cbor_serialize_long_string()
     TEST_ASSERT_EQUAL_UINT(0x2B, buf[2]);
 }
 
-
-/*
-void cbor_get_data_node_name()
-{
-    char req[3] = { TS_OBJ_NAME, 0x01, 0x00 };   // Obj ID 1
-    char resp[100];
-    int len = thingset_request(req, 3, resp, 100);
-
-    TEST_ASSERT_EQUAL(TS_OBJ_NAME + 128, resp[0]);
-    TEST_ASSERT_EQUAL(T_STRING, resp[1]);
-    TEST_ASSERT_EQUAL(sizeof("vSolar")-1, len - 2);     // protocol without nullbyte
-    TEST_ASSERT_EQUAL_STRING_LEN("vSolar", &(resp[2]), len - 2);
-}
-
-void test_list()
-{
-    uint8_t req[2] = { TS_LIST, TS_C_CAL };        // category: calibration settings
-    uint8_t resp[100];
-    int len = thingset_request(req, 2, resp, 100);
-
-    TEST_ASSERT_EQUAL(TS_LIST + 128, resp[0]);
-    TEST_ASSERT_EQUAL(TS_T_UINT16, resp[1]);
-    TEST_ASSERT_EQUAL(2 + 6*2, len);
-
-    int i = 2;
-    TEST_ASSERT_EQUAL_UINT16(100, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-    TEST_ASSERT_EQUAL_UINT16(101, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-    TEST_ASSERT_EQUAL_UINT16(102, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-    TEST_ASSERT_EQUAL_UINT16(103, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-    TEST_ASSERT_EQUAL_UINT16(104, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-    TEST_ASSERT_EQUAL_UINT16(105, (resp[i++] + ((uint16_t)resp[i++] << 8)));
-}
-
-void test_list_small_buffer()
-{
-    uint8_t req[2] = { TS_LIST, 0 };        // category 0
-    uint8_t resp[10];
-    int len = req.data.str(req, 2, resp, 10);
-
-    TEST_ASSERT_EQUAL(2, len);
-    TEST_ASSERT_EQUAL(TS_LIST + 128, resp[0]);
-    TEST_ASSERT_EQUAL(TS_STATUS_RESPONSE_TOO_LARGE, resp[1]);
-}
-*/
-
 void tests_cbor()
 {
     UNITY_BEGIN();
 
-    RUN_TEST(cbor_patch_array);
-    RUN_TEST(cbor_fetch_array);
-    RUN_TEST(cbor_patch_int32_array);
-    RUN_TEST(cbor_fetch_int32_array);
+    RUN_TEST(cbor_get_output_ids);
+    RUN_TEST(cbor_get_output_names);
+    RUN_TEST(cbor_get_names_values_output);
 
+    RUN_TEST(cbor_patch_multiple_nodes);
     RUN_TEST(cbor_patch_float_array);
-    RUN_TEST(cbor_fetch_float_array);
+    RUN_TEST(cbor_patch_rounded_float);     // writes an integer to float
 
-    RUN_TEST(cbor_fetch_rounded);
-    RUN_TEST(cbor_patch_rounded);       // writes an integer to float
-    RUN_TEST(cbor_list_ids_output);
-    RUN_TEST(cbor_list_names_output);
-    //RUN_TEST(cbor_get_names_values_output);
+    RUN_TEST(cbor_fetch_multiple_nodes);
+    RUN_TEST(cbor_fetch_float_array);
+    RUN_TEST(cbor_fetch_rounded_float);
+
     RUN_TEST(cbor_pub_msg);
-    RUN_TEST(cbor_exec);
+    RUN_TEST(cbor_exec);                    // still previous protocol spec
     RUN_TEST(cbor_num_elem);
     RUN_TEST(cbor_serialize_long_string);
 

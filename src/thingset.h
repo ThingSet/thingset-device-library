@@ -23,7 +23,7 @@
 #define TS_PATCH    0x07        // it's actually iPATCH
 
 /*
- * Protocol functions / categories
+ * Categories / first layer node IDs
  */
 // function + data node parent_id
 #define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
@@ -439,9 +439,9 @@ private:
     /**
      * GET request (binary mode)
      *
-     * List child data nodes (function called without content / parameters)
+     * List child data nodes (function called without content)
      */
-    int get_cbor(node_id_t parent_id, bool values = false, bool ids_only = true);
+    int get_cbor(const DataNode *parent, bool values = false, bool ids_only = true);
 
     /**
      * FETCH request (text mode)
@@ -455,7 +455,7 @@ private:
      *
      * Read data node values (function called with an array as argument)
      */
-    int fetch_cbor(node_id_t parent_id);
+    int fetch_cbor(const DataNode *parent, unsigned int pos_payload);
 
     /**
      * PATCH request (text mode)
@@ -469,7 +469,7 @@ private:
      *
      * Write data node values in binary mode (function called with a map as argument)
      */
-    int patch_cbor(node_id_t parent_id, bool ignore_access);
+    int patch_cbor(const DataNode *parent, unsigned int pos_payload, bool ignore_access);
 
     /**
      * POST request to append data
