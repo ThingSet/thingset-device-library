@@ -52,6 +52,9 @@ void reset_function(void);
 void auth_function(void);
 char auth_password[11];
 
+float bat_v_minval = 0;
+float bat_v_maxval = 16;
+uint16_t bat_v_readfreq = 10;
 
 char strbuf[300];
 
@@ -174,6 +177,13 @@ static const DataNode data_nodes[] = {
 
     // UNIT TEST DATA ///////////////////////////////////////////////////////
     // using IDs >= 0x1000
+
+    TS_NODE_PATH(0x2000, "spec", 0, NULL),
+    TS_NODE_PATH(0x2001, "Bat_V", 0x2000, NULL),
+
+    TS_NODE_FLOAT(0x2002, "minval", &bat_v_minval, 1, 0x2001, TS_ANY_R),
+    TS_NODE_FLOAT(0x2003, "maxval", &bat_v_maxval, 1, 0x2001, TS_ANY_R),
+    TS_NODE_UINT16(0x2004, "readfreq_Hz", &bat_v_readfreq, 0x2001, TS_ANY_R),
 
     TS_NODE_PATH(0x1000, "test", 0, NULL),
 
