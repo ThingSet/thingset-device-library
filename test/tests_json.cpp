@@ -282,11 +282,11 @@ void json_get_endpoint_node()
 
     node = ts.get_endpoint_node("conf", strlen("conf"));
     TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL(node->id, TS_CONF);
+    TEST_ASSERT_EQUAL(node->id, ID_CONF);
 
     node = ts.get_endpoint_node("conf/", strlen("conf/"));
     TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL(node->id, TS_CONF);
+    TEST_ASSERT_EQUAL(node->id, ID_CONF);
 }
 
 void json_pub_delete_append_node()

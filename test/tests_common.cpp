@@ -48,7 +48,7 @@ int _fetch_cbor(uint16_t id, char *value_read)
 {
     uint8_t req[] = {
         TS_FETCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0x19, (uint8_t)(id >> 8), (uint8_t)id
     };
 
@@ -68,7 +68,7 @@ void _patch_cbor(uint16_t id, char *value)
 
     uint8_t req[100] = {
         TS_PATCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0xA1,
         0x19, (uint8_t)(id >> 8), (uint8_t)id
     };

@@ -4,8 +4,8 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#ifndef __THINGSET_H_
-#define __THINGSET_H_
+#ifndef THINGSET_H_
+#define THINGSET_H_
 
 #include "ts_config.h"
 #include "jsmn.h"
@@ -22,26 +22,10 @@
 #define TS_FETCH    0x05
 #define TS_PATCH    0x07        // it's actually iPATCH
 
-/*
- * Categories / first layer node IDs
- */
-// function + data node parent_id
-#define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
-#define TS_CONF     0x02       // configurable settings
-#define TS_INPUT    0x03       // input data (e.g. set-points)
-#define TS_OUTPUT   0x04       // output data (e.g. measurement values)
-#define TS_REC      0x05       // recorded data (history-dependent)
-#define TS_CAL      0x06       // calibration
-#define TS_EXEC     0x0B       // RPC / function call
-// function only
-#define TS_NAME     0x0E
-#define TS_AUTH     0x10
-#define TS_LOG      0x11       // access log data
-#define TS_PUB      0x12       // publication request
-#define TS_PUBMSG   0x1F       // actual publication message
+#define TS_PUBMSG   0x1F
 
 /*
- * Status codes
+ * Status codes (same as CoAP)
  */
 
 // success
@@ -158,70 +142,7 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
     {_id, _parent, TS_READ_MASK, TS_T_PATH, 0, _function_to_void(_callback), _name}
 
 /*
- * This macro should be called first in the data_nodes array
- */
-#define TS_CATEGORIES_DATA_NODES \
-    TS_NODE_PATH(TS_INFO,   "info",   0, NULL),  \
-    TS_NODE_PATH(TS_CONF,   "conf",   0, NULL),  \
-    TS_NODE_PATH(TS_INPUT,  "input",  0, NULL),  \
-    TS_NODE_PATH(TS_OUTPUT, "output", 0, NULL),  \
-    TS_NODE_PATH(TS_REC,    "rec",    0, NULL),  \
-    TS_NODE_PATH(TS_CAL,    "cal",    0, NULL),  \
-    TS_NODE_PATH(TS_EXEC,   "exec",   0, NULL),  \
-    TS_NODE_PATH(TS_NAME,   "name",   0, NULL),  \
-    TS_NODE_PATH(TS_AUTH,   "auth",   0, NULL),  \
-    TS_NODE_PATH(TS_LOG,    "log",    0, NULL),  \
-    TS_NODE_PATH(TS_PUB,    "pub",    0, NULL)
-
-/*
- * Deprecate old macros
- */
-#define TS_DATA_OBJ_BOOL _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_BOOL
-
-#define TS_DATA_OBJ_UINT64 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_UINT64
-
-#define TS_DATA_OBJ_INT64 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_INT64
-
-#define TS_DATA_OBJ_UINT32 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_UINT32
-
-#define TS_DATA_OBJ_INT32 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_INT32
-
-#define TS_DATA_OBJ_UINT16 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_UINT16
-
-#define TS_DATA_OBJ_INT16 _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_INT16
-
-#define TS_DATA_OBJ_FLOAT _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_FLOAT
-
-#define TS_DATA_OBJ_STRING _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_STRING
-
-#define TS_DATA_OBJ_EXEC _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_EXEC
-
-#define TS_DATA_OBJ_ARRAY _Pragma \
-    ("GCC warning \"TS_NODE_... macros are deprecated. Use TS_NODE_... instead!\"") \
-    TS_NODE_ARRAY
-
-/*
- * Internal access rights to data nodes
+ * Access right macros for data nodes
  */
 #define TS_ROLE_USR     (1U << 0)       // normal user
 #define TS_ROLE_EXP     (1U << 1)       // expert user
@@ -303,9 +224,6 @@ typedef struct DataNode {
     const char *name;
 } DataNode;
 
-/* old naming convention of structs with _t is deprecated and will be removed in the future */
-__attribute__((deprecated)) typedef DataNode data_object_t;
-
 
 class ThingSet
 {
@@ -345,7 +263,7 @@ public:
      * The authentication flags must match with access flags specified in DataNode to allow
      * read/write access to a data node.
      *
-     * @param flags
+     * @param flags Bitset to define authentication level (1 = access allowed)
      */
     void set_authentication(uint8_t flags)
     {
@@ -546,4 +464,4 @@ private:
     uint8_t auth_flags = TS_USR_MASK;
 };
 
-#endif
+#endif /* THINGSET_H_ */

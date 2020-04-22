@@ -28,7 +28,7 @@ extern ArrayInfo pub_serial_array;
 void cbor_patch_multiple_nodes()
 {
     char cbor_req_hex[] =
-        "07 02 "
+        "07 18 30 "
         #if TS_64BIT_TYPES_SUPPORT
         "A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
@@ -61,7 +61,7 @@ void cbor_fetch_multiple_nodes()
     f32 = 7.89;
 
     char cbor_req_hex[] =
-        "05 18 70 "
+        "05 18 30 "
         #if TS_64BIT_TYPES_SUPPORT
         "89 "      // read array with 9 elements
         "19 60 01 "
@@ -121,7 +121,7 @@ void cbor_patch_float_array()
 
     uint8_t req[] = {
         TS_PATCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0xA1,
             0x19, 0x70, 0x04,
             0x82,
@@ -144,7 +144,7 @@ void cbor_fetch_float_array()
 
     uint8_t req[] = {
         TS_FETCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0x19, 0x70, 0x04
     };
 
@@ -166,7 +166,7 @@ void cbor_fetch_rounded_float()
 
     uint8_t req[] = {
         TS_FETCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0x19, 0x60, 0x0A
     };
 
@@ -187,7 +187,7 @@ void cbor_patch_rounded_float()
 
     uint8_t req[] = {
         TS_PATCH,
-        0x18, TS_CONF,
+        0x18, ID_CONF,
         0xA1,
             0x19, 0x60, 0x0A,
             0x05
@@ -202,7 +202,7 @@ void cbor_patch_rounded_float()
 
 void cbor_get_output_ids()
 {
-    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0xF7 };
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
     ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
@@ -223,7 +223,7 @@ void cbor_get_output_ids()
 
 void cbor_get_output_names()
 {
-    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0x80 };
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
     ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
@@ -244,10 +244,7 @@ void cbor_get_output_names()
 
 void cbor_get_names_values_output()
 {
-    uint8_t req[] = { TS_GET, 0x18, TS_OUTPUT, 0xA0 };
-    // generate list request
-    req_buf[0] = TS_OUTPUT;
-    req_buf[1] = 0xA0;     // empty map to get response as names + values
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
     ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     char cbor_resp_hex[] =
@@ -299,7 +296,7 @@ void cbor_exec()
 {
     dummy_called_flag = 0;
 
-    req_buf[0] = TS_EXEC;     // function ID for exec
+    req_buf[0] = TS_POST;
     req_buf[1] = 0x19;     // uint16 follows
     req_buf[2] = 0x50;     // data node ID 0x5001
     req_buf[3] = 0x01;

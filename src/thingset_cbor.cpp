@@ -244,7 +244,7 @@ int ThingSet::process_cbor()
         }
 
     }
-    else if (req[0] == TS_EXEC) {
+    else if (req[0] == TS_POST) {
         return exec_cbor();
     }
     return status_message_cbor(TS_STATUS_BAD_REQUEST);
