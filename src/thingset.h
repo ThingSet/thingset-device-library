@@ -251,12 +251,12 @@ public:
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
 
     /**
-     * Plot all data nodes as a structured JSON text to stdout
+     * Print all data nodes as a structured JSON text to stdout
      *
      * WARNING: This is a recursive function and might cause stack overflows if run in constrained
      *          devices with large data node tree. Use with care and for testing only!
      *
-     * @param node_id Root node ID where to start with plotting
+     * @param node_id Root node ID where to start with printing
      * @param level Indentation level (=depth inside the data node tree)
      */
     void dump_json(node_id_t node_id = 0, int level = 0);
@@ -267,7 +267,7 @@ public:
      * The authentication flags must match with access flags specified in DataNode to allow
      * read/write access to a data node.
      *
-     * @param flags Bitset to define authentication level (1 = access allowed)
+     * @param flags Flags to define authentication level (1 = access allowed)
      */
     void set_authentication(uint16_t flags)
     {
@@ -275,39 +275,43 @@ public:
     }
 
     /**
-     * Generate publication message in JSON format for supplied list of data node IDs
+     * Generate publication message in JSON format
      *
      * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param pub_ch Publication channel mask
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
     int pub_json(char *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
-     * Generate publication message in CBOR format for supplied list of data node IDs
+     * Generate publication message in CBOR format
      *
      * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param pub_ch Publication channel mask
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
     int pub_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
-     * Encodes a publication message in CAN message format for supplied data node
+     * Encode a publication message in CAN message format for supplied data node
      *
-     * @param can_node_id id of the can node
+     * @param node_prev_pos Position of previous node for this pub channel in the data_nodes array.
+     *                      This value is updated with the next node found in order to allow
+     *                      iterating over all nodes. It should be set to 0 to start from the
+     *                      beginning.
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      * @param msg_id reference to can message id storage
      * @param data_node reference to data node to be published
      * @param msg_data reference to the buffer where the publication message should be stored
      *
-     * @returns Actual length of the message_data, or -1 if not encodable / in case of error,
-     *          message length otherwise. msg_len 0 is valid, just the id is transmitted
+     * @returns Actual length of the message_data or -1 if not encodable / in case of error,
+     *          (msg_len 0 is valid, just the id is transmitted)
      */
-    int encode_msg_can(const DataNode& object, uint8_t can_node_id, unsigned int& msg_id,
+    int pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_node_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
