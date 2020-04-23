@@ -100,42 +100,42 @@ static const DataNode data_nodes[] = {
 
     TS_NODE_PATH(ID_INFO, "info", 0, NULL),
 
-    TS_NODE_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R),
-    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW),
-    TS_NODE_STRING(0x1B, "DeviceID", strbuf, sizeof(strbuf), ID_INFO, TS_ANY_R | TS_MKR_W),
+    TS_NODE_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
+    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, 0),
+    TS_NODE_STRING(0x1B, "DeviceID", strbuf, sizeof(strbuf), ID_INFO, TS_ANY_R | TS_MKR_W, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
     // using IDs >= 0x30 except for high priority data objects
 
     TS_NODE_PATH(ID_CONF, "conf", 0, &conf_callback),
 
-    TS_NODE_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2, ID_CONF, TS_ANY_RW),
-    TS_NODE_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2, ID_CONF, TS_ANY_RW),
+    TS_NODE_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2, ID_CONF, TS_ANY_RW, 0),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
     // using IDs >= 0x60
 
     TS_NODE_PATH(ID_INPUT, "input", 0, NULL),
 
-    TS_NODE_BOOL(0x61, "EnableCharging", &enable_switch, ID_INPUT, TS_ANY_RW),
+    TS_NODE_BOOL(0x61, "EnableCharging", &enable_switch, ID_INPUT, TS_ANY_RW, 0),
 
     // OUTPUT DATA ////////////////////////////////////////////////////////////
     // using IDs >= 0x70 except for high priority data objects
 
     TS_NODE_PATH(ID_OUTPUT, "output", 0, NULL),
 
-    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_OUTPUT, TS_ANY_R),
-    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_OUTPUT, TS_ANY_R),
-    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R),
+    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_OUTPUT, TS_ANY_R, 0),
+    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_OUTPUT, TS_ANY_R, 0),
+    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R, 0),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0
 
     TS_NODE_PATH(ID_REC, "rec", 0, NULL),
 
-    TS_NODE_FLOAT(0xA1, "BatHour_kWh", &bat_energy_hour, 2, ID_REC, TS_ANY_R),
-    TS_NODE_FLOAT(0xA2, "BatDay_kWh", &bat_energy_day, 2, ID_REC, TS_ANY_R),
-    TS_NODE_INT16(0xA3, "AmbientMaxDay_degC", &ambient_temp_max_day, ID_REC, TS_ANY_R),
+    TS_NODE_FLOAT(0xA1, "BatHour_kWh", &bat_energy_hour, 2, ID_REC, TS_ANY_R, 0),
+    TS_NODE_FLOAT(0xA2, "BatDay_kWh", &bat_energy_day, 2, ID_REC, TS_ANY_R, 0),
+    TS_NODE_INT16(0xA3, "AmbientMaxDay_degC", &ambient_temp_max_day, ID_REC, TS_ANY_R, 0),
 
     // CALIBRATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xD0
@@ -150,7 +150,7 @@ static const DataNode data_nodes[] = {
     TS_NODE_EXEC(0xE1, "reset", &reset_function, ID_EXEC, TS_ANY_RW),
 
     TS_NODE_EXEC(0xE2, "auth", &auth_function, 0, TS_ANY_RW),
-    TS_NODE_STRING(0xE3, "Password", auth_password, sizeof(auth_password), 0xE2, TS_ANY_RW),
+    TS_NODE_STRING(0xE3, "Password", auth_password, sizeof(auth_password), 0xE2, TS_ANY_RW, 0),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xF0
@@ -158,14 +158,14 @@ static const DataNode data_nodes[] = {
     TS_NODE_PATH(ID_PUB, "pub", 0, NULL),
 
     TS_NODE_PATH(0xF1, "serial", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW),
-    TS_NODE_UINT16(0xF3, "Interval_ms", &pub_serial_interval, 0xF1, TS_ANY_RW),
-    TS_NODE_ARRAY(0xF4, "IDs", &pub_serial_array, 0, 0xF1, TS_ANY_RW),
+    TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
+    TS_NODE_UINT16(0xF3, "Interval_ms", &pub_serial_interval, 0xF1, TS_ANY_RW, 0),
+    TS_NODE_ARRAY(0xF4, "IDs", &pub_serial_array, 0, 0xF1, TS_ANY_RW, 0),
 
     TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW),
-    TS_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_ANY_RW),
-    TS_NODE_ARRAY(0xF8, "IDs", &pub_can_array, 0, 0xF5, TS_ANY_RW),
+    TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
+    TS_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_ANY_RW, 0),
+    TS_NODE_ARRAY(0xF8, "IDs", &pub_can_array, 0, 0xF5, TS_ANY_RW, 0),
 
     // LOGGING DATA ///////////////////////////////////////////////////////
     // using IDs >= 0x100
@@ -193,28 +193,28 @@ static const DataNode data_nodes[] = {
 
     TS_NODE_PATH(0x1000, "test", 0, NULL),
 
-    TS_NODE_INT32(0x4001, "i32_readonly", &i32, 0x1000, TS_ANY_R),
+    TS_NODE_INT32(0x4001, "i32_readonly", &i32, 0x1000, TS_ANY_R, 0),
 
     TS_NODE_EXEC(0x5001, "dummy", &dummy, ID_EXEC, TS_ANY_RW),
 
-    TS_NODE_UINT64(0x6001, "ui64", &ui64, ID_CONF, TS_ANY_RW),
-    TS_NODE_INT64(0x6002, "i64", &i64, ID_CONF, TS_ANY_RW),
-    TS_NODE_UINT32(0x6003, "ui32", &ui32, ID_CONF, TS_ANY_RW),
-    TS_NODE_INT32(0x6004, "i32", &i32, ID_CONF, TS_ANY_RW),
-    TS_NODE_UINT16(0x6005, "ui16", &ui16, ID_CONF, TS_ANY_RW),
-    TS_NODE_INT16(0x6006, "i16", &i16, ID_CONF, TS_ANY_RW),
-    TS_NODE_FLOAT(0x6007, "f32", &f32, 2, ID_CONF, TS_ANY_RW),
-    TS_NODE_BOOL(0x6008, "bool", &b, ID_CONF, TS_ANY_RW),
+    TS_NODE_UINT64(0x6001, "ui64", &ui64, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_INT64(0x6002, "i64", &i64, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_UINT32(0x6003, "ui32", &ui32, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_INT32(0x6004, "i32", &i32, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_UINT16(0x6005, "ui16", &ui16, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_INT16(0x6006, "i16", &i16, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_FLOAT(0x6007, "f32", &f32, 2, ID_CONF, TS_ANY_RW, 0),
+    TS_NODE_BOOL(0x6008, "bool", &b, ID_CONF, TS_ANY_RW, 0),
 
-    TS_NODE_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf), ID_CONF, TS_ANY_RW),
+    TS_NODE_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf), ID_CONF, TS_ANY_RW, 0),
 
-    TS_NODE_FLOAT(0x600A, "f32_rounded", &f32, 0, ID_CONF, TS_ANY_RW),
+    TS_NODE_FLOAT(0x600A, "f32_rounded", &f32, 0, ID_CONF, TS_ANY_RW, 0),
 
-    TS_NODE_UINT32(0x7001, "secret_expert", &ui32, ID_CONF, TS_ANY_R | TS_EXP_W | TS_MKR_W),
-    TS_NODE_UINT32(0x7002, "secret_maker", &ui32, ID_CONF, TS_ANY_R | TS_MKR_W),
-    TS_NODE_ARRAY(0x7003, "arrayi32", &int32_array, 0, ID_CONF, TS_ANY_RW),
+    TS_NODE_UINT32(0x7001, "secret_expert", &ui32, ID_CONF, TS_ANY_R | TS_EXP_W | TS_MKR_W, 0),
+    TS_NODE_UINT32(0x7002, "secret_maker", &ui32, ID_CONF, TS_ANY_R | TS_MKR_W, 0),
+    TS_NODE_ARRAY(0x7003, "arrayi32", &int32_array, 0, ID_CONF, TS_ANY_RW, 0),
     // data_node->detail will specify the number of decimal places for float
-    TS_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, ID_CONF, TS_ANY_RW),
+    TS_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, ID_CONF, TS_ANY_RW, 0),
 };
 
 #endif

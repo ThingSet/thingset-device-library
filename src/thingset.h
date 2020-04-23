@@ -95,51 +95,51 @@ typedef struct {
  */
 
 static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
-#define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_BOOL, 0, _bool_to_void(_data_ptr), _name}
+#define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
 
 static inline void *_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
-#define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_UINT64, 0, _uint64_to_void(_data_ptr), _name}
+#define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
 
 static inline void *_int64_to_void(int64_t *ptr) { return (void*) ptr; }
-#define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_INT64, 0, _int64_to_void(_data_ptr), _name}
+#define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
 
 static inline void *_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
-#define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_UINT32, 0, _uint32_to_void(_data_ptr), _name}
+#define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
 
 static inline void *_int32_to_void(int32_t *ptr) { return (void*) ptr; }
-#define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_INT32, 0, _int32_to_void(_data_ptr), _name}
+#define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
 
 static inline void *_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
-#define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_UINT16, 0, _uint16_to_void(_data_ptr), _name}
+#define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
 
 static inline void *_int16_to_void(int16_t *ptr) { return (void*) ptr; }
-#define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_INT16, 0, _int16_to_void(_data_ptr), _name}
+#define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
 
 static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
-#define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_FLOAT32, _digits, _float_to_void(_data_ptr), _name}
+#define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
 
 static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
-#define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
+#define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_EXEC, 0, _function_to_void(_function_ptr), _name}
+    {_id, _parent, _name, _function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
 
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
-#define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc) \
-    {_id, _parent, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
+#define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
-    {_id, _parent, TS_READ_MASK, TS_T_PATH, 0, _function_to_void(_callback), _name}
+    {_id, _parent, _name, _function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
 
 /*
  * Access right macros for data nodes
@@ -147,18 +147,16 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_ROLE_USR     (1U << 0)       // normal user
 #define TS_ROLE_EXP     (1U << 1)       // expert user
 #define TS_ROLE_MKR     (1U << 2)       // maker
-#define TS_ROLE_NVM     (1U << 3)       // internal (for non-volatile memory storage)
 
-#define TS_READ_MASK    0x0F            // read flags stored in 4 least-significant bits
-#define TS_WRITE_MASK   0xF0            // write flags stored in 4 most-significant bits
+#define TS_READ_MASK    0x00FF          // read flags stored in 4 least-significant bits
+#define TS_WRITE_MASK   0xFF00          // write flags stored in 4 most-significant bits
 
-#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR)
-#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP)
-#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR)
-#define TS_NVM_MASK     (TS_ROLE_NVM << 4 | TS_ROLE_NVM)
+#define TS_USR_MASK     (TS_ROLE_USR << 8 | TS_ROLE_USR)
+#define TS_EXP_MASK     (TS_ROLE_EXP << 8 | TS_ROLE_EXP)
+#define TS_MKR_MASK     (TS_ROLE_MKR << 8 | TS_ROLE_MKR)
 
 #define TS_READ(roles)          ((roles) & TS_READ_MASK)
-#define TS_WRITE(roles)         (((roles) << 4) & TS_WRITE_MASK)
+#define TS_WRITE(roles)         (((roles) << 8) & TS_WRITE_MASK)
 #define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
 
 #define TS_USR_R        TS_READ(TS_ROLE_USR)
@@ -175,8 +173,6 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP)
 #define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR)
 #define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW)
-
-#define TS_NVM          TS_READ_WRITE(TS_ROLE_NVM)
 
 
 typedef uint16_t node_id_t;
@@ -196,9 +192,15 @@ typedef struct DataNode {
     const node_id_t parent;
 
     /**
-     * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
+     * Data Node name
      */
-    const uint8_t access;
+    const char *name;
+
+    /**
+     * Pointer to the variable containing the data. The variable type must match the type as
+     * specified
+     */
+    void *const data;
 
     /**
      * One of TS_TYPE_INT32, _FLOAT, ...
@@ -213,15 +215,15 @@ typedef struct DataNode {
     const int16_t detail;
 
     /**
-     * Pointer to the variable containing the data. The variable type must match the type as
-     * specified
+     * Flags to define read/write access
      */
-    void *data;
+    const uint16_t access;
 
     /**
-     * Data Node name
+     * Flags to add this node to different pub/sub channels
      */
-    const char *name;
+    uint16_t pubsub;
+
 } DataNode;
 
 
@@ -265,7 +267,7 @@ public:
      *
      * @param flags Bitset to define authentication level (1 = access allowed)
      */
-    void set_authentication(uint8_t flags)
+    void set_authentication(uint16_t flags)
     {
         auth_flags = flags;
     }
@@ -461,7 +463,7 @@ private:
      */
     int tok_count;
 
-    uint8_t auth_flags = TS_USR_MASK;
+    uint16_t auth_flags = TS_USR_MASK;
 };
 
 #endif /* THINGSET_H_ */

@@ -498,7 +498,7 @@ int ThingSet::patch_json(node_id_t parent_id)
 
         // create dummy node to test formats
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
-        DataNode dummy_node = {0, 0, 0, node->type, node->detail, (void *) dummy_data, "Dummy"};
+        DataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
 
         int res = json_deserialize_value(value_buf, value_len, tok, &dummy_node);
         if (res == 0) {
