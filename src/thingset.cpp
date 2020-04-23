@@ -66,11 +66,6 @@ ThingSet::ThingSet(DataNode *data, size_t num)
     num_nodes = num;
 }
 
-ThingSet::~ThingSet()
-{
-
-}
-
 int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
 {
     // check if proper request was set before asking for a response

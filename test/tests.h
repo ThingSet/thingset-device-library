@@ -7,6 +7,9 @@
 #ifndef TESTS_H_
 #define TESTS_H_
 
+#include <stdint.h>
+#include <string.h>
+
 /*
  * Same as in test_data.h
  */
@@ -32,5 +35,7 @@
 void tests_common();
 void tests_json();
 void tests_cbor();
+
+int hex2bin(char *hex, uint8_t *bin, size_t bin_size);
 
 #endif /* TESTS_H_ */

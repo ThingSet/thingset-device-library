@@ -257,36 +257,44 @@ void cbor_get_names_values_output()
         "16";
 
     uint8_t cbor_resp[100];
-    int len = strlen(cbor_resp_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
+    int pos = hex2bin(cbor_resp_hex, cbor_resp, sizeof(cbor_resp));
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
 }
 
-void cbor_pub_msg()
+void cbor_pub()
 {
-    ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
+    uint8_t bin[100];
+    ts.pub_cbor(bin, sizeof(bin), PUB_SER);
 
-    TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, resp_buf[0]);
+    TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, bin[0]);
 
-    char cbor_resp_hex[] =
+    char hex_expected[] =
         "1F A4 "     // map with 4 elements
         "18 1A 1A 00 BC 61 4E "     // int 12345678
         "18 71 FA 41 61 99 9a "     // float 14.10
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
 
-    uint8_t cbor_resp[100];
-    int len = strlen(cbor_resp_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
+    uint8_t bin_expected[100];
+    int len = hex2bin(hex_expected, bin_expected, sizeof(bin_expected));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(bin_expected, bin, len);
+}
+
+void cbor_sub()
+{
+    char msg_hex[] =
+        "1F A2 "     // map with 4 elements
+        "18 31 FA 41 61 99 9a "     // float 14.10
+        "18 32 FA 40 a4 28 f6 ";    // float 5.13
+
+    uint8_t msg_bin[100];
+    int len = hex2bin(msg_hex, msg_bin, sizeof(msg_bin));
+
+    int ret = ts.sub_cbor(msg_bin, len, TS_WRITE_MASK, PUB_SER);
+
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, ret);
 }
 
 extern bool dummy_called_flag;
@@ -356,10 +364,12 @@ void tests_cbor()
     RUN_TEST(cbor_fetch_float_array);
     RUN_TEST(cbor_fetch_rounded_float);
 
-    RUN_TEST(cbor_pub_msg);
     RUN_TEST(cbor_exec);                    // still previous protocol spec
     RUN_TEST(cbor_num_elem);
     RUN_TEST(cbor_serialize_long_string);
+
+    RUN_TEST(cbor_pub);
+    RUN_TEST(cbor_sub);
 
     UNITY_END();
 }

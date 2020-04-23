@@ -236,8 +236,6 @@ class ThingSet
 public:
     ThingSet(DataNode *data, size_t num);
 
-    ~ThingSet();
-
     /**
      * Process ThingSet request
      *
@@ -273,7 +271,7 @@ public:
      */
     void set_authentication(uint16_t flags)
     {
-        auth_flags = flags;
+        _auth_flags = flags;
     }
 
     /**
@@ -285,7 +283,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_json(char *buf, size_t buf_size, const uint16_t pub_ch);
+    int pub_json(char *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
      * Generate publication message in CBOR format for supplied list of data node IDs
@@ -296,7 +294,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
+    int pub_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
      * Encodes a publication message in CAN message format for supplied data node
@@ -313,15 +311,15 @@ public:
         uint8_t (&msg_data)[8]);
 
     /**
-     * Initialize data nodes based on values stored in EEPROM
+     * Update data nodes based on values provided in payload data (e.g. from other pub msg)
      *
-     * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data
-     *                  objects
+     * @param cbor_data Buffer containing key/value map that should be written to the data nodes
      * @param len Length of the data in the buffer
+     * @param sub_ch Subscribe channel (as bitfield)
      *
      * @returns ThingSet status code
      */
-    int init_cbor(uint8_t *cbor_data, size_t len);
+    int sub_cbor(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch);
 
     /**
      * Get data node by ID
@@ -395,9 +393,18 @@ private:
     /**
      * PATCH request (binary mode)
      *
-     * Write data node values in binary mode (function called with a map as argument)
+     * Write data node values in binary mode (function called with a map as payload)
+     *
+     * If sub_ch is specified, nodes not found are silently ignored. Otherwise, a NOT_FOUND
+     * error is raised.
+     *
+     * @param parent Pointer to path / parent node or NULL to consider any node
+     * @param pos_payload Position of payload in req buffer
+     * @param auth_flags Bitset to specify authentication status for different roles
+     * @param sub_ch Bitset to specifiy subscribe channel to be considered, 0 to ignore
      */
-    int patch_cbor(const DataNode *parent, unsigned int pos_payload, bool ignore_access);
+    int patch_cbor(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+        uint16_t sub_ch);
 
     /**
      * POST request to append data
@@ -465,7 +472,7 @@ private:
      */
     int tok_count;
 
-    uint16_t auth_flags = TS_USR_MASK;
+    uint16_t _auth_flags = TS_USR_MASK;
 };
 
 #endif /* THINGSET_H_ */

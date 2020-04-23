@@ -18,6 +18,21 @@ extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
 
+int hex2bin(char *hex, uint8_t *bin, size_t bin_size)
+{
+    int len = strlen(hex);
+    unsigned int pos = 0;
+    for (int i = 0; i < len; i += 3) {
+        if (pos < bin_size) {
+            bin[pos++] = (char)strtoul(&hex[i], NULL, 16);
+        }
+        else {
+            return 0;
+        }
+    }
+    return pos;
+}
+
 void _patch_json(char const *name, char const *value)
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"%s\":%s}", name, value);

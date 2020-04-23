@@ -361,7 +361,7 @@ int ThingSet::fetch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
 
-        if ((node->access & TS_READ_MASK & auth_flags) == 0) {
+        if ((node->access & TS_READ_MASK & _auth_flags) == 0) {
             if (node->access & TS_READ_MASK) {
                 return status_message_json(TS_STATUS_UNAUTHORIZED);
             }
@@ -483,7 +483,7 @@ int ThingSet::patch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_NOT_FOUND);
         }
 
-        if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
+        if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
             if (node->access & TS_WRITE_MASK) {
                 return status_message_json(TS_STATUS_UNAUTHORIZED);
             }
@@ -716,7 +716,7 @@ int ThingSet::exec_json(const DataNode *node)
 
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
-        if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
+        if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
             return status_message_json(TS_STATUS_UNAUTHORIZED);
         }
     }
@@ -753,7 +753,7 @@ int ThingSet::exec_json(const DataNode *node)
     return status_message_json(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_json(char *buf, size_t buf_size, const uint16_t pub_ch)
+int ThingSet::pub_json(char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");
 

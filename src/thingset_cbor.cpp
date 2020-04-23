@@ -234,7 +234,7 @@ int ThingSet::process_cbor()
         return fetch_cbor(endpoint, pos);
     }
     else if (req[0] == TS_PATCH && endpoint) {
-        return patch_cbor(endpoint, pos, false);
+        return patch_cbor(endpoint, pos, _auth_flags, 0);
 
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && resp[0] == TS_STATUS_CHANGED) {
@@ -310,18 +310,19 @@ int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
     }
 }
 
-int ThingSet::init_cbor(uint8_t *cbor_data, size_t len)
+int ThingSet::sub_cbor(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch)
 {
     uint8_t resp_tmp[1] = {};   // only one character as response expected
     req = cbor_data;
     req_len = len;
     resp = resp_tmp;
     resp_size = sizeof(resp_tmp);
-    //patch_cbor(0, true);                  // TODO!!
-    return resp[0] - 0x80;
+    patch_cbor(NULL, 1, auth_flags, sub_ch);
+    return resp[0];
 }
 
-int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, bool ignore_access)
+int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+    uint16_t sub_ch)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
@@ -335,7 +336,6 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, bool 
     //    req[pos_req], req[pos_req+1], req[pos_req+2], req[pos_req+3],
     //    req[pos_req+4], req[pos_req+5], req[pos_req+6], req[pos_req+7]);
 
-    // loop through all elements to check if request is valid
     while (pos_req < req_len && element < num_elements) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
@@ -347,26 +347,37 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, bool 
         }
         pos_req += num_bytes;
 
-        const DataNode* data_node = get_data_node(id);
-        if (data_node == NULL) {
-            if (!ignore_access) {
-                return status_message_cbor(TS_STATUS_NOT_FOUND);
-            }
-
-            // ignore element
-            num_bytes = cbor_size(&req[pos_req]);
-        }
-        else {
-            if (!ignore_access) { // access ignored if direcly called (e.g. to write data from EEPROM)
-                if (!(data_node->access & TS_WRITE_MASK)) {
+        const DataNode* node = get_data_node(id);
+        if (node) {
+            if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
+                if (node->access & TS_WRITE_MASK) {
                     return status_message_cbor(TS_STATUS_UNAUTHORIZED);
                 }
-                if (data_node->parent != parent->id) {
-                    return status_message_cbor(TS_STATUS_NOT_FOUND);
+                else {
+                    return status_message_cbor(TS_STATUS_FORBIDDEN);
                 }
             }
-
-            num_bytes = cbor_deserialize_data_node(&req[pos_req], data_node);
+            else if (parent && node->parent != parent->id) {
+                return status_message_cbor(TS_STATUS_NOT_FOUND);
+            }
+            else if (sub_ch && !(node->pubsub & sub_ch)) {
+                // ignore element
+                num_bytes = cbor_size(&req[pos_req]);
+            }
+            else {
+                // actually deserialize the data and update node
+                num_bytes = cbor_deserialize_data_node(&req[pos_req], node);
+            }
+        }
+        else {
+            // node not found
+            if (sub_ch) {
+                // ignore element
+                num_bytes = cbor_size(&req[pos_req]);
+            }
+            else {
+                return status_message_cbor(TS_STATUS_NOT_FOUND);
+            }
         }
 
         if (num_bytes == 0) {
@@ -408,7 +419,7 @@ int ThingSet::exec_cbor()
     return status_message_cbor(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
+int ThingSet::pub_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
 {
     buf[0] = TS_PUBMSG;
     int len = 1;
