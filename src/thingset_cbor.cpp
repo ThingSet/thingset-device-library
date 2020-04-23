@@ -408,32 +408,30 @@ int ThingSet::exec_cbor()
     return status_message_cbor(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const node_id_t node_ids[],
-    size_t num_ids)
+int ThingSet::pub_msg_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
 {
     buf[0] = TS_PUBMSG;
     int len = 1;
 
-    if (num_ids > 1) {
-        len += cbor_serialize_map(&buf[len], num_ids, buf_size - len);
+    // find out number of elements to be published
+    int num_ids = 0;
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].pubsub & pub_ch) {
+            num_ids++;
+        }
     }
 
-    for (unsigned int i = 0; i < num_ids; i++) {
+    len += cbor_serialize_map(&buf[len], num_ids, buf_size - len);
 
-        size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
-
-        const DataNode* data_node = get_data_node(node_ids[i]);
-        if (data_node == NULL || !(data_node->access & TS_READ_MASK)) {
-            continue;
-        }
-
-        len += cbor_serialize_uint(&buf[len], data_node->id, buf_size - len);
-        num_bytes += cbor_serialize_data_node(&buf[len], buf_size - len, data_node);
-
-        if (num_bytes == 0) {
-            return 0;
-        } else {
-            len += num_bytes;
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].pubsub & pub_ch) {
+            len += cbor_serialize_uint(&buf[len], data_nodes[i].id, buf_size - len);
+            size_t num_bytes = cbor_serialize_data_node(&buf[len], buf_size - len, &data_nodes[i]);
+            if (num_bytes == 0) {
+                return 0;
+            } else {
+                len += num_bytes;
+            }
         }
     }
     return len;

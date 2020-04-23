@@ -56,7 +56,7 @@ static void _count_array_elements(const DataNode *data, size_t num)
     }
 }
 
-ThingSet::ThingSet(const DataNode *data, size_t num)
+ThingSet::ThingSet(DataNode *data, size_t num)
 {
     _check_id_duplicates(data, num);
 
@@ -98,7 +98,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     }
 }
 
-const DataNode* ThingSet::get_data_node(const char *str, size_t len, int32_t parent)
+DataNode *const ThingSet::get_data_node(const char *str, size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (parent != -1 && data_nodes[i].parent != parent) {
@@ -113,7 +113,7 @@ const DataNode* ThingSet::get_data_node(const char *str, size_t len, int32_t par
     return NULL;
 }
 
-const DataNode* ThingSet::get_data_node(node_id_t id)
+DataNode *const ThingSet::get_data_node(node_id_t id)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].id == id) {
@@ -123,7 +123,7 @@ const DataNode* ThingSet::get_data_node(node_id_t id)
     return NULL;
 }
 
-const DataNode *ThingSet::get_endpoint_node(const char *path, size_t len)
+DataNode *const ThingSet::get_endpoint_node(const char *path, size_t len)
 {
     const DataNode *node;
     const char *start = path;

@@ -125,6 +125,16 @@ int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data
     case TS_T_STRING:
         pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_node->data);
         break;
+    case TS_T_PUBSUB:
+        pos = snprintf(&resp[pos], size - pos, "[]") - 1;
+        for (unsigned int i = 0; i < num_nodes; i++) {
+            if (data_nodes[i].pubsub & (uint16_t)data_node->detail) {
+                pos += snprintf(&resp[pos], size - pos, "\"%s\",", data_nodes[i].name);
+            }
+        }
+        pos--; // remove trailing comma
+        pos += snprintf(&resp[pos], size - pos, "],");
+        break;
     case TS_T_ARRAY:
         ArrayInfo *array_info = (ArrayInfo *)data_node->data;
         if (!array_info) {
@@ -596,82 +606,103 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
 
 int ThingSet::create_json(const DataNode *node)
 {
-    if (node->type != TS_T_ARRAY) {
-        return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
-    }
-    else if (tok_count > 1) {
+    if (tok_count > 1) {
         // only single JSON primitive supported at the moment
         return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
     }
 
-    ArrayInfo *arr_info = (ArrayInfo *)node->data;
+    if (node->type == TS_T_ARRAY) {
+        ArrayInfo *arr_info = (ArrayInfo *)node->data;
+        if (arr_info->num_elements < arr_info->max_elements) {
 
-    if (arr_info->num_elements < arr_info->max_elements) {
+            if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
 
-        if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
+                const DataNode *new_node = get_data_node(json_str + tokens[0].start,
+                    tokens[0].end - tokens[0].start);
 
-            const DataNode *new_node = get_data_node(json_str + tokens[0].start,
-                tokens[0].end - tokens[0].start);
-
-            if (new_node != NULL) {
-                node_id_t *node_ids = (node_id_t *)arr_info->ptr;
-                // check if node is already existing in array
-                for (int i = 0; i < arr_info->num_elements; i++) {
-                    if (node_ids[i] == new_node->id) {
-                        return status_message_json(TS_STATUS_CONFLICT);
+                if (new_node != NULL) {
+                    node_id_t *node_ids = (node_id_t *)arr_info->ptr;
+                    // check if node is already existing in array
+                    for (int i = 0; i < arr_info->num_elements; i++) {
+                        if (node_ids[i] == new_node->id) {
+                            return status_message_json(TS_STATUS_CONFLICT);
+                        }
                     }
+                    // otherwise append it
+                    node_ids[arr_info->num_elements] = new_node->id;
+                    arr_info->num_elements++;
+                    return status_message_json(TS_STATUS_CREATED);
                 }
-                // otherwise append it
-                node_ids[arr_info->num_elements] = new_node->id;
-                arr_info->num_elements++;
-                return status_message_json(TS_STATUS_CREATED);
+                else {
+                    return status_message_json(TS_STATUS_NOT_FOUND);
+                }
             }
             else {
-                return status_message_json(TS_STATUS_NOT_FOUND);
+                return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
             }
+        }
+        else {
+            return status_message_json(TS_STATUS_INTERNAL_SERVER_ERR);
+        }
+    }
+    else if (node->type == TS_T_PUBSUB) {
+        if (tokens[0].type == JSMN_STRING) {
+            DataNode *del_node = get_data_node(json_str + tokens[0].start,
+                tokens[0].end - tokens[0].start);
+            if (del_node != NULL) {
+                del_node->pubsub |= (uint16_t)node->detail;
+                return status_message_json(TS_STATUS_CREATED);
+            }
+            return status_message_json(TS_STATUS_NOT_FOUND);
+        }
+    }
+    return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
+}
+
+int ThingSet::delete_json(const DataNode *node)
+{
+    if (tok_count > 1) {
+        // only single JSON primitive supported at the moment
+        return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
+    }
+
+    if (node->type == TS_T_ARRAY) {
+        ArrayInfo *arr_info = (ArrayInfo *)node->data;
+        if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
+            const DataNode *del_node = get_data_node(json_str + tokens[0].start,
+                tokens[0].end - tokens[0].start);
+            if (del_node != NULL) {
+                // node found in node database, now look for same ID in the array
+                node_id_t *node_ids = (node_id_t *)arr_info->ptr;
+                for (int i = 0; i < arr_info->num_elements; i++) {
+                    if (node_ids[i] == del_node->id) {
+                        // node also found in array, shift all remaining elements
+                        for (int j = i; j < arr_info->num_elements - 1; j++) {
+                            node_ids[j] = node_ids[j+1];
+                        }
+                        arr_info->num_elements--;
+                        return status_message_json(TS_STATUS_DELETED);
+                    }
+                }
+            }
+            return status_message_json(TS_STATUS_NOT_FOUND);
         }
         else {
             return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
         }
     }
-    else {
-        return status_message_json(TS_STATUS_INTERNAL_SERVER_ERR);
-    }
-}
-
-int ThingSet::delete_json(const DataNode *node)
-{
-    if (node->type != TS_T_ARRAY) {
-        return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
-    }
-    else if (tok_count > 1) {
-        // only single JSON primitive supported at the moment
-        return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
-    }
-
-    ArrayInfo *arr_info = (ArrayInfo *)node->data;
-    if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
-        const DataNode *del_node = get_data_node(json_str + tokens[0].start,
-            tokens[0].end - tokens[0].start);
-        if (del_node != NULL) {
-            // node found in node database, now look for same ID in the array
-            node_id_t *node_ids = (node_id_t *)arr_info->ptr;
-            for (int i = 0; i < arr_info->num_elements; i++) {
-                if (node_ids[i] == del_node->id) {
-                    // node also found in array, shift all remaining elements
-                    for (int j = i; j < arr_info->num_elements - 1; j++) {
-                        node_ids[j] = node_ids[j+1];
-                    }
-                    arr_info->num_elements--;
-                    return status_message_json(TS_STATUS_DELETED);
-                }
+    else if (node->type == TS_T_PUBSUB) {
+        if (tokens[0].type == JSMN_STRING) {
+            DataNode *del_node = get_data_node(json_str + tokens[0].start,
+                tokens[0].end - tokens[0].start);
+            if (del_node != NULL) {
+                del_node->pubsub &= ~((uint16_t)node->detail);
+                return status_message_json(TS_STATUS_DELETED);
             }
+            return status_message_json(TS_STATUS_NOT_FOUND);
         }
-        return status_message_json(TS_STATUS_NOT_FOUND);
     }
-    else {
-        return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
-    }
+    return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
 int ThingSet::exec_json(const DataNode *node)
@@ -722,19 +753,14 @@ int ThingSet::exec_json(const DataNode *node)
     return status_message_json(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids)
+int ThingSet::pub_msg_json(char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");
 
-    for (unsigned int i = 0; i < num_ids; i++) {
-
-        const DataNode* node = get_data_node(node_ids[i]);
-        if (node == NULL || !(node->access & TS_READ_MASK)) {
-            continue;
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].pubsub & pub_ch) {
+            len += json_serialize_name_value(&buf[len], buf_size - len, &data_nodes[i]);
         }
-
-        len += json_serialize_name_value(&buf[len], buf_size - len, node);
-
         if (len >= buf_size - 1) {
             return 0;
         }

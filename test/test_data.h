@@ -35,17 +35,9 @@ static int16_t ambient_temp_max_day = 28;
 // pub
 bool pub_serial_enable = false;
 uint16_t pub_serial_interval = 1000;
-node_id_t pub_serial_ids[20] = { 0x1A, 0x71, 0x72, 0x73 };
-ArrayInfo pub_serial_array = {
-    pub_serial_ids, sizeof(pub_serial_ids)/sizeof(node_id_t), TS_AUTODETECT_ARRLEN, TS_T_NODE_ID
-};
 
 bool pub_can_enable = true;
 uint16_t pub_can_interval = 100;
-node_id_t pub_can_ids[20] = { 0x71, 0x72, 0x73 };
-ArrayInfo pub_can_array = {
-    pub_can_ids, sizeof(pub_can_ids)/sizeof(node_id_t), TS_AUTODETECT_ARRLEN, TS_T_NODE_ID
-};
 
 // exec
 void reset_function(void);
@@ -93,7 +85,11 @@ void conf_callback(void);
 #define ID_SUB      0xF1        // subscription setup
 #define ID_LOG      0x100       // access log data
 
-static const DataNode data_nodes[] = {
+#define PUB_SER     (1U << 0)   // UART serial
+#define PUB_CAN     (1U << 1)   // CAN bus
+#define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
+
+static DataNode data_nodes[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
@@ -101,7 +97,7 @@ static const DataNode data_nodes[] = {
     TS_NODE_PATH(ID_INFO, "info", 0, NULL),
 
     TS_NODE_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
-    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, 0),
+    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, PUB_SER),
     TS_NODE_STRING(0x1B, "DeviceID", strbuf, sizeof(strbuf), ID_INFO, TS_ANY_R | TS_MKR_W, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
@@ -124,9 +120,9 @@ static const DataNode data_nodes[] = {
 
     TS_NODE_PATH(ID_OUTPUT, "output", 0, NULL),
 
-    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_OUTPUT, TS_ANY_R, 0),
-    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_OUTPUT, TS_ANY_R, 0),
-    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R, 0),
+    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0
@@ -160,12 +156,12 @@ static const DataNode data_nodes[] = {
     TS_NODE_PATH(0xF1, "serial", ID_PUB, NULL),
     TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
     TS_NODE_UINT16(0xF3, "Interval_ms", &pub_serial_interval, 0xF1, TS_ANY_RW, 0),
-    TS_NODE_ARRAY(0xF4, "IDs", &pub_serial_array, 0, 0xF1, TS_ANY_RW, 0),
+    TS_NODE_PUBSUB(0xF4, "IDs", PUB_SER, 0xF1, TS_ANY_RW, 0),
 
     TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
     TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
     TS_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_ANY_RW, 0),
-    TS_NODE_ARRAY(0xF8, "IDs", &pub_can_array, 0, 0xF5, TS_ANY_RW, 0),
+    TS_NODE_PUBSUB(0xF4, "IDs", PUB_CAN, 0xF5, TS_ANY_RW, 0),
 
     // LOGGING DATA ///////////////////////////////////////////////////////
     // using IDs >= 0x100

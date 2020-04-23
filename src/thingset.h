@@ -70,7 +70,8 @@ enum TsType {
     TS_T_DECFRAC,       // CBOR decimal fraction
     TS_T_PATH,          // internal node to describe URI path
     TS_T_NODE_ID,       // internally equal to uint16_t
-    TS_T_EXEC           // for exec data objects
+    TS_T_EXEC,          // for exec data objects
+    TS_T_PUBSUB
 };
 
 /**
@@ -137,6 +138,9 @@ static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     {_id, _parent, _name, _array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
+
+#define TS_NODE_PUBSUB(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, NULL, TS_T_PUBSUB, _pubsub_channel, _acc, _pubsub}
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
     {_id, _parent, _name, _function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
@@ -230,7 +234,7 @@ typedef struct DataNode {
 class ThingSet
 {
 public:
-    ThingSet(const DataNode *data, size_t num);
+    ThingSet(DataNode *data, size_t num);
 
     ~ThingSet();
 
@@ -277,24 +281,22 @@ public:
      *
      * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param node_ids Array of data node IDs to be published
-     * @param num_ids Number of elements in the nodes array
+     * @param pub_ch Publication channel mask
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_json(char *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids);
+    int pub_msg_json(char *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
      * Generate publication message in CBOR format for supplied list of data node IDs
      *
      * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param node_ids Array of data node IDs to be published
-     * @param num_ids Number of elements in the nodes array
+     * @param pub_ch Publication channel mask
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const node_id_t node_ids[], size_t num_ids);
+    int pub_msg_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
 
     /**
      * Encodes a publication message in CAN message format for supplied data node
@@ -324,7 +326,7 @@ public:
     /**
      * Get data node by ID
      */
-    const DataNode *get_data_node(node_id_t id);
+    DataNode *const get_data_node(node_id_t id);
 
     /**
      * Get data node by name
@@ -337,12 +339,12 @@ public:
      *
      * @returns Pointer to data node or NULL if node is not found
      */
-    const DataNode *get_data_node(const char *name, size_t len, int32_t parent = -1);
+    DataNode *const get_data_node(const char *name, size_t len, int32_t parent = -1);
 
     /**
      * Get the endpoint node of a provided path, e.g. "conf"
      */
-    const DataNode *get_endpoint_node(const char *path, size_t len);
+    DataNode *const get_endpoint_node(const char *path, size_t len);
 
 private:
     /**
@@ -439,7 +441,7 @@ private:
      */
     int status_message_cbor(uint8_t code);
 
-    const DataNode *data_nodes;
+    DataNode *data_nodes;
     size_t num_nodes;
 
     uint8_t *req;               ///< Request buffer

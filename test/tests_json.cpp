@@ -133,8 +133,9 @@ void json_fetch_float_array()
 
 void json_pub_msg()
 {
-    int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN,
-        (node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
+    int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
+//    int resp_len = ts.pub_msg_json((char *)resp_buf, TS_RESP_BUFFER_LEN,
+//        (node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(
         "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}",

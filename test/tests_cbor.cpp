@@ -268,8 +268,7 @@ void cbor_get_names_values_output()
 
 void cbor_pub_msg()
 {
-    ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN,
-        (node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
+    ts.pub_msg_cbor(resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
 
     TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, resp_buf[0]);
 

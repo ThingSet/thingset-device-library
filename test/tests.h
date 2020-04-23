@@ -22,6 +22,10 @@
 #define ID_SUB      0xF1        // subscription setup
 #define ID_LOG      0x100       // access log data
 
+#define PUB_SER     (1U << 0)   // UART serial
+#define PUB_CAN     (1U << 1)   // CAN bus
+#define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
+
 #define TS_REQ_BUFFER_LEN 500
 #define TS_RESP_BUFFER_LEN 500
 
