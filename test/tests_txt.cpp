@@ -49,7 +49,7 @@ void test_txt_patch_wrong_data_structure()
 
 void test_txt_patch_array()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {    \"f32\" : 52.8,\"i32\":50.6}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {    \"f32\" : 52.8,\"i32\":50.6}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
@@ -59,7 +59,7 @@ void test_txt_patch_array()
 
 void test_txt_patch_readonly()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!test {\"i32_readonly\" : 52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=test {\"i32_readonly\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A3 Forbidden.", resp_buf);
@@ -67,7 +67,7 @@ void test_txt_patch_readonly()
 
 void test_txt_patch_wrong_path()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!info {\"i32\" : 52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=info {\"i32\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
@@ -75,7 +75,7 @@ void test_txt_patch_wrong_path()
 
 void test_txt_patch_unknown_node()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i3\" : 52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"i3\" : 52}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
@@ -87,7 +87,7 @@ void test_txt_fetch_array()
     b = false;
     i32 = 50;
 
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf [\"f32\",\"bool\",\"i32\"]");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"f32\",\"bool\",\"i32\"]");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":85 Content. [52.80,false,50]", resp_buf);
@@ -172,7 +172,7 @@ void conf_callback(void)        // implement function as defined in test_data.h
 void test_txt_conf_callback()
 {
     conf_callback_called = 0;
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"i32\":52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"i32\":52}");
 
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
@@ -189,13 +189,13 @@ void test_txt_auth_user()
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     // write expert user data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
     // attempt to write maker data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
@@ -210,13 +210,13 @@ void test_txt_auth_root()
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
     // write expert user data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 
     // write maker data
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_maker\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_maker\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
@@ -229,7 +229,7 @@ void test_txt_auth_failure()
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
@@ -255,7 +255,7 @@ void test_txt_auth_reset()
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":83 Valid.", resp_buf);
 
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"secret_expert\" : 10}");
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"secret_expert\" : 10}");
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);

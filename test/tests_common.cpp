@@ -35,7 +35,7 @@ int hex2bin(char *const hex, uint8_t *bin, size_t bin_size)
 
 void _txt_patch(char const *name, char const *value)
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"%s\":%s}", name, value);
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"%s\":%s}", name, value);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
@@ -43,7 +43,7 @@ void _txt_patch(char const *name, char const *value)
 
 int _txt_fetch(char const *name, char *value_read)
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"%s\"", name);
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"%s\"", name);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
 

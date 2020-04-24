@@ -291,13 +291,11 @@ int ThingSet::txt_process()
             return txt_exec(endpoint);
         }
     }
-    else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
-        // legacy function to get all sub-nodes of a node by passing empty map
-        return txt_get(endpoint, true);
-    }
     else {
-        if (tokens[0].type == JSMN_OBJECT) {
-            //printf("txt_patch: %s\n", json_str);
+        if (req[0] == '?') {
+            return txt_fetch(endpoint->id);
+        }
+        else if (req[0] == '=') {
             int len = txt_patch(endpoint->id);
 
             // check if endpoint has a callback assigned
@@ -308,21 +306,14 @@ int ThingSet::txt_process()
             }
             return len;
         }
-        else {
-            if (req[0] == '!' && endpoint->type == TS_T_EXEC) {
-                //printf("txt_exec: %s\n", json_str);
-                return txt_exec(endpoint);
-            }
-            else if (req[0] == '+') {
-                return txt_create(endpoint);
-            }
-            else if (req[0] == '-') {
-                return txt_delete(endpoint);
-            }
-            else {
-                //printf("fetch_json: %s\n", json_str);
-                return txt_fetch(endpoint->id);
-            }
+        else if (req[0] == '!' && endpoint->type == TS_T_EXEC) {
+            return txt_exec(endpoint);
+        }
+        else if (req[0] == '+') {
+            return txt_create(endpoint);
+        }
+        else if (req[0] == '-') {
+            return txt_delete(endpoint);
         }
     }
     return txt_response(TS_STATUS_BAD_REQUEST);
