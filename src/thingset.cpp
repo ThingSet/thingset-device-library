@@ -14,42 +14,56 @@
 
 #define DEBUG 0
 
-static void _check_id_duplicates(const data_object_t *data, size_t num)
+static void _check_id_duplicates(const DataNode *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         for (unsigned int j = i + 1; j < num; j++) {
             if (data[i].id == data[j].id) {
-                printf("ThingSet error: Duplicate data object ID 0x%X.\n", data[i].id);
+                printf("ThingSet error: Duplicate data node ID 0x%X.\n", data[i].id);
             }
         }
     }
 }
 
-ThingSet::ThingSet(const data_object_t *data, size_t num)
+/*
+ * Counts the number of elements in an an array of node IDs by looking for the first non-zero
+ * elements starting from the back.
+ *
+ * Currently only supporting uint16_t (node_id_t) arrays as we need the size of each element
+ * to iterate through the array.
+ */
+static void _count_array_elements(const DataNode *data, size_t num)
+{
+    for (unsigned int i = 0; i < num; i++) {
+        if (data[i].type == TS_T_ARRAY) {
+            ArrayInfo *arr = (ArrayInfo *)data[i].data;
+            if (arr->num_elements == TS_AUTODETECT_ARRLEN) {
+                arr->num_elements = 0;  // set to safe default
+                if (arr->type == TS_T_NODE_ID) {
+                    for (int elem = arr->max_elements - 1; elem >= 0; elem--) {
+                        if (((node_id_t *)arr->ptr)[elem] != 0) {
+                            arr->num_elements = elem + 1;
+                            //printf("%s num elements: %d\n", data[i].name, arr->num_elements);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    printf("Autodetecting array length of node 0x%X not possible.\n", data[i].id);
+                }
+            }
+        }
+    }
+}
+
+ThingSet::ThingSet(DataNode *data, size_t num)
 {
     _check_id_duplicates(data, num);
-    data_objects = data;
-    num_objects = num;
-}
 
-ThingSet::ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch)
-{
-    _check_id_duplicates(data, num_obj);
-    data_objects = data;
-    num_objects = num_obj;
-    pub_channels = channels;
-    num_channels = num_ch;
-}
+    _count_array_elements(data, num);
 
-ThingSet::~ThingSet()
-{
-
-}
-
-void ThingSet::set_pub_channels(ts_pub_channel_t *channels, size_t num)
-{
-    pub_channels = channels;
-    num_channels = num;
+    data_nodes = data;
+    num_nodes = num;
 }
 
 int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
@@ -64,67 +78,13 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     resp = response;
     resp_size = response_size;
 
-    if (req[0] <= TS_EXEC) {          // CBOR list/read/write request
-        if (req_len == 2 && (req[1] == CBOR_NULL || req[1] == CBOR_ARRAY || req[1] == CBOR_MAP)) {
-            //printf("list_cbor\n");
-            return list_cbor(req[0], req[1] == CBOR_MAP, req[1] == CBOR_NULL);
-        }
-        else if ((req[1] & CBOR_TYPE_MASK) == CBOR_MAP) {
-            //printf("write_cbor\n");
-            int len = write_cbor(req[0], false);
-            if ((response[0] - 0x80) == TS_STATUS_SUCCESS &&
-                req[0] == TS_CONF && conf_callback != NULL) {
-                conf_callback();
-            }
-            return len;
-        }
-        else {  // array or single data object
-            if (req[0] == TS_EXEC) {
-                return exec_cbor();
-            }
-            else {
-                //printf("read_cbor\n");
-                return read_cbor(req[0]);
-            }
-        }
+    if (req[0] < 0x20) {
+        // binary mode request
+        return bin_process();
     }
-    else if (req[0] == '!') {      // JSON request
-
-        if (req_len >= 5 && strncmp((char *)req, "!info", 5) == 0) {
-            return access_json(TS_INFO, 5);
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!conf", 5) == 0) {
-            return access_json(TS_CONF, 5);
-        }
-        else if (req_len >= 6 && strncmp((char *)req, "!input", 6) == 0) {
-            return access_json(TS_INPUT, 6);
-        }
-        else if (req_len >= 7 && strncmp((char *)req, "!output", 7) == 0) {
-            return access_json(TS_OUTPUT, 7);
-        }
-        else if (req_len >= 4 && strncmp((char *)req, "!rec", 4) == 0) {
-            return access_json(TS_REC, 4);
-        }
-        else if (req_len >= 4 && strncmp((char *)req, "!cal", 4) == 0) {
-            return access_json(TS_CAL, 4);
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!exec", 5) == 0) {
-            return access_json(TS_EXEC, 5);
-        }
-        /*
-        else if (req_len >= 2 && strncmp((char *)req, "! ", 2) == 0) {
-            function = TS_ANY;
-            len_function = 2;
-        }*/
-        else if (req_len >= 4 && strncmp((char *)req, "!pub", 4) == 0) {
-            return pub_json();
-        }
-        else if (req_len >= 5 && strncmp((char *)req, "!auth", 5) == 0) {
-            return auth_json();
-        }
-        else {
-            return status_message_json(TS_STATUS_UNKNOWN_FUNCTION);
-        }
+    else if (req[0] == '?' || req[0] == '=' || req[0] == '+' || req[0] == '-' || req[0] == '!') {
+        // text mode request
+        return txt_process();
     }
     else {
         // not a thingset command --> ignore and set response to empty string
@@ -133,51 +93,58 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     }
 }
 
-void ThingSet::set_conf_callback(void (*callback)(void))
+DataNode *const ThingSet::get_node(const char *str, size_t len, int32_t parent)
 {
-    conf_callback = callback;
-}
-
-const data_object_t* ThingSet::get_data_object(char *str, size_t len)
-{
-    //printf("get_data_object(%.*s)\n", len, str);
-    for (unsigned int i = 0; i < num_objects; i++) {
-        //printf("i=%d num_obj=%d name=%s\n", i, num_objects, data_objects[i].name);
-        if (strncmp(data_objects[i].name, str, len) == 0
-            && strlen(data_objects[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
-            return &(data_objects[i]);
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (parent != -1 && data_nodes[i].parent != parent) {
+            continue;
+        }
+        else if (strncmp(data_nodes[i].name, str, len) == 0
+            && strlen(data_nodes[i].name) == len)  // otherwise e.g. foo and fooBar would be recognized as equal
+        {
+            return &(data_nodes[i]);
         }
     }
     return NULL;
 }
 
-const data_object_t* ThingSet::get_data_object(uint16_t id)
+DataNode *const ThingSet::get_node(node_id_t id)
 {
-    for (unsigned int i = 0; i < num_objects; i++) {
-        if (data_objects[i].id == id) {
-            return &(data_objects[i]);
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].id == id) {
+            return &(data_nodes[i]);
         }
     }
     return NULL;
 }
 
-ts_pub_channel_t *ThingSet::get_pub_channel(char *name, size_t len)
+DataNode *const ThingSet::get_endpoint(const char *path, size_t len)
 {
-    for (unsigned int i = 0; i < num_channels; i++) {
-        if (strncmp(pub_channels[i].name, name, len) == 0
-            && strlen(pub_channels[i].name) == len) {  // otherwise e.g. foo and fooBar would be recognized as equal
-            return &(pub_channels[i]);
+    const DataNode *node;
+    const char *start = path;
+    const char *end = strchr(path, '/');
+    uint16_t parent = 0;
+
+    // maximum depth of 10 assumed
+    for (int i = 0; i < 10; i++) {
+        if (end != NULL) {
+            if (end - path != (int)len - 1) {
+                node = get_node(start, end - start, parent);
+                if (!node) {
+                    return NULL;
+                }
+                parent = node->id;
+                start = end + 1;
+                end = strchr(start, '/');
+            }
+            else {
+                // resource ends with trailing slash
+                return get_node(start, end - start, parent);
+            }
+        }
+        else {
+            return get_node(start, path + len - start, parent);
         }
     }
     return NULL;
-}
-
-void ThingSet::set_user_password(const char *password)
-{
-    user_pass = password;
-}
-
-void ThingSet::set_maker_password(const char *password)
-{
-    maker_pass = password;
 }

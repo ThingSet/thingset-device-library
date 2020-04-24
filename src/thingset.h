@@ -4,8 +4,8 @@
  * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#ifndef __THINGSET_H_
-#define __THINGSET_H_
+#ifndef THINGSET_H_
+#define THINGSET_H_
 
 #include "ts_config.h"
 #include "jsmn.h"
@@ -14,46 +14,49 @@
 #include <stdbool.h>
 
 /*
- * Protocol functions / categories
+ * Protocol function codes (same as CoAP)
  */
-// function + data object category
-#define TS_INFO     0x01       // read-only device information (e.g. manufacturer, device ID)
-#define TS_CONF     0x02       // configurable settings
-#define TS_INPUT    0x03       // input data (e.g. set-points)
-#define TS_OUTPUT   0x04       // output data (e.g. measurement values)
-#define TS_REC      0x05       // recorded data (history-dependent)
-#define TS_CAL      0x06       // calibration
-#define TS_ANY      0x09       // any of above non-exec categories 0x01-0x08
-#define TS_EXEC     0x0B       // RPC / function call
-// function only
-#define TS_NAME     0x0E
-#define TS_AUTH     0x10
-#define TS_LOG      0x11       // access log data
-#define TS_PUB      0x12       // publication request
-#define TS_PUBMSG   0x1F       // actual publication message
+#define TS_GET      0x01
+#define TS_POST     0x02
+#define TS_DELETE   0x04
+#define TS_FETCH    0x05
+#define TS_PATCH    0x07        // it's actually iPATCH
+
+#define TS_PUBMSG   0x1F
 
 /*
- * Status codes
+ * Status codes (same as CoAP)
  */
-#define TS_STATUS_SUCCESS            0
-#define TS_STATUS_ERROR             32
-#define TS_STATUS_UNKNOWN_FUNCTION  33    // Function ID unknown
-#define TS_STATUS_UNKNOWN_DATA_OBJ  34    // Data Object ID unknown
-#define TS_STATUS_WRONG_FORMAT      35
-#define TS_STATUS_WRONG_TYPE        36    // Data type not supported
-#define TS_STATUS_DEVICE_BUSY       37    // Device busy
-#define TS_STATUS_UNAUTHORIZED      38
-#define TS_STATUS_REQUEST_TOO_LONG  39
-#define TS_STATUS_RESPONSE_TOO_LONG 40
-#define TS_STATUS_INVALID_VALUE     41     // value out of allowed range
-#define TS_STATUS_WRONG_CATEGORY    42
-#define TS_STATUS_WRONG_PASSWORD    43
-#define TS_STATUS_UNSUPPORTED       44    // type of request not (yet) supported
+
+// success
+#define TS_STATUS_CREATED               0x81
+#define TS_STATUS_DELETED               0x82
+#define TS_STATUS_VALID                 0x83
+#define TS_STATUS_CHANGED               0x84
+#define TS_STATUS_CONTENT               0x85
+
+// client errors
+#define TS_STATUS_BAD_REQUEST           0xA0
+#define TS_STATUS_UNAUTHORIZED          0xA1        // need to authenticate
+#define TS_STATUS_FORBIDDEN             0xA3        // trying to write read-only value
+#define TS_STATUS_NOT_FOUND             0xA4
+#define TS_STATUS_METHOD_NOT_ALLOWED    0xA5
+#define TS_STATUS_REQUEST_INCOMPLETE    0xA8
+#define TS_STATUS_CONFLICT              0xA9
+#define TS_STATUS_REQUEST_TOO_LARGE     0xAD
+#define TS_STATUS_UNSUPPORTED_FORMAT    0xAF
+
+// server errors
+#define TS_STATUS_INTERNAL_SERVER_ERR   0xC0
+#define TS_STATUS_NOT_IMPLEMENTED       0xC1
+
+// ThingSet specific errors
+#define TS_STATUS_RESPONSE_TOO_LARGE    0xE1
 
 /**
  * Internal C data types (used to cast void* pointers)
  */
-enum ts_type {
+enum TsType {
     TS_T_BOOL,
     TS_T_UINT64,
     TS_T_INT64,
@@ -64,113 +67,144 @@ enum ts_type {
     TS_T_FLOAT32,
     TS_T_STRING,
     TS_T_ARRAY,
-    TS_T_DECFRAC       // CBOR decimal fraction
+    TS_T_DECFRAC,       // CBOR decimal fraction
+    TS_T_PATH,          // internal node to describe URI path
+    TS_T_NODE_ID,       // internally equal to uint16_t
+    TS_T_EXEC,          // for exec data objects
+    TS_T_PUBSUB
 };
 
 /**
- * Data structure to store the array pointer, length, and its type
+ * Data structure to specify an array data node
  */
 typedef struct {
-    void *ptr;          ///< Pointer to the array
-    int num_elements;   ///< Number of elements in the array. For eg, sizeof(data)/sizeof(data[0]);
-    uint8_t type;       ///< Type of the array
-    int max_elements;   ///< The maximum number of elements in the array
+    void *ptr;                  ///< Pointer to the array
+    uint16_t max_elements;      ///< Maximum number of elements in the array
+    uint16_t num_elements;      ///< Actual number of elements in the array
+    uint8_t type;               ///< Type of the array elements
 } ArrayInfo;
 
+/**
+ * If TS_AUTODETECT_ARRLEN is assigned to num_elements, the number of elements in the array is
+ * detected in the constructor by counting downwards till the first non-zero element is found.
+ */
+#define TS_AUTODETECT_ARRLEN    UINT16_MAX
+
 /*
- * Functions to generate data_object map and make compiler complain if wrong
+ * Functions to generate data_node map and make compiler complain if wrong
  * type is passed
  */
 
-#define TS_DATA_OBJ_ID_CHECK(_id) TS_DATA_OBJ_ID_TEMP_##_id
-
 static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_BOOL(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_BOOL, 0, _bool_to_void(_data_ptr), _name}
+#define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
 
 static inline void *_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT64(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT64, 0, _uint64_to_void(_data_ptr), _name}
+#define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
 
 static inline void *_int64_to_void(int64_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT64(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT64, 0, _int64_to_void(_data_ptr), _name}
+#define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
 
 static inline void *_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT32(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT32, 0, _uint32_to_void(_data_ptr), _name}
+#define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
 
 static inline void *_int32_to_void(int32_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT32(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT32, 0, _int32_to_void(_data_ptr), _name}
+#define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
 
 static inline void *_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_UINT16(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_UINT16, 0, _uint16_to_void(_data_ptr), _name}
+#define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
 
 static inline void *_int16_to_void(int16_t *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_INT16(_id, _name, _data_ptr, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_INT16, 0, _int16_to_void(_data_ptr), _name}
+#define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
 
 static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_FLOAT(_id, _name, _data_ptr, _digits, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_FLOAT32, _digits, _float_to_void(_data_ptr), _name}
+#define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
 
 static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
-#define TS_DATA_OBJ_STRING(_id, _name, _data_ptr, _buf_size, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_STRING, _buf_size, _string_to_void(_data_ptr), _name}
+#define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
-#define TS_DATA_OBJ_EXEC(_id, _name, _data_ptr, _acc) \
-    {_id, TS_EXEC, _acc, TS_T_BOOL, 0, _function_to_void(_data_ptr), _name}
+#define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
+    {_id, _parent, _name, _function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
 
 static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
-#define TS_DATA_OBJ_ARRAY(_id, _name, _data_ptr, _digits, _cat, _acc) \
-    {_id, _cat, _acc, TS_T_ARRAY, _digits, _array_to_void(_data_ptr), _name}
+#define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
+
+#define TS_NODE_PUBSUB(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, NULL, TS_T_PUBSUB, _pubsub_channel, _acc, _pubsub}
+
+#define TS_NODE_PATH(_id, _name, _parent, _callback) \
+    {_id, _parent, _name, _function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
 
 /*
- * Internal access rights to data objects
+ * Access right macros for data nodes
  */
-#define TS_READ_ALL     (0x1U << 0)     // read access for all
-#define TS_READ_USER    (0x3U << 0)     // read after authentication as normal user
-#define TS_READ_MAKER   (0x7U << 0)     // read after authentication as manufacturer, e.g. for factory calibration
-#define TS_READ_MASK    TS_READ_MAKER   // maker has all 3 bits set
+#define TS_ROLE_USR     (1U << 0)       // normal user
+#define TS_ROLE_EXP     (1U << 1)       // expert user
+#define TS_ROLE_MKR     (1U << 2)       // maker
 
-#define TS_WRITE_ALL    (0x1U << 3)     // write access for all
-#define TS_WRITE_USER   (0x3U << 3)     // write after authentication as normal user
-#define TS_WRITE_MAKER  (0x7U << 3)     // write after authentication as manufacturer, e.g. for factory calibration
-#define TS_WRITE_MASK   TS_WRITE_MAKER
+#define TS_READ_MASK    0x00FF          // read flags stored in 4 least-significant bits
+#define TS_WRITE_MASK   0xFF00          // write flags stored in 4 most-significant bits
 
-#define TS_EXEC_ALL     (0x1U << 6)     // execute access for all (only for RPC)
-#define TS_EXEC_USER    (0x3U << 6)     // execute after authentication as normal user
-#define TS_EXEC_MAKER   (0x7U << 6)     // execute after authentication as manufacturer, e.g. for factory calibration
-#define TS_EXEC_MASK    TS_EXEC_MAKER
+#define TS_USR_MASK     (TS_ROLE_USR << 8 | TS_ROLE_USR)
+#define TS_EXP_MASK     (TS_ROLE_EXP << 8 | TS_ROLE_EXP)
+#define TS_MKR_MASK     (TS_ROLE_MKR << 8 | TS_ROLE_MKR)
 
-// legacy names
-#define TS_ACCESS_READ          TS_READ_ALL
-#define TS_ACCESS_READ_AUTH     TS_READ_USER
-#define TS_ACCESS_WRITE         TS_WRITE_ALL
-#define TS_ACCESS_WRITE_AUTH    TS_WRITE_USER
-#define TS_ACCESS_EXEC          TS_EXEC_ALL
-#define TS_ACCESS_EXEC_AUTH     TS_EXEC_USER
+#define TS_READ(roles)          ((roles) & TS_READ_MASK)
+#define TS_WRITE(roles)         (((roles) << 8) & TS_WRITE_MASK)
+#define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
 
-/** ThingSet data object struct
+#define TS_USR_R        TS_READ(TS_ROLE_USR)
+#define TS_EXP_R        TS_READ(TS_ROLE_EXP)
+#define TS_MKR_R        TS_READ(TS_ROLE_MKR)
+#define TS_ANY_R        (TS_USR_R | TS_EXP_R | TS_MKR_R)
+
+#define TS_USR_W        TS_WRITE(TS_ROLE_USR)
+#define TS_EXP_W        TS_WRITE(TS_ROLE_EXP)
+#define TS_MKR_W        TS_WRITE(TS_ROLE_MKR)
+#define TS_ANY_W        (TS_USR_W | TS_EXP_W | TS_MKR_W)
+
+#define TS_USR_RW       TS_READ_WRITE(TS_ROLE_USR)
+#define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP)
+#define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR)
+#define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW)
+
+
+typedef uint16_t node_id_t;
+
+/**
+ * ThingSet data node struct
  */
-typedef struct data_object_t {
+typedef struct DataNode {
     /**
-     * Data Object ID
+     * Data node ID
      */
-    const uint16_t id;
+    const node_id_t id;
 
     /**
-     * One of TS_INFO, TS_CONF, ...
+     * ID of parent node
      */
-    const uint16_t category;
+    const node_id_t parent;
 
     /**
-     * One of TS_ACCESS_READ, _WRITE, _EXECUTE, ...
+     * Data Node name
      */
-    const uint8_t access;
+    const char *name;
+
+    /**
+     * Pointer to the variable containing the data. The variable type must match the type as
+     * specified
+     */
+    void *const data;
 
     /**
      * One of TS_TYPE_INT32, _FLOAT, ...
@@ -185,34 +219,32 @@ typedef struct data_object_t {
     const int16_t detail;
 
     /**
-     * Pointer to the variable containing the data. The variable type must match the type as
-     * specified
+     * Flags to define read/write access
      */
-    void *data;
+    const uint16_t access;
 
     /**
-     * Data Object name
+     * Flags to add this node to different pub/sub channels
      */
-    const char *name;
-} data_object_t;
+    uint16_t pubsub;
+
+} DataNode;
 
 /**
- * Container for data object publication channel
+ * Main ThingSet class
+ *
+ * Stores and handles all data exposed to different communication interfaces
  */
-typedef struct {
-    const char *name;           ///< Publication channel name
-    const uint16_t *object_ids; ///< Array of data object IDs
-    const size_t num;           ///< Number of objects
-    bool enabled;               ///< Enabled/disabled status
-} ts_pub_channel_t;
-
-
 class ThingSet
 {
 public:
-    ThingSet(const data_object_t *data, size_t num);
-    ThingSet(const data_object_t *data, size_t num_obj, ts_pub_channel_t *channels, size_t num_ch);
-    ~ThingSet();
+    /**
+     * Initialize a ThingSet object
+     *
+     * @param data Pointer to array of DataNode type containing the entire node database
+     * @param num Number of elements in that array
+     */
+    ThingSet(DataNode *data, size_t num);
 
     /**
      * Process ThingSet request
@@ -228,161 +260,198 @@ public:
      */
     int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size);
 
-    void set_pub_channels(ts_pub_channel_t *channels, size_t num);
-
     /**
-     * Sets password for users
-     */
-    void set_user_password(const char *password);
-
-    /**
-     * Sets password for maker/manufacturer
-     */
-    void set_maker_password(const char *password);
-
-    /**
-     * Generates a publication message in JSON format for a defined channel
+     * Print all data nodes as a structured JSON text to stdout
      *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * WARNING: This is a recursive function and might cause stack overflows if run in constrained
+     *          devices with large data node tree. Use with care and for testing only!
+     *
+     * @param node_id Root node ID where to start with printing
+     * @param level Indentation level (=depth inside the data node tree)
+     */
+    void dump_json(node_id_t node_id = 0, int level = 0);
+
+    /**
+     * Sets current authentication level
+     *
+     * The authentication flags must match with access flags specified in DataNode to allow
+     * read/write access to a data node.
+     *
+     * @param flags Flags to define authentication level (1 = access allowed)
+     */
+    void set_authentication(uint16_t flags)
+    {
+        _auth_flags = flags;
+    }
+
+    /**
+     * Generate publication message in JSON format
+     *
+     * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param channel Number/ID of the publication channel
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_json(char *msg_buf, size_t size, unsigned int channel);
+    int txt_pub(char *buf, size_t size, const uint16_t pub_ch);
 
     /**
-     * Generates a publication message in CBOR format for a defined channel
+     * Generate publication message in CBOR format
      *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
+     * @param buf Pointer to the buffer where the publication message should be stored
      * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param channel Number/ID of the publication channel
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_msg_cbor(uint8_t *msg_buf, size_t size, unsigned int channel);
+    int bin_pub(uint8_t *buf, size_t size, const uint16_t pub_ch);
 
     /**
-     * Generates a publication message in CBOR format for supplied list of data object IDs
+     * Encode a publication message in CAN message format for supplied data node
      *
-     * @param msg_buf Pointer to the buffer where the publication message should be stored
-     * @param size Size of the message buffer, i.e. maximum allowed length of the message
-     * @param pub_list Array of data object IDs to be published
-     * @param num_elements Number of elements in the pub_list array
-     *
-     * @returns Actual length of the message written to the buffer or 0 in case of error
-     */
-    int pub_msg_cbor(uint8_t *resp, size_t size, const uint16_t pub_list[], size_t num_elements);
-
-    /**
-     * Encodes a publication message in CAN message format for supplied data object
-     *
-     * @param can_node_id id of the can node
+     * @param start_pos Position in data_nodes array to start searching
+     *                  This value is updated with the next node found to allow iterating over all
+     *                  nodes for this channel. It should be set to 0 to start from the beginning.
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+     * @param can_dev_id Device ID on the CAN bus
      * @param msg_id reference to can message id storage
-     * @param data_object reference to data object to be published
      * @param msg_data reference to the buffer where the publication message should be stored
      *
-     * @returns Actual length of the message_data, or -1 if not encodable / in case of error,
-     *          message length otherwise. msg_len 0 is valid, just the id is transmitted
+     * @returns Actual length of the message_data or -1 if not encodable / in case of error,
+     *          (msg_len 0 is valid, just the id is transmitted)
      */
-    int encode_msg_can(const data_object_t& object, uint8_t can_node_id, unsigned int& msg_id,
+    int bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
-     * Initialize data objects based on values stored in EEPROM
+     * Update data nodes based on values provided in payload data (e.g. from other pub msg)
      *
-     * @param cbor_data Buffer containing key/value map that should be written to the ThingSet data
-     *                  objects
+     * @param cbor_data Buffer containing key/value map that should be written to the data nodes
      * @param len Length of the data in the buffer
+     * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+     * @param sub_ch Subscribe channel (as bitfield)
      *
      * @returns ThingSet status code
      */
-    int init_cbor(uint8_t *cbor_data, size_t len);
+    int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch);
 
     /**
-     * Set function to be called when data objects of conf category were changed
+     * Get data node by ID
+     *
+     * @param id Node ID
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    void set_conf_callback(void (*callback)(void));
+    DataNode *const get_node(node_id_t id);
 
     /**
-     * Get data object by ID
+     * Get data node by name
+     *
+     * As the names are not necessarily unique in the entire data tree, the parent is needed
+     *
+     * @param name Node name
+     * @param len Length of the node name
+     * @param parent Node ID of the parent or -1 for global search
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    const data_object_t *get_data_object(uint16_t id);
+    DataNode *const get_node(const char *name, size_t len, int32_t parent = -1);
 
     /**
-     * Get data object by name
+     * Get the endpoint node of a provided path
+     *
+     * @param path Path of with multiple node names divided by forward slash
+     * @param len Length of the node name
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    const data_object_t *get_data_object(char *name, size_t len);
-
-    /** Get pub channel by name
-     */
-    ts_pub_channel_t *get_pub_channel(char *name, size_t len);
-
-    /**
-     * Get pub channel by id
-     */
-    inline ts_pub_channel_t *get_pub_channel(unsigned int id)
-    {
-        return id < num_channels ? &pub_channels[id] : NULL;
-    }
+    DataNode *const get_endpoint(const char *path, size_t len);
 
 private:
     /**
-     * Parser preparation and calling of the different data object access functions read/write/list
+     * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
+     * functions
      */
-    int access_json(int category, size_t pos);
+    int txt_process();
 
     /**
-     * List data objects in text mode (function called with empty argument)
+     * Performs initial check of payload data and calls get/fetch/patch functions
      */
-    int list_json(int category, bool values = false);
+    int bin_process();
 
     /**
-     * List data objects in binary mode (function called with empty argument)
+     * GET request (text mode)
+     *
+     * List child data nodes (function called without content / parameters)
      */
-    int list_cbor(int category, bool values = false, bool ids_only = true);
+    int txt_get(const DataNode *parent, bool include_values = false);
 
     /**
-     * Read data object values in text mode (function called with an array as argument)
+     * GET request (binary mode)
+     *
+     * List child data nodes (function called without content)
      */
-    int read_json(int category);
+    int bin_get(const DataNode *parent, bool values = false, bool ids_only = true);
 
     /**
-     * Read data object values in binary mode (function called with an array as argument)
+     * FETCH request (text mode)
+     *
+     * Read data node values (function called with an array as argument)
      */
-    int read_cbor(int category);
+    int txt_fetch(node_id_t parent_id);
 
     /**
-     * Write data object values in text mode (function called with a map as argument)
+     * FETCH request (binary mode)
+     *
+     * Read data node values (function called with an array as argument)
      */
-    int write_json(int category);
+    int bin_fetch(const DataNode *parent, unsigned int pos_payload);
 
     /**
-     * Write data object values in binary mode (function called with a map as argument)
+     * PATCH request (text mode)
+     *
+     * Write data node values in text mode (function called with a map as argument)
      */
-    int write_cbor(int category, bool ignore_access);
+    int txt_patch(node_id_t parent_id);
 
     /**
-     * Execute command in text mode (function called with a single data object name as argument)
+     * PATCH request (binary mode)
+     *
+     * Write data node values in binary mode (function called with a map as payload)
+     *
+     * If sub_ch is specified, nodes not found are silently ignored. Otherwise, a NOT_FOUND
+     * error is raised.
+     *
+     * @param parent Pointer to path / parent node or NULL to consider any node
+     * @param pos_payload Position of payload in req buffer
+     * @param auth_flags Bitset to specify authentication status for different roles
+     * @param sub_ch Bitset to specifiy subscribe channel to be considered, 0 to ignore
      */
-    int exec_json();
+    int bin_patch(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+        uint16_t sub_ch);
 
     /**
-     * Execute command in binary mode (function called with a single data object name/id as argument)
+     * POST request to append data
      */
-    int exec_cbor();
+    int txt_create(const DataNode *node);
 
     /**
-     * Publication control function in text mode
+     * DELETE request to delete data from node
      */
-    int pub_json();
+    int txt_delete(const DataNode *node);
 
     /**
-     * Authentication command in text mode (user or root level)
+     * Execute command in text mode (function called with a single data node name as argument)
      */
-    int auth_json();
+    int txt_exec(const DataNode *node);
 
-    //int auth_cbor();
+    /**
+     * Execute command in binary mode (function called with a single data node name/id as argument)
+     *
+     * @param parent Pointer to executable node
+     * @param pos_payload Position of payload in req buffer
+     */
+    int bin_exec(const DataNode *node, unsigned int pos_payload);
 
     /**
      * Fill the resp buffer with a JSON response status message
@@ -390,7 +459,7 @@ private:
      * @param code Status code
      * @returns length of status message in buffer or 0 in case of error
      */
-    int status_message_json(int code);
+    int txt_response(int code);
 
     /**
      * Fill the resp buffer with a CBOR response status message
@@ -398,32 +467,87 @@ private:
      * @param code Status code
      * @returns length of status message in buffer or 0 in case of error
      */
-    int status_message_cbor(uint8_t code);
+    int bin_response(uint8_t code);
 
-    const data_object_t *data_objects;
-    size_t num_objects;
+    /**
+     * Serialize a node value into a JSON string
+     *
+     * @param buf Pointer to the buffer where the JSON value should be stored
+     * @param size Size of the buffer, i.e. maximum allowed length of the value
+     * @param node Pointer to node which should be serialized
+     *
+     * @returns Length of data written to buffer or 0 in case of error
+     */
+    int json_serialize_value(char *buf, size_t size, const DataNode *node);
 
-    ts_pub_channel_t *pub_channels;
-    size_t num_channels;
+    /**
+     * Serialize node name and value as JSON object
+     *
+     * same as json_serialize_value, just that the node name is also serialized
+     */
+    int json_serialize_name_value(char *buf, size_t size, const DataNode *node);
 
-    uint8_t *req;               ///< Request buffer
-    size_t req_len;             ///< Length of request
+    /**
+     * Deserialize a node value from a JSON string
+     *
+     * @param buf Pointer to the position of the value in a buffer
+     * @param len Length of value in the buffer
+     * @param type Type of the JSMN token as identified by the parser
+     * @param node Pointer to node where the deserialized value should be stored
+     *
+     * @returns Number of tokens processed (always 1) or 0 in case of error
+     */
+    int json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node);
 
-    uint8_t *resp;              ///< Response buffer
-    size_t resp_size;           ///< Size of response buffer (i.e. maximum length)
+    /**
+     * Array of nodes database provided during initialization
+     */
+    DataNode *data_nodes;
 
-    // parsed JSON data of request
-    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+    /**
+     * Number of nodes in the data_nodes array
+     */
+    size_t num_nodes;
+
+    /**
+     * Pointer to request buffer (provided in process function)
+     */
+    uint8_t *req;
+
+    /**
+     * Length of the request
+     */
+    size_t req_len;
+
+    /**
+     * Pointer to response buffer (provided in process function)
+     */
+    uint8_t *resp;
+
+    /**
+     * Size of response buffer (i.e. maximum length)
+     */
+    size_t resp_size;
+
+    /**
+     * Pointer to the start of JSON payload in the request
+     */
     char *json_str;
+
+    /**
+     * JSON tokes in json_str parsed by JSMN
+     */
+    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+
+    /**
+     * Number of JSON tokens parsed by JSMN
+     */
     int tok_count;
 
-    const char *user_pass = NULL;
-    const char *maker_pass = NULL;
-
-    bool user_authorized = false;
-    bool maker_authorized = false;
-
-    void (*conf_callback)(void);
+    /**
+     * Stores current authentication status (authentication as "normal" user as default)
+     */
+    uint16_t _auth_flags = TS_USR_MASK;
 };
 
-#endif
+#endif /* THINGSET_H_ */
