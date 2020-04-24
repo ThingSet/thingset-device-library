@@ -245,7 +245,7 @@ int ThingSet::process_cbor()
 
     }
     else if (req[0] == TS_POST) {
-        return exec_cbor();
+        return exec_cbor(endpoint, pos);
     }
     return status_message_cbor(TS_STATUS_BAD_REQUEST);
 }
@@ -395,25 +395,49 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
     }
 }
 
-int ThingSet::exec_cbor()
+int ThingSet::exec_cbor(const DataNode *node, unsigned int pos_payload)
 {
-    // only a single function call allowed (no array of data nodes)
-    node_id_t id;
-    size_t num_bytes = cbor_deserialize_uint16(&req[1], &id);
-    if (num_bytes == 0 || req_len > 4) {
+    unsigned int pos_req = pos_payload;
+    uint16_t num_elements, element = 0;
+
+    if ((req[pos_req] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
+    pos_req += cbor_num_elements(&req[pos_req], &num_elements);
 
-    const DataNode* data_node = get_node(id);
-    if (data_node == NULL) {
-        return status_message_cbor(TS_STATUS_NOT_FOUND);
+    if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
+        // node is generally executable, but are we authorized?
+        if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
+            return status_message_cbor(TS_STATUS_UNAUTHORIZED);
+        }
     }
-    if (!(data_node->access & TS_WRITE_MASK)) {
+    else {
         return status_message_cbor(TS_STATUS_FORBIDDEN);
     }
 
-    // create function pointer and call function
-    void (*fun)(void) = reinterpret_cast<void(*)()>(data_node->data);
+    for (unsigned int i = 0; i < num_nodes; i++) {
+        if (data_nodes[i].parent == node->id) {
+            if (element >= num_elements) {
+                // more child nodes found than parameters were passed
+                return status_message_cbor(TS_STATUS_BAD_REQUEST);
+            }
+            int num_bytes = cbor_deserialize_data_node(&req[pos_req], &data_nodes[i]);
+            if (num_bytes == 0) {
+                // deserializing the value was not successful
+                return status_message_cbor(TS_STATUS_UNSUPPORTED_FORMAT);
+            }
+            pos_req += num_bytes;
+            element++;
+        }
+    }
+
+    if (num_elements > element) {
+        // more parameters passed than child nodes found
+        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+    }
+
+    // if we got here, finally create function pointer and call function
+    void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
     fun();
 
     return status_message_cbor(TS_STATUS_VALID);

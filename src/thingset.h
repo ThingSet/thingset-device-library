@@ -448,8 +448,11 @@ private:
 
     /**
      * Execute command in binary mode (function called with a single data node name/id as argument)
+     *
+     * @param parent Pointer to executable node
+     * @param pos_payload Position of payload in req buffer
      */
-    int exec_cbor();
+    int exec_cbor(const DataNode *node, unsigned int pos_payload);
 
     /**
      * Fill the resp buffer with a JSON response status message

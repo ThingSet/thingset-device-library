@@ -291,9 +291,8 @@ void test_bin_exec()
 
     uint8_t req[] = {
         TS_POST,
-        0x19,     // uint16 follows
-        0x50,     // data node ID 0x5001
-        0x01
+        0x19, 0x50, 0x01,       // node ID as endpoint
+        0x80                    // empty array (no parameters)
     };
 
     uint8_t resp[100];
@@ -350,7 +349,7 @@ void tests_binary_mode()
     RUN_TEST(test_bin_fetch_rounded_float);
 
     // POST request
-    RUN_TEST(test_bin_exec);                    // still previous protocol spec
+    RUN_TEST(test_bin_exec);
 
     // pub/sub messages
     RUN_TEST(test_bin_pub);
