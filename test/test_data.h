@@ -122,7 +122,7 @@ static DataNode data_nodes[] = {
 
     TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
     TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
-    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_OUTPUT, TS_ANY_R, PUB_SER),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0

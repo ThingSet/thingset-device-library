@@ -21,7 +21,7 @@
 #define CAN_TS_T_FALSE      60
 #define CAN_TS_T_TRUE       61
 
-int ThingSet::bin_pub_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id,
+int ThingSet::bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id,
     uint32_t &msg_id, uint8_t (&msg_data)[8])
 {
     int msg_len = -1;
@@ -30,14 +30,14 @@ int ThingSet::bin_pub_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_i
 
     const int msg_priority = 6;
 
-    for (unsigned int i = node_prev_pos + 1; i < num_nodes; i++) {
+    for (unsigned int i = start_pos; i < num_nodes; i++) {
 
         if (!(data_nodes[i].pubsub & pub_ch)) {
             continue;
         }
 
-        // next node found
-        node_prev_pos = i;
+        // node found, increase start pos for next run
+        start_pos = i + 1;
 
         msg_id = msg_priority << 26
             | (1U << 24) | (1U << 25)   // identify as publication message
@@ -121,12 +121,12 @@ int ThingSet::bin_pub_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_i
             default:
                 break;
         }
-
+        return msg_len;
     }
 
     if (msg_len == -1) {
         // no more nodes found, reset position
-        node_prev_pos = 0;
+        start_pos = 0;
     }
 
     return msg_len;

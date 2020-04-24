@@ -268,6 +268,26 @@ void test_bin_pub()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(bin_expected, bin, len);
 }
 
+void test_bin_pub_can()
+{
+    int start_pos = 0;
+    uint32_t msg_id;
+    uint8_t can_data[8];
+
+    // first call (should return Bat_V)
+    int len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
+    TEST_ASSERT_NOT_EQUAL(-1, len);
+    TEST_ASSERT_EQUAL_HEX(0x71, (msg_id & 0x00FFFF00) >> 8);
+
+    // second call (should return Bat_A)
+    len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
+    TEST_ASSERT_NOT_EQUAL(-1, len);
+    TEST_ASSERT_EQUAL_HEX(0x72, (msg_id & 0x00FFFF00) >> 8);
+
+    // third call (should not find further nodes)
+    len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
+    TEST_ASSERT_EQUAL(-1, len);}
+
 void test_bin_sub()
 {
     char msg_hex[] =
@@ -353,6 +373,7 @@ void tests_binary_mode()
 
     // pub/sub messages
     RUN_TEST(test_bin_pub);
+    RUN_TEST(test_bin_pub_can);
     RUN_TEST(test_bin_sub);
 
     // general tests

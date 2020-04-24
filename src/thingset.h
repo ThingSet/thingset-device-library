@@ -309,10 +309,9 @@ public:
     /**
      * Encode a publication message in CAN message format for supplied data node
      *
-     * @param node_prev_pos Position of previous node for this pub channel in the data_nodes array.
-     *                      This value is updated with the next node found in order to allow
-     *                      iterating over all nodes. It should be set to 0 to start from the
-     *                      beginning.
+     * @param start_pos Position in data_nodes array to start searching
+     *                  This value is updated with the next node found to allow iterating over all
+     *                  nodes for this channel. It should be set to 0 to start from the beginning.
      * @param pub_ch Flag to select publication channel (must match pubsub of data node)
      * @param can_dev_id Device ID on the CAN bus
      * @param msg_id reference to can message id storage
@@ -321,7 +320,7 @@ public:
      * @returns Actual length of the message_data or -1 if not encodable / in case of error,
      *          (msg_len 0 is valid, just the id is transmitted)
      */
-    int bin_pub_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
+    int bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
