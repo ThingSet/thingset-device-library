@@ -212,12 +212,12 @@ int ThingSet::process_cbor()
     if ((req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
         uint16_t path_len;
         pos += cbor_num_elements(&req[pos], &path_len);
-        endpoint = get_endpoint_node((char *)req + pos, path_len);
+        endpoint = get_endpoint((char *)req + pos, path_len);
     }
     else if ((req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
         node_id_t id = 0;
         pos += cbor_deserialize_uint16(&req[pos], &id);
-        endpoint = get_data_node(id);
+        endpoint = get_node(id);
     }
     else if (req[pos] == CBOR_UNDEFINED) {
         pos++;
@@ -286,7 +286,7 @@ int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
         }
         pos_req += num_bytes;
 
-        const DataNode* data_node = get_data_node(id);
+        const DataNode* data_node = get_node(id);
         if (data_node == NULL) {
             return status_message_cbor(TS_STATUS_NOT_FOUND);
         }
@@ -347,7 +347,7 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
         }
         pos_req += num_bytes;
 
-        const DataNode* node = get_data_node(id);
+        const DataNode* node = get_node(id);
         if (node) {
             if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (node->access & TS_WRITE_MASK) {
@@ -404,7 +404,7 @@ int ThingSet::exec_cbor()
         return status_message_cbor(TS_STATUS_BAD_REQUEST);
     }
 
-    const DataNode* data_node = get_data_node(id);
+    const DataNode* data_node = get_node(id);
     if (data_node == NULL) {
         return status_message_cbor(TS_STATUS_NOT_FOUND);
     }

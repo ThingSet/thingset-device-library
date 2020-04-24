@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern uint8_t req_buf[];
-extern uint8_t resp_buf[];
 extern ThingSet ts;
 
 extern float f32;
@@ -25,9 +23,9 @@ extern ArrayInfo float32_array;
 
 extern ArrayInfo pub_serial_array;
 
-void cbor_patch_multiple_nodes()
+void test_bin_patch_multiple_nodes()
 {
-    char cbor_req_hex[] =
+    char req_hex[] =
         "07 18 30 "
         #if TS_64BIT_TYPES_SUPPORT
         "A9 "      // write map with 9 elements
@@ -44,23 +42,19 @@ void cbor_patch_multiple_nodes()
         "19 60 08 f5 "                  // true
         "19 60 09 64 74 65 73 74 ";        // string "test"
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req_bin[100];
+    int len = hex2bin(req_hex, req_bin, sizeof(req_bin));
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
+    uint8_t resp[100];
+    ts.process(req_bin, len, resp, sizeof(resp));
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp[0]);
 }
 
-void cbor_fetch_multiple_nodes()
+void test_bin_fetch_multiple_nodes()
 {
     f32 = 7.89;
 
-    char cbor_req_hex[] =
+    char req_hex[] =
         "05 18 30 "
         #if TS_64BIT_TYPES_SUPPORT
         "89 "      // read array with 9 elements
@@ -77,17 +71,13 @@ void cbor_fetch_multiple_nodes()
         "19 60 08 "
         "19 60 09 ";
 
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req_bin[100];
+    int len = hex2bin(req_hex, req_bin, sizeof(req_bin));
 
-    memcpy(req_buf, cbor_req, pos);
-    ts.process(req_buf, pos, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp[100];
+    ts.process(req_bin, len, resp, sizeof(resp));
 
-    char cbor_resp_hex[] =
+    char resp_hex[] =
         #if TS_64BIT_TYPES_SUPPORT
         "85 89 "     // successful response: array with 9 elements
         "01 "                  // value 1
@@ -103,17 +93,13 @@ void cbor_fetch_multiple_nodes()
         "f5 "                  // true
         "64 74 65 73 74 ";        // string "test"
 
-    uint8_t cbor_resp[100];
-    len = strlen(cbor_resp_hex);
-    pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
+    uint8_t resp_expected[100];
+    len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
 }
 
-void cbor_patch_float_array()
+void test_bin_patch_float_array()
 {
     float *arr = (float *)float32_array.ptr;
     arr[0] = 0;
@@ -129,14 +115,15 @@ void cbor_patch_float_array()
                 0xFA, 0x40, 0x5C, 0x28, 0xF6        // 3.44
     };
 
-    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
 
-    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp[0]);
     TEST_ASSERT_EQUAL_FLOAT(2.27, arr[0]);
     TEST_ASSERT_EQUAL_FLOAT(3.44, arr[1]);
 }
 
-void cbor_fetch_float_array()
+void test_bin_fetch_float_array()
 {
     float *arr = (float *)float32_array.ptr;
     arr[0] = 2.27;
@@ -155,12 +142,13 @@ void cbor_fetch_float_array()
         0xFA, 0x40, 0x5C, 0x28, 0xF6
     };
 
-    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp_buf, sizeof(resp_expected));
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, sizeof(resp_expected));
 }
 
-void cbor_fetch_rounded_float()
+void test_bin_fetch_rounded_float()
 {
     f32 = 8.4;
 
@@ -181,7 +169,7 @@ void cbor_fetch_rounded_float()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, sizeof(resp_expected));
 }
 
-void cbor_patch_rounded_float()
+void test_bin_patch_rounded_float()
 {
     f32 = 0;
 
@@ -200,54 +188,52 @@ void cbor_patch_rounded_float()
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
 }
 
-void cbor_get_output_ids()
+void test_bin_get_output_ids()
 {
     uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
-    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
-    char cbor_resp_hex[] =
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "18 71 "
         "18 72 "
         "18 73 ";
 
-    uint8_t cbor_resp[100];
-    int len = strlen(cbor_resp_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
 }
 
-void cbor_get_output_names()
+void test_bin_get_output_names()
 {
     uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
-    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
-    char cbor_resp_hex[] =
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "65 42 61 74 5F 56 "
         "65 42 61 74 5F 41 "
         "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
 
-    uint8_t cbor_resp[100];
-    int len = strlen(cbor_resp_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_resp[pos++] = (char)strtoul(&cbor_resp_hex[i], NULL, 16);
-    }
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
 }
 
-void cbor_get_names_values_output()
+void test_bin_get_output_names_values()
 {
     uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
-    ts.process(req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
-    char cbor_resp_hex[] =
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
         "85 A3 "     // successful response: map with 3 elements
         "65 42 61 74 5F 56 "
         "FA 41 61 99 9A "        // 14.1
@@ -256,13 +242,13 @@ void cbor_get_names_values_output()
         "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
         "16";
 
-    uint8_t cbor_resp[100];
-    int pos = hex2bin(cbor_resp_hex, cbor_resp, sizeof(cbor_resp));
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_resp, resp_buf, pos);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
 }
 
-void cbor_pub()
+void test_bin_pub()
 {
     uint8_t bin[100];
     ts.pub_cbor(bin, sizeof(bin), PUB_SER);
@@ -282,7 +268,7 @@ void cbor_pub()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(bin_expected, bin, len);
 }
 
-void cbor_sub()
+void test_bin_sub()
 {
     char msg_hex[] =
         "1F A2 "     // map with 4 elements
@@ -299,38 +285,34 @@ void cbor_sub()
 
 extern bool dummy_called_flag;
 
-void cbor_exec()
+void test_bin_exec()
 {
     dummy_called_flag = 0;
 
-    req_buf[0] = TS_POST;
-    req_buf[1] = 0x19;     // uint16 follows
-    req_buf[2] = 0x50;     // data node ID 0x5001
-    req_buf[3] = 0x01;
+    uint8_t req[] = {
+        TS_POST,
+        0x19,     // uint16 follows
+        0x50,     // data node ID 0x5001
+        0x01
+    };
 
-    ts.process(req_buf, 4, resp_buf, TS_RESP_BUFFER_LEN);
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
 
-    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_VALID, resp_buf[0]);
+    TEST_ASSERT_EQUAL_HEX8(TS_STATUS_VALID, resp[0]);
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-void cbor_num_elem()
+void test_bin_num_elem()
 {
-    char cbor_req_hex[] = "B9 F0 00 ";
-
-    uint8_t cbor_req[100];
-    int len = strlen(cbor_req_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_req[pos++] = (char)strtoul(&cbor_req_hex[i], NULL, 16);
-    }
+    uint8_t req[] = { 0xB9, 0xF0, 0x00 };
 
     uint16_t num_elements;
-    cbor_num_elements(cbor_req, &num_elements);
+    cbor_num_elements(req, &num_elements);
     TEST_ASSERT_EQUAL(0xF000, num_elements);
 }
 
-void cbor_serialize_long_string()
+void test_bin_serialize_long_string()
 {
     char str[300];
     uint8_t buf[302];
@@ -348,28 +330,35 @@ void cbor_serialize_long_string()
     TEST_ASSERT_EQUAL_UINT(0x2B, buf[2]);
 }
 
-void tests_cbor()
+void tests_binary_mode()
 {
     UNITY_BEGIN();
 
-    RUN_TEST(cbor_get_output_ids);
-    RUN_TEST(cbor_get_output_names);
-    RUN_TEST(cbor_get_names_values_output);
+    // GET request
+    RUN_TEST(test_bin_get_output_ids);
+    RUN_TEST(test_bin_get_output_names);
+    RUN_TEST(test_bin_get_output_names_values);
 
-    RUN_TEST(cbor_patch_multiple_nodes);
-    RUN_TEST(cbor_patch_float_array);
-    RUN_TEST(cbor_patch_rounded_float);     // writes an integer to float
+    // PATCH request
+    RUN_TEST(test_bin_patch_multiple_nodes);
+    RUN_TEST(test_bin_patch_float_array);
+    RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
 
-    RUN_TEST(cbor_fetch_multiple_nodes);
-    RUN_TEST(cbor_fetch_float_array);
-    RUN_TEST(cbor_fetch_rounded_float);
+    // FETCH request
+    RUN_TEST(test_bin_fetch_multiple_nodes);
+    RUN_TEST(test_bin_fetch_float_array);
+    RUN_TEST(test_bin_fetch_rounded_float);
 
-    RUN_TEST(cbor_exec);                    // still previous protocol spec
-    RUN_TEST(cbor_num_elem);
-    RUN_TEST(cbor_serialize_long_string);
+    // POST request
+    RUN_TEST(test_bin_exec);                    // still previous protocol spec
 
-    RUN_TEST(cbor_pub);
-    RUN_TEST(cbor_sub);
+    // pub/sub messages
+    RUN_TEST(test_bin_pub);
+    RUN_TEST(test_bin_sub);
+
+    // general tests
+    RUN_TEST(test_bin_num_elem);
+    RUN_TEST(test_bin_serialize_long_string);
 
     UNITY_END();
 }

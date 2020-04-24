@@ -18,7 +18,7 @@ extern uint8_t req_buf[];
 extern uint8_t resp_buf[];
 extern ThingSet ts;
 
-int hex2bin(char *hex, uint8_t *bin, size_t bin_size)
+int hex2bin(char *const hex, uint8_t *bin, size_t bin_size)
 {
     int len = strlen(hex);
     unsigned int pos = 0;
@@ -94,17 +94,12 @@ void _patch_cbor(uint16_t id, char *value)
     TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, resp_buf[0]);
 }
 
-void _json2cbor(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex)
+void _json2cbor(char const *name, char const *json_value, uint16_t id, const char *const cbor_value_hex)
 {
     char buf[100];  // temporary data storage (JSON or CBOR)
 
-    // extract binary CBOR data
-    char cbor_value[100];
-    int len = strlen(cbor_value_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_value[pos++] = (char)strtoul(&cbor_value_hex[i], NULL, 16);
-    }
+    uint8_t cbor_value[100];
+    int len = hex2bin((char *)cbor_value_hex, cbor_value, sizeof(cbor_value));
 
     //printf("json2cbor(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
@@ -118,18 +113,13 @@ void _cbor2json(char const *name, char const *json_value, uint16_t id, char cons
 {
     char buf[100];  // temporary data storage (JSON or CBOR)
 
-    // extract binary CBOR data
     char cbor_value[100];
-    int len = strlen(cbor_value_hex);
-    int pos = 0;
-    for (int i = 0; i < len; i += 3) {
-        cbor_value[pos++] = (char)strtoul(&cbor_value_hex[i], NULL, 16);
-    }
+    hex2bin((char *)cbor_value_hex, (uint8_t *)cbor_value, sizeof(cbor_value));
 
     //printf("cbor2json(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
     _patch_cbor(id, cbor_value);
-    len = _fetch_json(name, buf);
+    _fetch_json(name, buf);
 
     TEST_ASSERT_EQUAL_STRING(json_value, buf);
 }

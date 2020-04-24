@@ -4,8 +4,8 @@
  * Copyright (c) 2020 Martin Jäger / Libre Solar
  */
 
-#ifndef TESTS_H_
-#define TESTS_H_
+#ifndef TEST_H_
+#define TEST_H_
 
 #include <stdint.h>
 #include <string.h>
@@ -33,9 +33,9 @@
 #define TS_RESP_BUFFER_LEN 500
 
 void tests_common();
-void tests_json();
-void tests_cbor();
+void tests_text_mode();
+void tests_binary_mode();
 
-int hex2bin(char *hex, uint8_t *bin, size_t bin_size);
+int hex2bin(char *const hex, uint8_t *bin, size_t bin_size);
 
-#endif /* TESTS_H_ */
+#endif /* TEST_H_ */

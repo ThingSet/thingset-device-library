@@ -21,7 +21,7 @@
 #define CAN_TS_T_FALSE      60
 #define CAN_TS_T_TRUE       61
 
-int ThingSet::pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_node_id,
+int ThingSet::pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id,
     uint32_t &msg_id, uint8_t (&msg_data)[8])
 {
     int msg_len = -1;
@@ -42,7 +42,7 @@ int ThingSet::pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_no
         msg_id = msg_priority << 26
             | (1U << 24) | (1U << 25)   // identify as publication message
             | data_nodes[i].id << 8
-            | can_node_id;
+            | can_dev_id;
 
         // first byte: TinyTP-header or data type for single frame message
         // currently: no multi-frame and no timestamp

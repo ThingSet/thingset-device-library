@@ -27,6 +27,6 @@ ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
 int main()
 {
     tests_common();
-    tests_json();
-    tests_cbor();
+    tests_text_mode();
+    tests_binary_mode();
 }

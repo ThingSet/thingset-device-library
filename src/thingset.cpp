@@ -93,7 +93,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     }
 }
 
-DataNode *const ThingSet::get_data_node(const char *str, size_t len, int32_t parent)
+DataNode *const ThingSet::get_node(const char *str, size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (parent != -1 && data_nodes[i].parent != parent) {
@@ -108,7 +108,7 @@ DataNode *const ThingSet::get_data_node(const char *str, size_t len, int32_t par
     return NULL;
 }
 
-DataNode *const ThingSet::get_data_node(node_id_t id)
+DataNode *const ThingSet::get_node(node_id_t id)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].id == id) {
@@ -118,7 +118,7 @@ DataNode *const ThingSet::get_data_node(node_id_t id)
     return NULL;
 }
 
-DataNode *const ThingSet::get_endpoint_node(const char *path, size_t len)
+DataNode *const ThingSet::get_endpoint(const char *path, size_t len)
 {
     const DataNode *node;
     const char *start = path;
@@ -129,7 +129,7 @@ DataNode *const ThingSet::get_endpoint_node(const char *path, size_t len)
     for (int i = 0; i < 10; i++) {
         if (end != NULL) {
             if (end - path != (int)len - 1) {
-                node = get_data_node(start, end - start, parent);
+                node = get_node(start, end - start, parent);
                 if (!node) {
                     return NULL;
                 }
@@ -139,11 +139,11 @@ DataNode *const ThingSet::get_endpoint_node(const char *path, size_t len)
             }
             else {
                 // resource ends with trailing slash
-                return get_data_node(start, end - start, parent);
+                return get_node(start, end - start, parent);
             }
         }
         else {
-            return get_data_node(start, path + len - start, parent);
+            return get_node(start, path + len - start, parent);
         }
     }
     return NULL;

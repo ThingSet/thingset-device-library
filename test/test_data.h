@@ -136,7 +136,7 @@ static DataNode data_nodes[] = {
     // CALIBRATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xD0
 
-    TS_NODE_PATH(ID_REC, "cal", 0, NULL),
+    TS_NODE_PATH(ID_CAL, "cal", 0, NULL),
 
     // FUNCTION CALLS (EXEC) //////////////////////////////////////////////////
     // using IDs >= 0xE0
@@ -161,7 +161,7 @@ static DataNode data_nodes[] = {
     TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
     TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
     TS_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_ANY_RW, 0),
-    TS_NODE_PUBSUB(0xF4, "IDs", PUB_CAN, 0xF5, TS_ANY_RW, 0),
+    TS_NODE_PUBSUB(0xF8, "IDs", PUB_CAN, 0xF5, TS_ANY_RW, 0),
 
     // LOGGING DATA ///////////////////////////////////////////////////////
     // using IDs >= 0x100

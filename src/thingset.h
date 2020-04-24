@@ -230,10 +230,20 @@ typedef struct DataNode {
 
 } DataNode;
 
-
+/**
+ * Main ThingSet class
+ *
+ * Stores and handles all data exposed to different communication interfaces
+ */
 class ThingSet
 {
 public:
+    /**
+     * Initialize a ThingSet object
+     *
+     * @param data Pointer to array of DataNode type containing the entire node database
+     * @param num Number of elements in that array
+     */
     ThingSet(DataNode *data, size_t num);
 
     /**
@@ -283,7 +293,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_json(char *buf, size_t buf_size, const uint16_t pub_ch);
+    int pub_json(char *buf, size_t size, const uint16_t pub_ch);
 
     /**
      * Generate publication message in CBOR format
@@ -294,7 +304,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
+    int pub_cbor(uint8_t *buf, size_t size, const uint16_t pub_ch);
 
     /**
      * Encode a publication message in CAN message format for supplied data node
@@ -304,14 +314,14 @@ public:
      *                      iterating over all nodes. It should be set to 0 to start from the
      *                      beginning.
      * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+     * @param can_dev_id Device ID on the CAN bus
      * @param msg_id reference to can message id storage
-     * @param data_node reference to data node to be published
      * @param msg_data reference to the buffer where the publication message should be stored
      *
      * @returns Actual length of the message_data or -1 if not encodable / in case of error,
      *          (msg_len 0 is valid, just the id is transmitted)
      */
-    int pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_node_id, uint32_t &msg_id,
+    int pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
@@ -319,6 +329,7 @@ public:
      *
      * @param cbor_data Buffer containing key/value map that should be written to the data nodes
      * @param len Length of the data in the buffer
+     * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
      * @param sub_ch Subscribe channel (as bitfield)
      *
      * @returns ThingSet status code
@@ -327,35 +338,45 @@ public:
 
     /**
      * Get data node by ID
+     *
+     * @param id Node ID
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_data_node(node_id_t id);
+    DataNode *const get_node(node_id_t id);
 
     /**
      * Get data node by name
      *
      * As the names are not necessarily unique in the entire data tree, the parent is needed
      *
-     * @param name node name
-     * @param len length of the node name
-     * @param parent node ID of the parent or -1 for global search
+     * @param name Node name
+     * @param len Length of the node name
+     * @param parent Node ID of the parent or -1 for global search
      *
      * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_data_node(const char *name, size_t len, int32_t parent = -1);
+    DataNode *const get_node(const char *name, size_t len, int32_t parent = -1);
 
     /**
-     * Get the endpoint node of a provided path, e.g. "conf"
+     * Get the endpoint node of a provided path
+     *
+     * @param path Path of with multiple node names divided by forward slash
+     * @param len Length of the node name
+     *
+     * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_endpoint_node(const char *path, size_t len);
+    DataNode *const get_endpoint(const char *path, size_t len);
 
 private:
     /**
-     * Parser preparation and calling of the different data node access functions read/write/list
+     * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
+     * functions
      */
     int process_json();
 
     /**
-     * Calling of the different data node access functions read/write/list
+     * Performs initial check of payload data and calls get/fetch/patch functions
      */
     int process_cbor();
 
@@ -364,7 +385,7 @@ private:
      *
      * List child data nodes (function called without content / parameters)
      */
-    int get_json(const DataNode *parent_node, bool include_values = false);
+    int get_json(const DataNode *parent, bool include_values = false);
 
     /**
      * GET request (binary mode)
@@ -438,11 +459,35 @@ private:
      */
     int status_message_json(int code);
 
-    int json_serialize_value(char *resp, size_t size, const DataNode *data_node);
+    /**
+     * Serialize a node value into a JSON string
+     *
+     * @param buf Pointer to the buffer where the JSON value should be stored
+     * @param size Size of the buffer, i.e. maximum allowed length of the value
+     * @param node Pointer to node which should be serialized
+     *
+     * @returns Length of data written to buffer or 0 in case of error
+     */
+    int json_serialize_value(char *buf, size_t size, const DataNode *node);
 
-    int json_serialize_name_value(char *resp, size_t size, const DataNode* data_node);
+    /**
+     * Serialize node name and value as JSON object
+     *
+     * same as json_serialize_value, just that the node name is also serialized
+     */
+    int json_serialize_name_value(char *buf, size_t size, const DataNode *node);
 
-    int json_deserialize_value(char *buf, size_t len, int tok, const DataNode *data_node);
+    /**
+     * Deserialize a node value from a JSON string
+     *
+     * @param buf Pointer to the position of the value in a buffer
+     * @param len Length of value in the buffer
+     * @param type Type of the JSMN token as identified by the parser
+     * @param node Pointer to node where the deserialized value should be stored
+     *
+     * @returns Number of tokens processed (always 1) or 0 in case of error
+     */
+    int json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node);
 
     /**
      * Fill the resp buffer with a CBOR response status message
@@ -452,14 +497,35 @@ private:
      */
     int status_message_cbor(uint8_t code);
 
+    /**
+     * Array of nodes database provided during initialization
+     */
     DataNode *data_nodes;
+
+    /**
+     * Number of nodes in the data_nodes array
+     */
     size_t num_nodes;
 
-    uint8_t *req;               ///< Request buffer
-    size_t req_len;             ///< Length of request
+    /**
+     * Pointer to request buffer (provided in process function)
+     */
+    uint8_t *req;
 
-    uint8_t *resp;              ///< Response buffer
-    size_t resp_size;           ///< Size of response buffer (i.e. maximum length)
+    /**
+     * Length of the request
+     */
+    size_t req_len;
+
+    /**
+     * Pointer to response buffer (provided in process function)
+     */
+    uint8_t *resp;
+
+    /**
+     * Size of response buffer (i.e. maximum length)
+     */
+    size_t resp_size;
 
     /**
      * Pointer to the start of JSON payload in the request
@@ -476,6 +542,9 @@ private:
      */
     int tok_count;
 
+    /**
+     * Stores current authentication status (authentication as "normal" user as default)
+     */
     uint16_t _auth_flags = TS_USR_MASK;
 };
 

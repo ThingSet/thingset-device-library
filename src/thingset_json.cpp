@@ -85,96 +85,96 @@ int ThingSet::status_message_json(int code)
         return 0;
 }
 
-int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data_node)
+int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
 {
     size_t pos = 0;
     const DataNode *sub_node;
 
-    switch (data_node->type) {
+    switch (node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)node->data));
         break;
     case TS_T_INT64:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi64 ",", *((int64_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi64 ",", *((int64_t *)node->data));
         break;
 #endif
     case TS_T_UINT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)node->data));
         break;
     case TS_T_INT32:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi32 ",", *((int32_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 ",", *((int32_t *)node->data));
         break;
     case TS_T_UINT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)node->data));
         break;
     case TS_T_INT16:
-        pos = snprintf(&resp[pos], size - pos, "%" PRIi16 ",", *((int16_t *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ",", *((int16_t *)node->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&resp[pos], size - pos, "%.*f,", data_node->detail,
-                *((float *)data_node->data));
+        pos = snprintf(&buf[pos], size - pos, "%.*f,", node->detail,
+                *((float *)node->data));
         break;
     case TS_T_BOOL:
-        pos = snprintf(&resp[pos], size - pos, "%s,",
-                (*((bool *)data_node->data) == true ? "true" : "false"));
+        pos = snprintf(&buf[pos], size - pos, "%s,",
+                (*((bool *)node->data) == true ? "true" : "false"));
         break;
     case TS_T_EXEC:
-        pos = snprintf(&resp[pos], size - pos, "null,");
+        pos = snprintf(&buf[pos], size - pos, "null,");
         break;
     case TS_T_STRING:
-        pos = snprintf(&resp[pos], size - pos, "\"%s\",", (char *)data_node->data);
+        pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char *)node->data);
         break;
     case TS_T_PUBSUB:
-        pos = snprintf(&resp[pos], size - pos, "[]") - 1;
+        pos = snprintf(&buf[pos], size - pos, "[]") - 1;
         for (unsigned int i = 0; i < num_nodes; i++) {
-            if (data_nodes[i].pubsub & (uint16_t)data_node->detail) {
-                pos += snprintf(&resp[pos], size - pos, "\"%s\",", data_nodes[i].name);
+            if (data_nodes[i].pubsub & (uint16_t)node->detail) {
+                pos += snprintf(&buf[pos], size - pos, "\"%s\",", data_nodes[i].name);
             }
         }
         pos--; // remove trailing comma
-        pos += snprintf(&resp[pos], size - pos, "],");
+        pos += snprintf(&buf[pos], size - pos, "],");
         break;
     case TS_T_ARRAY:
-        ArrayInfo *array_info = (ArrayInfo *)data_node->data;
+        ArrayInfo *array_info = (ArrayInfo *)node->data;
         if (!array_info) {
             return 0;
         }
-        pos += snprintf(&resp[pos], size - pos, "[");
+        pos += snprintf(&buf[pos], size - pos, "[");
         for (int i = 0; i < array_info->num_elements; i++) {
             switch (array_info->type) {
             case TS_T_UINT64:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu64 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIu64 ",",
                         ((uint64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT64:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi64 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIi64 ",",
                         ((int64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT32:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu32 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIu32 ",",
                         ((uint32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT32:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi32 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIi32 ",",
                         ((int32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT16:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIu16 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIu16 ",",
                         ((uint16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT16:
-                pos += snprintf(&resp[pos], size - pos, "%" PRIi16 ",",
+                pos += snprintf(&buf[pos], size - pos, "%" PRIi16 ",",
                         ((int16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_FLOAT32:
-                pos += snprintf(&resp[pos], size - pos, "%.*f,", data_node->detail,
+                pos += snprintf(&buf[pos], size - pos, "%.*f,", node->detail,
                         ((float *)array_info->ptr)[i]);
                 break;
             case TS_T_NODE_ID:
-                sub_node = get_data_node(((uint16_t *)array_info->ptr)[i]);
+                sub_node = get_node(((uint16_t *)array_info->ptr)[i]);
                 if (sub_node) {
-                    pos += snprintf(&resp[pos], size - pos, "\"%s\",", sub_node->name);
+                    pos += snprintf(&buf[pos], size - pos, "\"%s\",", sub_node->name);
                 }
                 break;
             default:
@@ -184,7 +184,7 @@ int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data
         if (array_info->num_elements > 0) {
             pos--; // remove trailing comma
         }
-        pos += snprintf(&resp[pos], size - pos, "],");
+        pos += snprintf(&buf[pos], size - pos, "],");
         break;
     }
 
@@ -196,12 +196,12 @@ int ThingSet::json_serialize_value(char *resp, size_t size, const DataNode *data
     }
 }
 
-int ThingSet::json_serialize_name_value(char *resp, size_t size, const DataNode* data_node)
+int ThingSet::json_serialize_name_value(char *buf, size_t size, const DataNode* node)
 {
-    size_t pos = snprintf(resp, size, "\"%s\":", data_node->name);
+    size_t pos = snprintf(buf, size, "\"%s\":", node->name);
 
     if (pos < size) {
-        return pos + json_serialize_value(&resp[pos], size - pos, data_node);
+        return pos + json_serialize_value(&buf[pos], size - pos, node);
     }
     else {
         return 0;
@@ -248,7 +248,7 @@ int ThingSet::process_json()
         path_len = (uint8_t *)path_end - req - 1;
     }
 
-    const DataNode *endpoint = get_endpoint_node((char *)req + 1, path_len);
+    const DataNode *endpoint = get_endpoint((char *)req + 1, path_len);
     if (!endpoint) {
         if (req[0] == '?' && req[1] == '/' && path_len == 1) {
             return get_json(NULL, false);
@@ -349,7 +349,7 @@ int ThingSet::fetch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode *node = get_data_node(
+        const DataNode *node = get_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
@@ -389,53 +389,53 @@ int ThingSet::fetch_json(node_id_t parent_id)
     return pos;
 }
 
-int ThingSet::json_deserialize_value(char *buf, size_t len, int tok, const DataNode *data_node)
+int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node)
 {
-    if (tokens[tok].type != JSMN_PRIMITIVE && tokens[tok].type != JSMN_STRING) {
+    if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
     }
 
     errno = 0;
-    switch (data_node->type) {
+    switch (node->type) {
         case TS_T_FLOAT32:
-            *((float*)data_node->data) = strtod(buf, NULL);
+            *((float*)node->data) = strtod(buf, NULL);
             break;
         case TS_T_UINT64:
-            *((uint64_t*)data_node->data) = strtoull(buf, NULL, 0);
+            *((uint64_t*)node->data) = strtoull(buf, NULL, 0);
             break;
         case TS_T_INT64:
-            *((int64_t*)data_node->data) = strtoll(buf, NULL, 0);
+            *((int64_t*)node->data) = strtoll(buf, NULL, 0);
             break;
         case TS_T_UINT32:
-            *((uint32_t*)data_node->data) = strtoul(buf, NULL, 0);
+            *((uint32_t*)node->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT32:
-            *((int32_t*)data_node->data) = strtol(buf, NULL, 0);
+            *((int32_t*)node->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_UINT16:
-            *((uint16_t*)data_node->data) = strtoul(buf, NULL, 0);
+            *((uint16_t*)node->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT16:
-            *((uint16_t*)data_node->data) = strtol(buf, NULL, 0);
+            *((uint16_t*)node->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_BOOL:
             if (buf[0] == 't' || buf[0] == '1') {
-                *((bool*)data_node->data) = true;
+                *((bool*)node->data) = true;
             }
             else if (buf[0] == 'f' || buf[0] == '0') {
-                *((bool*)data_node->data) = false;
+                *((bool*)node->data) = false;
             }
             else {
                 return 0;       // error
             }
             break;
         case TS_T_STRING:
-            if (tokens[tok].type != JSMN_STRING || (unsigned int)data_node->detail <= len) {
+            if (type != JSMN_STRING || (unsigned int)node->detail <= len) {
                 return 0;
             }
-            else if (data_node->id != 0) {     // dummy node has id = 0
-                strncpy((char*)data_node->data, buf, len);
-                ((char*)data_node->data)[len] = '\0';
+            else if (node->id != 0) {     // dummy node has id = 0
+                strncpy((char*)node->data, buf, len);
+                ((char*)node->data)[len] = '\0';
             }
             break;
     }
@@ -475,7 +475,7 @@ int ThingSet::patch_json(node_id_t parent_id)
             return status_message_json(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode* node = get_data_node(
+        const DataNode* node = get_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
@@ -510,7 +510,7 @@ int ThingSet::patch_json(node_id_t parent_id)
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
         DataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
 
-        int res = json_deserialize_value(value_buf, value_len, tok, &dummy_node);
+        int res = json_deserialize_value(value_buf, value_len, tokens[tok].type, &dummy_node);
         if (res == 0) {
             return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
         }
@@ -527,7 +527,7 @@ int ThingSet::patch_json(node_id_t parent_id)
     // actually write data
     while (tok + 1 < tok_count) {
 
-        const DataNode *node = get_data_node(json_str + tokens[tok].start,
+        const DataNode *node = get_node(json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
         tok++;
@@ -539,7 +539,8 @@ int ThingSet::patch_json(node_id_t parent_id)
             value_buf[value_len] = '\0';
         }
 
-        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tok, node);
+        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tokens[tok].type,
+            node);
     }
 
     return status_message_json(TS_STATUS_CHANGED);
@@ -617,7 +618,7 @@ int ThingSet::create_json(const DataNode *node)
 
             if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
 
-                const DataNode *new_node = get_data_node(json_str + tokens[0].start,
+                const DataNode *new_node = get_node(json_str + tokens[0].start,
                     tokens[0].end - tokens[0].start);
 
                 if (new_node != NULL) {
@@ -647,7 +648,7 @@ int ThingSet::create_json(const DataNode *node)
     }
     else if (node->type == TS_T_PUBSUB) {
         if (tokens[0].type == JSMN_STRING) {
-            DataNode *del_node = get_data_node(json_str + tokens[0].start,
+            DataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub |= (uint16_t)node->detail;
@@ -669,7 +670,7 @@ int ThingSet::delete_json(const DataNode *node)
     if (node->type == TS_T_ARRAY) {
         ArrayInfo *arr_info = (ArrayInfo *)node->data;
         if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
-            const DataNode *del_node = get_data_node(json_str + tokens[0].start,
+            const DataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 // node found in node database, now look for same ID in the array
@@ -693,7 +694,7 @@ int ThingSet::delete_json(const DataNode *node)
     }
     else if (node->type == TS_T_PUBSUB) {
         if (tokens[0].type == JSMN_STRING) {
-            DataNode *del_node = get_data_node(json_str + tokens[0].start,
+            DataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub &= ~((uint16_t)node->detail);
@@ -731,7 +732,7 @@ int ThingSet::exec_json(const DataNode *node)
                 return status_message_json(TS_STATUS_BAD_REQUEST);
             }
             int res = json_deserialize_value(json_str + tokens[tok].start,
-                tokens[tok].end - tokens[tok].start, tok, &data_nodes[i]);
+                tokens[tok].end - tokens[tok].start, tokens[tok].type, &data_nodes[i]);
             if (res == 0) {
                 // deserializing the value was not successful
                 return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
