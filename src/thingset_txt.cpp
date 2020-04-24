@@ -16,7 +16,7 @@
 #include <cinttypes>
 
 
-int ThingSet::status_message_json(int code)
+int ThingSet::txt_response(int code)
 {
     size_t pos = 0;
 #ifdef TS_VERBOSE_STATUS_MESSAGES
@@ -240,7 +240,7 @@ void ThingSet::dump_json(node_id_t node_id, int level)
     }
 }
 
-int ThingSet::process_json()
+int ThingSet::txt_process()
 {
     int path_len = req_len - 1;
     char *path_end = strchr((char *)req + 1, ' ');
@@ -251,10 +251,10 @@ int ThingSet::process_json()
     const DataNode *endpoint = get_endpoint((char *)req + 1, path_len);
     if (!endpoint) {
         if (req[0] == '?' && req[1] == '/' && path_len == 1) {
-            return get_json(NULL, false);
+            return txt_get(NULL, false);
         }
         else {
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
     }
 
@@ -265,40 +265,40 @@ int ThingSet::process_json()
     tok_count = jsmn_parse(&parser, json_str, req_len - path_len - 1, tokens, sizeof(tokens));
 
     if (tok_count == JSMN_ERROR_NOMEM) {
-        return status_message_json(TS_STATUS_REQUEST_TOO_LARGE);
+        return txt_response(TS_STATUS_REQUEST_TOO_LARGE);
     }
     else if (tok_count < 0) {
         // other parsing error
-        return status_message_json(TS_STATUS_BAD_REQUEST);
+        return txt_response(TS_STATUS_BAD_REQUEST);
     }
     else if (tok_count == 0) {
         if (req[0] == '?') {
             // no payload data
             if ((char)req[path_len] == '/') {
                 if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
-                    return get_json(endpoint, false);
+                    return txt_get(endpoint, false);
                 }
                 else {
                     // device discovery is only allowed for internal nodes
-                    return status_message_json(TS_STATUS_BAD_REQUEST);
+                    return txt_response(TS_STATUS_BAD_REQUEST);
                 }
             }
             else {
-                return get_json(endpoint, true);
+                return txt_get(endpoint, true);
             }
         }
         else if (req[0] == '!') {
-            return exec_json(endpoint);
+            return txt_exec(endpoint);
         }
     }
     else if (tok_count == 1 && tokens[0].type == JSMN_OBJECT) {
         // legacy function to get all sub-nodes of a node by passing empty map
-        return get_json(endpoint, true);
+        return txt_get(endpoint, true);
     }
     else {
         if (tokens[0].type == JSMN_OBJECT) {
-            //printf("patch_json: %s\n", json_str);
-            int len = patch_json(endpoint->id);
+            //printf("txt_patch: %s\n", json_str);
+            int len = txt_patch(endpoint->id);
 
             // check if endpoint has a callback assigned
             if (endpoint->data != NULL && strncmp((char *)resp, ":84", 3) == 0) {
@@ -310,31 +310,31 @@ int ThingSet::process_json()
         }
         else {
             if (req[0] == '!' && endpoint->type == TS_T_EXEC) {
-                //printf("exec_json: %s\n", json_str);
-                return exec_json(endpoint);
+                //printf("txt_exec: %s\n", json_str);
+                return txt_exec(endpoint);
             }
             else if (req[0] == '+') {
-                return create_json(endpoint);
+                return txt_create(endpoint);
             }
             else if (req[0] == '-') {
-                return delete_json(endpoint);
+                return txt_delete(endpoint);
             }
             else {
                 //printf("fetch_json: %s\n", json_str);
-                return fetch_json(endpoint->id);
+                return txt_fetch(endpoint->id);
             }
         }
     }
-    return status_message_json(TS_STATUS_BAD_REQUEST);
+    return txt_response(TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::fetch_json(node_id_t parent_id)
+int ThingSet::txt_fetch(node_id_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
 
     // initialize response with success message
-    pos += status_message_json(TS_STATUS_CONTENT);
+    pos += txt_response(TS_STATUS_CONTENT);
 
     if (tokens[0].type == JSMN_ARRAY) {
         pos += snprintf((char *)&resp[pos], resp_size - pos, " [");
@@ -346,7 +346,7 @@ int ThingSet::fetch_json(node_id_t parent_id)
     while (tok < tok_count) {
 
         if (tokens[tok].type != JSMN_STRING) {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
+            return txt_response(TS_STATUS_BAD_REQUEST);
         }
 
         const DataNode *node = get_node(
@@ -354,26 +354,26 @@ int ThingSet::fetch_json(node_id_t parent_id)
             tokens[tok].end - tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
         else if (node->type == TS_T_PATH) {
             // bad request, as we can't read internal path node's values
-            return status_message_json(TS_STATUS_BAD_REQUEST);
+            return txt_response(TS_STATUS_BAD_REQUEST);
         }
 
         if ((node->access & TS_READ_MASK & _auth_flags) == 0) {
             if (node->access & TS_READ_MASK) {
-                return status_message_json(TS_STATUS_UNAUTHORIZED);
+                return txt_response(TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return status_message_json(TS_STATUS_FORBIDDEN);
+                return txt_response(TS_STATUS_FORBIDDEN);
             }
         }
 
         pos += json_serialize_value((char *)&resp[pos], resp_size - pos, node);
 
         if (pos >= resp_size - 2) {
-            return status_message_json(TS_STATUS_RESPONSE_TOO_LARGE);
+            return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
         }
         tok++;
     }
@@ -447,7 +447,7 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, con
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ThingSet::patch_json(node_id_t parent_id)
+int ThingSet::txt_patch(node_id_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -457,9 +457,9 @@ int ThingSet::patch_json(node_id_t parent_id)
 
     if (tok_count < 2) {
         if (tok_count == JSMN_ERROR_NOMEM) {
-            return status_message_json(TS_STATUS_REQUEST_TOO_LARGE);
+            return txt_response(TS_STATUS_REQUEST_TOO_LARGE);
         } else {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
+            return txt_response(TS_STATUS_BAD_REQUEST);
         }
     }
 
@@ -472,7 +472,7 @@ int ThingSet::patch_json(node_id_t parent_id)
 
         if (tokens[tok].type != JSMN_STRING ||
             (tokens[tok+1].type != JSMN_PRIMITIVE && tokens[tok+1].type != JSMN_STRING)) {
-            return status_message_json(TS_STATUS_BAD_REQUEST);
+            return txt_response(TS_STATUS_BAD_REQUEST);
         }
 
         const DataNode* node = get_node(
@@ -480,15 +480,15 @@ int ThingSet::patch_json(node_id_t parent_id)
             tokens[tok].end - tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
 
         if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
             if (node->access & TS_WRITE_MASK) {
-                return status_message_json(TS_STATUS_UNAUTHORIZED);
+                return txt_response(TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return status_message_json(TS_STATUS_FORBIDDEN);
+                return txt_response(TS_STATUS_FORBIDDEN);
             }
         }
 
@@ -499,7 +499,7 @@ int ThingSet::patch_json(node_id_t parent_id)
         if ((node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
             (node->type == TS_T_STRING && value_len >= (size_t)node->detail))
         {
-            return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
+            return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
         }
         else {
             strncpy(value_buf, &json_str[tokens[tok].start], value_len);
@@ -512,7 +512,7 @@ int ThingSet::patch_json(node_id_t parent_id)
 
         int res = json_deserialize_value(value_buf, value_len, tokens[tok].type, &dummy_node);
         if (res == 0) {
-            return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
+            return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
         }
         tok += res;
     }
@@ -543,13 +543,13 @@ int ThingSet::patch_json(node_id_t parent_id)
             node);
     }
 
-    return status_message_json(TS_STATUS_CHANGED);
+    return txt_response(TS_STATUS_CHANGED);
 }
 
-int ThingSet::get_json(const DataNode *parent_node, bool include_values)
+int ThingSet::txt_get(const DataNode *parent_node, bool include_values)
 {
     // initialize response with success message
-    size_t len = status_message_json(TS_STATUS_CONTENT);
+    size_t len = txt_response(TS_STATUS_CONTENT);
 
     node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
@@ -565,7 +565,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
 
     if (parent_node != NULL && parent_node->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec node's values
-        return status_message_json(TS_STATUS_BAD_REQUEST);
+        return txt_response(TS_STATUS_BAD_REQUEST);
     }
 
     len += sprintf((char *)&resp[len], include_values ? " {" : " [");
@@ -577,7 +577,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
             if (include_values) {
                 if (data_nodes[i].type == TS_T_PATH) {
                     // bad request, as we can't read nternal path node's values
-                    return status_message_json(TS_STATUS_BAD_REQUEST);
+                    return txt_response(TS_STATUS_BAD_REQUEST);
                 }
                 len += json_serialize_name_value((char *)&resp[len], resp_size - len,
                     &data_nodes[i]);
@@ -590,7 +590,7 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
             nodes_found++;
 
             if (len >= resp_size - 1) {
-                return status_message_json(TS_STATUS_RESPONSE_TOO_LARGE);
+                return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
             }
         }
     }
@@ -605,11 +605,11 @@ int ThingSet::get_json(const DataNode *parent_node, bool include_values)
     return len;
 }
 
-int ThingSet::create_json(const DataNode *node)
+int ThingSet::txt_create(const DataNode *node)
 {
     if (tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
+        return txt_response(TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
@@ -626,24 +626,24 @@ int ThingSet::create_json(const DataNode *node)
                     // check if node is already existing in array
                     for (int i = 0; i < arr_info->num_elements; i++) {
                         if (node_ids[i] == new_node->id) {
-                            return status_message_json(TS_STATUS_CONFLICT);
+                            return txt_response(TS_STATUS_CONFLICT);
                         }
                     }
                     // otherwise append it
                     node_ids[arr_info->num_elements] = new_node->id;
                     arr_info->num_elements++;
-                    return status_message_json(TS_STATUS_CREATED);
+                    return txt_response(TS_STATUS_CREATED);
                 }
                 else {
-                    return status_message_json(TS_STATUS_NOT_FOUND);
+                    return txt_response(TS_STATUS_NOT_FOUND);
                 }
             }
             else {
-                return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
+                return txt_response(TS_STATUS_NOT_IMPLEMENTED);
             }
         }
         else {
-            return status_message_json(TS_STATUS_INTERNAL_SERVER_ERR);
+            return txt_response(TS_STATUS_INTERNAL_SERVER_ERR);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
@@ -652,19 +652,19 @@ int ThingSet::create_json(const DataNode *node)
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub |= (uint16_t)node->detail;
-                return status_message_json(TS_STATUS_CREATED);
+                return txt_response(TS_STATUS_CREATED);
             }
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
     }
-    return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
+    return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::delete_json(const DataNode *node)
+int ThingSet::txt_delete(const DataNode *node)
 {
     if (tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
+        return txt_response(TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
@@ -682,14 +682,14 @@ int ThingSet::delete_json(const DataNode *node)
                             node_ids[j] = node_ids[j+1];
                         }
                         arr_info->num_elements--;
-                        return status_message_json(TS_STATUS_DELETED);
+                        return txt_response(TS_STATUS_DELETED);
                     }
                 }
             }
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
         else {
-            return status_message_json(TS_STATUS_NOT_IMPLEMENTED);
+            return txt_response(TS_STATUS_NOT_IMPLEMENTED);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
@@ -698,15 +698,15 @@ int ThingSet::delete_json(const DataNode *node)
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub &= ~((uint16_t)node->detail);
-                return status_message_json(TS_STATUS_DELETED);
+                return txt_response(TS_STATUS_DELETED);
             }
-            return status_message_json(TS_STATUS_NOT_FOUND);
+            return txt_response(TS_STATUS_NOT_FOUND);
         }
     }
-    return status_message_json(TS_STATUS_METHOD_NOT_ALLOWED);
+    return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::exec_json(const DataNode *node)
+int ThingSet::txt_exec(const DataNode *node)
 {
     int tok = 0;            // current token
     int nodes_found = 0;    // number of child nodes found
@@ -718,24 +718,24 @@ int ThingSet::exec_json(const DataNode *node)
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
         if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
-            return status_message_json(TS_STATUS_UNAUTHORIZED);
+            return txt_response(TS_STATUS_UNAUTHORIZED);
         }
     }
     else {
-        return status_message_json(TS_STATUS_FORBIDDEN);
+        return txt_response(TS_STATUS_FORBIDDEN);
     }
 
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].parent == node->id) {
             if (tok >= tok_count) {
                 // more child nodes found than parameters were passed
-                return status_message_json(TS_STATUS_BAD_REQUEST);
+                return txt_response(TS_STATUS_BAD_REQUEST);
             }
             int res = json_deserialize_value(json_str + tokens[tok].start,
                 tokens[tok].end - tokens[tok].start, tokens[tok].type, &data_nodes[i]);
             if (res == 0) {
                 // deserializing the value was not successful
-                return status_message_json(TS_STATUS_UNSUPPORTED_FORMAT);
+                return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
             }
             tok += res;
             nodes_found++;
@@ -744,17 +744,17 @@ int ThingSet::exec_json(const DataNode *node)
 
     if (tok_count > tok) {
         // more parameters passed than child nodes found
-        return status_message_json(TS_STATUS_BAD_REQUEST);
+        return txt_response(TS_STATUS_BAD_REQUEST);
     }
 
     // if we got here, finally create function pointer and call function
     void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
     fun();
 
-    return status_message_json(TS_STATUS_VALID);
+    return txt_response(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_json(char *buf, size_t buf_size, const uint16_t pub_ch)
+int ThingSet::txt_pub(char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");
 

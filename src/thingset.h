@@ -293,7 +293,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_json(char *buf, size_t size, const uint16_t pub_ch);
+    int txt_pub(char *buf, size_t size, const uint16_t pub_ch);
 
     /**
      * Generate publication message in CBOR format
@@ -304,7 +304,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    int pub_cbor(uint8_t *buf, size_t size, const uint16_t pub_ch);
+    int bin_pub(uint8_t *buf, size_t size, const uint16_t pub_ch);
 
     /**
      * Encode a publication message in CAN message format for supplied data node
@@ -321,7 +321,7 @@ public:
      * @returns Actual length of the message_data or -1 if not encodable / in case of error,
      *          (msg_len 0 is valid, just the id is transmitted)
      */
-    int pub_single_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
+    int bin_pub_can(int &node_prev_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
 
     /**
@@ -334,7 +334,7 @@ public:
      *
      * @returns ThingSet status code
      */
-    int sub_cbor(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch);
+    int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch);
 
     /**
      * Get data node by ID
@@ -373,47 +373,47 @@ private:
      * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
      * functions
      */
-    int process_json();
+    int txt_process();
 
     /**
      * Performs initial check of payload data and calls get/fetch/patch functions
      */
-    int process_cbor();
+    int bin_process();
 
     /**
      * GET request (text mode)
      *
      * List child data nodes (function called without content / parameters)
      */
-    int get_json(const DataNode *parent, bool include_values = false);
+    int txt_get(const DataNode *parent, bool include_values = false);
 
     /**
      * GET request (binary mode)
      *
      * List child data nodes (function called without content)
      */
-    int get_cbor(const DataNode *parent, bool values = false, bool ids_only = true);
+    int bin_get(const DataNode *parent, bool values = false, bool ids_only = true);
 
     /**
      * FETCH request (text mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int fetch_json(node_id_t parent_id);
+    int txt_fetch(node_id_t parent_id);
 
     /**
      * FETCH request (binary mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int fetch_cbor(const DataNode *parent, unsigned int pos_payload);
+    int bin_fetch(const DataNode *parent, unsigned int pos_payload);
 
     /**
      * PATCH request (text mode)
      *
      * Write data node values in text mode (function called with a map as argument)
      */
-    int patch_json(node_id_t parent_id);
+    int txt_patch(node_id_t parent_id);
 
     /**
      * PATCH request (binary mode)
@@ -428,23 +428,23 @@ private:
      * @param auth_flags Bitset to specify authentication status for different roles
      * @param sub_ch Bitset to specifiy subscribe channel to be considered, 0 to ignore
      */
-    int patch_cbor(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+    int bin_patch(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
         uint16_t sub_ch);
 
     /**
      * POST request to append data
      */
-    int create_json(const DataNode *node);
+    int txt_create(const DataNode *node);
 
     /**
      * DELETE request to delete data from node
      */
-    int delete_json(const DataNode *node);
+    int txt_delete(const DataNode *node);
 
     /**
      * Execute command in text mode (function called with a single data node name as argument)
      */
-    int exec_json(const DataNode *node);
+    int txt_exec(const DataNode *node);
 
     /**
      * Execute command in binary mode (function called with a single data node name/id as argument)
@@ -452,7 +452,7 @@ private:
      * @param parent Pointer to executable node
      * @param pos_payload Position of payload in req buffer
      */
-    int exec_cbor(const DataNode *node, unsigned int pos_payload);
+    int bin_exec(const DataNode *node, unsigned int pos_payload);
 
     /**
      * Fill the resp buffer with a JSON response status message
@@ -460,7 +460,15 @@ private:
      * @param code Status code
      * @returns length of status message in buffer or 0 in case of error
      */
-    int status_message_json(int code);
+    int txt_response(int code);
+
+    /**
+     * Fill the resp buffer with a CBOR response status message
+     *
+     * @param code Status code
+     * @returns length of status message in buffer or 0 in case of error
+     */
+    int bin_response(uint8_t code);
 
     /**
      * Serialize a node value into a JSON string
@@ -491,14 +499,6 @@ private:
      * @returns Number of tokens processed (always 1) or 0 in case of error
      */
     int json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node);
-
-    /**
-     * Fill the resp buffer with a CBOR response status message
-     *
-     * @param code Status code
-     * @returns length of status message in buffer or 0 in case of error
-     */
-    int status_message_cbor(uint8_t code);
 
     /**
      * Array of nodes database provided during initialization

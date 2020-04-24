@@ -80,11 +80,11 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
 
     if (req[0] < 0x20) {
         // binary mode request
-        return process_cbor();
+        return bin_process();
     }
     else if (req[0] == '?' || req[0] == '=' || req[0] == '+' || req[0] == '-' || req[0] == '!') {
         // text mode request
-        return process_json();
+        return txt_process();
     }
     else {
         // not a thingset command --> ignore and set response to empty string

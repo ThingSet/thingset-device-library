@@ -192,7 +192,7 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const DataNode *data_no
     return pos;
 }
 
-int ThingSet::status_message_cbor(uint8_t code)
+int ThingSet::bin_response(uint8_t code)
 {
     if (resp_size > 0) {
         resp[0] = code;
@@ -203,7 +203,7 @@ int ThingSet::status_message_cbor(uint8_t code)
     }
 }
 
-int ThingSet::process_cbor()
+int ThingSet::bin_process()
 {
     int pos = 1;    // current position during data processing
 
@@ -223,18 +223,18 @@ int ThingSet::process_cbor()
         pos++;
     }
     else {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
 
     // process data
     if (req[0] == TS_GET && endpoint) {
-        return get_cbor(endpoint, req[pos] == 0xA0, req[pos] == 0xF7);
+        return bin_get(endpoint, req[pos] == 0xA0, req[pos] == 0xF7);
     }
     else if (req[0] == TS_FETCH) {
-        return fetch_cbor(endpoint, pos);
+        return bin_fetch(endpoint, pos);
     }
     else if (req[0] == TS_PATCH && endpoint) {
-        return patch_cbor(endpoint, pos, _auth_flags, 0);
+        return bin_patch(endpoint, pos, _auth_flags, 0);
 
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && resp[0] == TS_STATUS_CHANGED) {
@@ -245,12 +245,12 @@ int ThingSet::process_cbor()
 
     }
     else if (req[0] == TS_POST) {
-        return exec_cbor(endpoint, pos);
+        return bin_exec(endpoint, pos);
     }
-    return status_message_cbor(TS_STATUS_BAD_REQUEST);
+    return bin_response(TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
+int ThingSet::bin_fetch(const DataNode *parent, unsigned int pos_payload)
 {
     /*
      * Remark: the parent node is currently still ignored. Any found data object is fetched.
@@ -260,11 +260,11 @@ int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
     unsigned int pos_resp = 0;
     uint16_t num_elements, element = 0;
 
-    pos_resp += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
+    pos_resp += bin_response(TS_STATUS_CONTENT);   // init response buffer
 
     pos_req += cbor_num_elements(&req[pos_req], &num_elements);
     if (num_elements != 1 && (req[pos_payload] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
 
     //printf("fetch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -282,21 +282,21 @@ int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
         node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_BAD_REQUEST);
+            return bin_response(TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
         const DataNode* data_node = get_node(id);
         if (data_node == NULL) {
-            return status_message_cbor(TS_STATUS_NOT_FOUND);
+            return bin_response(TS_STATUS_NOT_FOUND);
         }
         if (!(data_node->access & TS_READ_MASK)) {
-            return status_message_cbor(TS_STATUS_UNAUTHORIZED);
+            return bin_response(TS_STATUS_UNAUTHORIZED);
         }
 
         num_bytes = cbor_serialize_data_node(&resp[pos_resp], resp_size - pos_resp, data_node);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_RESPONSE_TOO_LARGE);
+            return bin_response(TS_STATUS_RESPONSE_TOO_LARGE);
         }
         pos_resp += num_bytes;
         element++;
@@ -306,29 +306,29 @@ int ThingSet::fetch_cbor(const DataNode *parent, unsigned int pos_payload)
         return pos_resp;
     }
     else {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
 }
 
-int ThingSet::sub_cbor(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch)
+int ThingSet::bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch)
 {
     uint8_t resp_tmp[1] = {};   // only one character as response expected
     req = cbor_data;
     req_len = len;
     resp = resp_tmp;
     resp_size = sizeof(resp_tmp);
-    patch_cbor(NULL, 1, auth_flags, sub_ch);
+    bin_patch(NULL, 1, auth_flags, sub_ch);
     return resp[0];
 }
 
-int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+int ThingSet::bin_patch(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
     uint16_t sub_ch)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
 
     if ((req[pos_req] & CBOR_TYPE_MASK) != CBOR_MAP) {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
     pos_req += cbor_num_elements(&req[pos_req], &num_elements);
 
@@ -343,7 +343,7 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
         node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_BAD_REQUEST);
+            return bin_response(TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
@@ -351,14 +351,14 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
         if (node) {
             if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (node->access & TS_WRITE_MASK) {
-                    return status_message_cbor(TS_STATUS_UNAUTHORIZED);
+                    return bin_response(TS_STATUS_UNAUTHORIZED);
                 }
                 else {
-                    return status_message_cbor(TS_STATUS_FORBIDDEN);
+                    return bin_response(TS_STATUS_FORBIDDEN);
                 }
             }
             else if (parent && node->parent != parent->id) {
-                return status_message_cbor(TS_STATUS_NOT_FOUND);
+                return bin_response(TS_STATUS_NOT_FOUND);
             }
             else if (sub_ch && !(node->pubsub & sub_ch)) {
                 // ignore element
@@ -376,12 +376,12 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
                 num_bytes = cbor_size(&req[pos_req]);
             }
             else {
-                return status_message_cbor(TS_STATUS_NOT_FOUND);
+                return bin_response(TS_STATUS_NOT_FOUND);
             }
         }
 
         if (num_bytes == 0) {
-            return status_message_cbor(TS_STATUS_BAD_REQUEST);
+            return bin_response(TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
@@ -389,42 +389,42 @@ int ThingSet::patch_cbor(const DataNode *parent, unsigned int pos_payload, uint1
     }
 
     if (element == num_elements) {
-        return status_message_cbor(TS_STATUS_CHANGED);
+        return bin_response(TS_STATUS_CHANGED);
     } else {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
 }
 
-int ThingSet::exec_cbor(const DataNode *node, unsigned int pos_payload)
+int ThingSet::bin_exec(const DataNode *node, unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
 
     if ((req[pos_req] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
     pos_req += cbor_num_elements(&req[pos_req], &num_elements);
 
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
         if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
-            return status_message_cbor(TS_STATUS_UNAUTHORIZED);
+            return bin_response(TS_STATUS_UNAUTHORIZED);
         }
     }
     else {
-        return status_message_cbor(TS_STATUS_FORBIDDEN);
+        return bin_response(TS_STATUS_FORBIDDEN);
     }
 
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].parent == node->id) {
             if (element >= num_elements) {
                 // more child nodes found than parameters were passed
-                return status_message_cbor(TS_STATUS_BAD_REQUEST);
+                return bin_response(TS_STATUS_BAD_REQUEST);
             }
             int num_bytes = cbor_deserialize_data_node(&req[pos_req], &data_nodes[i]);
             if (num_bytes == 0) {
                 // deserializing the value was not successful
-                return status_message_cbor(TS_STATUS_UNSUPPORTED_FORMAT);
+                return bin_response(TS_STATUS_UNSUPPORTED_FORMAT);
             }
             pos_req += num_bytes;
             element++;
@@ -433,17 +433,17 @@ int ThingSet::exec_cbor(const DataNode *node, unsigned int pos_payload)
 
     if (num_elements > element) {
         // more parameters passed than child nodes found
-        return status_message_cbor(TS_STATUS_BAD_REQUEST);
+        return bin_response(TS_STATUS_BAD_REQUEST);
     }
 
     // if we got here, finally create function pointer and call function
     void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
     fun();
 
-    return status_message_cbor(TS_STATUS_VALID);
+    return bin_response(TS_STATUS_VALID);
 }
 
-int ThingSet::pub_cbor(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
+int ThingSet::bin_pub(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
 {
     buf[0] = TS_PUBMSG;
     int len = 1;
@@ -504,10 +504,10 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::get_cbor(const DataNode *parent, bool values, bool ids_only)
+int ThingSet::bin_get(const DataNode *parent, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
-    len += status_message_cbor(TS_STATUS_CONTENT);   // init response buffer
+    len += bin_response(TS_STATUS_CONTENT);   // init response buffer
 
     // find out number of elements
     int num_elements = 0;
@@ -544,7 +544,7 @@ int ThingSet::get_cbor(const DataNode *parent, bool values, bool ids_only)
             }
 
             if (num_bytes == 0) {
-                return status_message_cbor(TS_STATUS_RESPONSE_TOO_LARGE);
+                return bin_response(TS_STATUS_RESPONSE_TOO_LARGE);
             } else {
                 len += num_bytes;
             }

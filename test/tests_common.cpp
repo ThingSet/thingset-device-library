@@ -33,7 +33,7 @@ int hex2bin(char *const hex, uint8_t *bin, size_t bin_size)
     return pos;
 }
 
-void _patch_json(char const *name, char const *value)
+void _txt_patch(char const *name, char const *value)
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf {\"%s\":%s}", name, value);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -41,7 +41,7 @@ void _patch_json(char const *name, char const *value)
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 }
 
-int _fetch_json(char const *name, char *value_read)
+int _txt_fetch(char const *name, char *value_read)
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!conf \"%s\"", name);
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
@@ -59,7 +59,7 @@ int _fetch_json(char const *name, char *value_read)
 }
 
 // returns length of read value
-int _fetch_cbor(uint16_t id, char *value_read)
+int _bin_fetch(uint16_t id, char *value_read)
 {
     uint8_t req[] = {
         TS_FETCH,
@@ -77,7 +77,7 @@ int _fetch_cbor(uint16_t id, char *value_read)
 }
 
 // returns length of read value
-void _patch_cbor(uint16_t id, char *value)
+void _bin_patch(uint16_t id, char *value)
 {
     unsigned int len = cbor_size((uint8_t*)value);
 
@@ -103,8 +103,8 @@ void _json2cbor(char const *name, char const *json_value, uint16_t id, const cha
 
     //printf("json2cbor(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
-    _patch_json(name, json_value);
-    len = _fetch_cbor(id, buf);
+    _txt_patch(name, json_value);
+    len = _bin_fetch(id, buf);
 
     TEST_ASSERT_EQUAL_HEX8_ARRAY(cbor_value, buf, len);
 }
@@ -118,13 +118,13 @@ void _cbor2json(char const *name, char const *json_value, uint16_t id, char cons
 
     //printf("cbor2json(\"%s\", \"%s\", 0x%x, 0x(%s) )\n", name, json_value, id, cbor_value_hex);
 
-    _patch_cbor(id, cbor_value);
-    _fetch_json(name, buf);
+    _bin_patch(id, cbor_value);
+    _txt_fetch(name, buf);
 
     TEST_ASSERT_EQUAL_STRING(json_value, buf);
 }
 
-void patch_json_fetch_cbor()
+void txt_patch_bin_fetch()
 {
     // uint16
     _json2cbor("ui16", "0", 0x6005, "00");
@@ -216,7 +216,7 @@ void patch_json_fetch_cbor()
 }
 
 
-void patch_cbor_fetch_json()
+void bin_patch_txt_fetch()
 {
     // uint16
     _cbor2json("ui16", "0", 0x6005, "00");
@@ -313,8 +313,8 @@ void tests_common()
     UNITY_BEGIN();
 
     // data conversion tests
-    RUN_TEST(patch_json_fetch_cbor);
-    RUN_TEST(patch_cbor_fetch_json);
+    RUN_TEST(txt_patch_bin_fetch);
+    RUN_TEST(bin_patch_txt_fetch);
 
     UNITY_END();
 }

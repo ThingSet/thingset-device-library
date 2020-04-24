@@ -251,7 +251,7 @@ void test_bin_get_output_names_values()
 void test_bin_pub()
 {
     uint8_t bin[100];
-    ts.pub_cbor(bin, sizeof(bin), PUB_SER);
+    ts.bin_pub(bin, sizeof(bin), PUB_SER);
 
     TEST_ASSERT_EQUAL_UINT8(TS_PUBMSG, bin[0]);
 
@@ -278,7 +278,7 @@ void test_bin_sub()
     uint8_t msg_bin[100];
     int len = hex2bin(msg_hex, msg_bin, sizeof(msg_bin));
 
-    int ret = ts.sub_cbor(msg_bin, len, TS_WRITE_MASK, PUB_SER);
+    int ret = ts.bin_sub(msg_bin, len, TS_WRITE_MASK, PUB_SER);
 
     TEST_ASSERT_EQUAL_HEX8(TS_STATUS_CHANGED, ret);
 }
