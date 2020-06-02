@@ -2,6 +2,7 @@
 #define __JSMN_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,11 +42,11 @@ enum jsmnerr {
  */
 typedef struct {
 	jsmntype_t type;
-	int start;
-	int end;
-	int size;
+	int16_t start;
+	int16_t end;
+	int16_t size;
 #ifdef JSMN_PARENT_LINKS
-	int parent;
+	int16_t parent;
 #endif
 } jsmntok_t;
 
@@ -54,9 +55,9 @@ typedef struct {
  * the string being parsed now and current position in that string
  */
 typedef struct {
-	unsigned int pos; /**< offset in the JSON string */
-	unsigned int toknext; /**< next token to allocate */
-	int toksuper; /**< superior token node, e.g parent object or array */
+	int16_t pos; /**< offset in the JSON string */
+	int16_t toknext; /**< next token to allocate */
+	int16_t toksuper; /**< superior token node, e.g parent object or array */
 } jsmn_parser;
 
 /**
