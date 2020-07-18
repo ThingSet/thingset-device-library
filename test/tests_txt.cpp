@@ -26,12 +26,56 @@ extern bool b;
 extern bool pub_serial_enable;
 extern ArrayInfo pub_serial_array;
 
-void test_txt_wrong_command()
+void test_txt_get_output_names()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!abcd \"f32\"");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output/");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
+}
+
+void test_txt_get_output_names_values()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}", resp_buf);
+}
+
+void test_txt_fetch_array()
+{
+    f32 = 52.80;
+    b = false;
+    i32 = 50;
+
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"f32\",\"bool\",\"i32\"]");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [52.80,false,50]", resp_buf);
+}
+
+void test_txt_fetch_rounded()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"f32_rounded\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
+}
+
+void test_txt_fetch_int32_array()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayi32\"]");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [[4,2,8,4]]", resp_buf);
+}
+
+void test_txt_fetch_float_array()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayfloat\"]");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [[2.27,3.44]]", resp_buf);
 }
 
 void test_txt_patch_wrong_data_structure()
@@ -81,67 +125,22 @@ void test_txt_patch_unknown_node()
     TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
-void test_txt_fetch_array()
-{
-    f32 = 52.80;
-    b = false;
-    i32 = 50;
+bool conf_callback_called;
 
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"f32\",\"bool\",\"i32\"]");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [52.80,false,50]", resp_buf);
+void conf_callback(void)        // implement function as defined in test_data.h
+{
+    conf_callback_called = 1;
 }
 
-void test_txt_fetch_rounded()
+void test_txt_conf_callback()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"f32_rounded\"");
+    conf_callback_called = 0;
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"i32\":52}");
+
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
-}
-
-void test_txt_get_output_names()
-{
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output/");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
-}
-
-void test_txt_get_output_names_values()
-{
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?output");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}", resp_buf);
-}
-
-void test_txt_fetch_int32_array()
-{
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayi32\"]");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [[4,2,8,4]]", resp_buf);
-}
-
-void test_txt_fetch_float_array()
-{
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayfloat\"]");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [[2.27,3.44]]", resp_buf);
-}
-
-void test_txt_pub_msg()
-{
-    int resp_len = ts.txt_pub((char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
-//    int resp_len = ts.txt_pub((char *)resp_buf, TS_RESP_BUFFER_LEN,
-//        (node_id_t *)pub_serial_array.ptr, pub_serial_array.num_elements);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(
-        "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}",
-        resp_buf);
+    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
+    TEST_ASSERT_EQUAL(1, conf_callback_called);
 }
 
 bool dummy_called_flag;
@@ -162,22 +161,67 @@ void test_txt_exec()
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-bool conf_callback_called;
-
-void conf_callback(void)        // implement function as defined in test_data.h
+void test_txt_pub_msg()
 {
-    conf_callback_called = 1;
+    int resp_len = ts.txt_pub((char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}",
+        resp_buf);
 }
 
-void test_txt_conf_callback()
+void test_txt_pub_list_channels()
 {
-    conf_callback_called = 0;
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"i32\":52}");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"serial\",\"can\"]", resp_buf);
+}
 
+void test_txt_pub_enable()
+{
+    pub_serial_enable = false;
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=pub/serial {\"Enable\":true}");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
-    TEST_ASSERT_EQUAL(1, conf_callback_called);
+    TEST_ASSERT_EQUAL(pub_serial_enable, true);
+}
+
+void test_txt_pub_delete_append_node()
+{
+    // before change
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
+
+    // delete "Ambient_degC"
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "-pub/serial/IDs \"Ambient_degC\"");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":82 Deleted.", resp_buf);
+
+    // check if it was deleted
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]", resp_buf);
+
+    // append "Ambient_degC" again
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "+pub/serial/IDs \"Ambient_degC\"");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":81 Created.", resp_buf);
+
+    // check if it was appended
+    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
+    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(
+        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
 }
 
 void test_txt_auth_user()
@@ -222,6 +266,14 @@ void test_txt_auth_root()
     TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
 }
 
+void test_txt_auth_long_password()
+{
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"012345678901234567890123456789\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":AF Unsupported Content-Format.", resp_buf);
+}
+
 void test_txt_auth_failure()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"abc\"");
@@ -233,14 +285,6 @@ void test_txt_auth_failure()
     resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
-}
-
-void test_txt_auth_long_password()
-{
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!auth \"012345678901234567890123456789\"");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":AF Unsupported Content-Format.", resp_buf);
 }
 
 void test_txt_auth_reset()
@@ -261,22 +305,12 @@ void test_txt_auth_reset()
     TEST_ASSERT_EQUAL_STRING(":A1 Unauthorized.", resp_buf);
 }
 
-void test_txt_pub_list_channels()
+void test_txt_wrong_command()
 {
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/");
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "!abcd \"f32\"");
     int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":85 Content. [\"serial\",\"can\"]", resp_buf);
-}
-
-void test_txt_pub_enable()
-{
-    pub_serial_enable = false;
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=pub/serial {\"Enable\":true}");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":84 Changed.", resp_buf);
-    TEST_ASSERT_EQUAL(pub_serial_enable, true);
+    TEST_ASSERT_EQUAL_STRING(":A4 Not Found.", resp_buf);
 }
 
 void test_txt_get_endpoint()
@@ -290,42 +324,6 @@ void test_txt_get_endpoint()
     node = ts.get_endpoint("conf/", strlen("conf/"));
     TEST_ASSERT_NOT_NULL(node);
     TEST_ASSERT_EQUAL(node->id, ID_CONF);
-}
-
-void test_txt_pub_delete_append_node()
-{
-    // before change
-    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
-    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(
-        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
-
-    // delete "Ambient_degC"
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "-pub/serial/IDs \"Ambient_degC\"");
-    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":82 Deleted.", resp_buf);
-
-    // check if it was deleted
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
-    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(
-        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]", resp_buf);
-
-    // append "Ambient_degC" again
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "+pub/serial/IDs \"Ambient_degC\"");
-    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(":81 Created.", resp_buf);
-
-    // check if it was appended
-    req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?pub/serial/IDs");
-    resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
-    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
-    TEST_ASSERT_EQUAL_STRING(
-        ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]", resp_buf);
 }
 
 void tests_text_mode()

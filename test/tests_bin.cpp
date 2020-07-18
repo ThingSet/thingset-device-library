@@ -23,6 +23,66 @@ extern ArrayInfo float32_array;
 
 extern ArrayInfo pub_serial_array;
 
+void test_bin_get_output_ids()
+{
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
+
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
+        "85 83 "     // successful response: array with 3 elements
+        "18 71 "
+        "18 72 "
+        "18 73 ";
+
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
+}
+
+void test_bin_get_output_names()
+{
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
+
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
+        "85 83 "     // successful response: array with 3 elements
+        "65 42 61 74 5F 56 "
+        "65 42 61 74 5F 41 "
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
+
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
+}
+
+void test_bin_get_output_names_values()
+{
+    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
+
+    uint8_t resp[100];
+    ts.process(req, sizeof(req), resp, sizeof(resp));
+
+    char resp_hex[] =
+        "85 A3 "     // successful response: map with 3 elements
+        "65 42 61 74 5F 56 "
+        "FA 41 61 99 9A "        // 14.1
+        "65 42 61 74 5F 41 "
+        "FA 40 A4 28 F6 "        // 5.13
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
+        "16";
+
+    uint8_t resp_expected[100];
+    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
+}
+
 void test_bin_patch_multiple_nodes()
 {
     char req_hex[] =
@@ -188,66 +248,6 @@ void test_bin_patch_rounded_float()
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
 }
 
-void test_bin_get_output_ids()
-{
-    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
-
-    uint8_t resp[100];
-    ts.process(req, sizeof(req), resp, sizeof(resp));
-
-    char resp_hex[] =
-        "85 83 "     // successful response: array with 3 elements
-        "18 71 "
-        "18 72 "
-        "18 73 ";
-
-    uint8_t resp_expected[100];
-    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
-}
-
-void test_bin_get_output_names()
-{
-    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
-
-    uint8_t resp[100];
-    ts.process(req, sizeof(req), resp, sizeof(resp));
-
-    char resp_hex[] =
-        "85 83 "     // successful response: array with 3 elements
-        "65 42 61 74 5F 56 "
-        "65 42 61 74 5F 41 "
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
-
-    uint8_t resp_expected[100];
-    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
-}
-
-void test_bin_get_output_names_values()
-{
-    uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
-
-    uint8_t resp[100];
-    ts.process(req, sizeof(req), resp, sizeof(resp));
-
-    char resp_hex[] =
-        "85 A3 "     // successful response: map with 3 elements
-        "65 42 61 74 5F 56 "
-        "FA 41 61 99 9A "        // 14.1
-        "65 42 61 74 5F 41 "
-        "FA 40 A4 28 F6 "        // 5.13
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
-        "16";
-
-    uint8_t resp_expected[100];
-    int len = hex2bin(resp_hex, resp_expected, sizeof(resp_expected));
-
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, len);
-}
-
 void test_bin_pub()
 {
     uint8_t bin[100];
@@ -286,7 +286,8 @@ void test_bin_pub_can()
 
     // third call (should not find further nodes)
     len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
-    TEST_ASSERT_EQUAL(-1, len);}
+    TEST_ASSERT_EQUAL(-1, len);
+}
 
 void test_bin_sub()
 {

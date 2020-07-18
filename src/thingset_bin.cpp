@@ -464,7 +464,8 @@ int ThingSet::bin_pub(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
             size_t num_bytes = cbor_serialize_data_node(&buf[len], buf_size - len, &data_nodes[i]);
             if (num_bytes == 0) {
                 return 0;
-            } else {
+            }
+            else {
                 len += num_bytes;
             }
         }
