@@ -274,15 +274,20 @@ void test_bin_pub_can()
     uint32_t msg_id;
     uint8_t can_data[8];
 
+    uint8_t Bat_V_hex[] = { 0xFA, 0x41, 0x61, 0x99, 0x9a };
+    uint8_t Bat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
+
     // first call (should return Bat_V)
     int len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
     TEST_ASSERT_NOT_EQUAL(-1, len);
     TEST_ASSERT_EQUAL_HEX(0x71, (msg_id & 0x00FFFF00) >> 8);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(Bat_V_hex, can_data, 5);
 
     // second call (should return Bat_A)
     len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);
     TEST_ASSERT_NOT_EQUAL(-1, len);
     TEST_ASSERT_EQUAL_HEX(0x72, (msg_id & 0x00FFFF00) >> 8);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(Bat_A_hex, can_data, 5);
 
     // third call (should not find further nodes)
     len = ts.bin_pub_can(start_pos, PUB_CAN, 123, msg_id, can_data);

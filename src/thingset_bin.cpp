@@ -473,6 +473,38 @@ int ThingSet::bin_pub(uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
     return len;
 }
 
+int ThingSet::bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id,
+    uint32_t &msg_id, uint8_t (&msg_data)[8])
+{
+    int msg_len = -1;
+    const int msg_priority = 6;
+
+    for (unsigned int i = start_pos; i < num_nodes; i++) {
+        if (data_nodes[i].pubsub & pub_ch) {
+            msg_id = msg_priority << 26
+                | (1U << 24) | (1U << 25)   // identify as publication message
+                | data_nodes[i].id << 8
+                | can_dev_id;
+
+            msg_len = cbor_serialize_data_node(msg_data, 8, &data_nodes[i]);
+
+            if (msg_len > 0) {
+                // node found and successfully encoded, increase start pos for next run
+                start_pos = i + 1;
+                break;
+            }
+            // else: data too long, take next node
+        }
+    }
+
+    if (msg_len <= 0) {
+        // no more nodes found, reset position
+        start_pos = 0;
+    }
+
+    return msg_len;
+}
+
 /*
 int ThingSet::name_cbor(void)
 {

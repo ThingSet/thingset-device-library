@@ -309,6 +309,9 @@ public:
     /**
      * Encode a publication message in CAN message format for supplied data node
      *
+     * The data may only be 8 bytes long. If the actual length of a node exceeds the available
+     * length, the node is silently ignored and the function continues with the next one.
+     *
      * @param start_pos Position in data_nodes array to start searching
      *                  This value is updated with the next node found to allow iterating over all
      *                  nodes for this channel. It should be set to 0 to start from the beginning.
@@ -317,8 +320,7 @@ public:
      * @param msg_id reference to can message id storage
      * @param msg_data reference to the buffer where the publication message should be stored
      *
-     * @returns Actual length of the message_data or -1 if not encodable / in case of error,
-     *          (msg_len 0 is valid, just the id is transmitted)
+     * @returns Actual length of the message_data or -1 if not encodable / in case of error
      */
     int bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
         uint8_t (&msg_data)[8]);
