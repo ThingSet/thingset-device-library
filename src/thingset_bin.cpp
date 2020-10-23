@@ -234,7 +234,7 @@ int ThingSet::bin_process()
         return bin_fetch(endpoint, pos);
     }
     else if (req[0] == TS_PATCH && endpoint) {
-        return bin_patch(endpoint, pos, _auth_flags, 0);
+        int response = bin_patch(endpoint, pos, _auth_flags, 0);
 
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && resp[0] == TS_STATUS_CHANGED) {
@@ -242,7 +242,7 @@ int ThingSet::bin_process()
             void (*fun)(void) = reinterpret_cast<void(*)()>(endpoint->data);
             fun();
         }
-
+        return response;
     }
     else if (req[0] == TS_POST) {
         return bin_exec(endpoint, pos);
