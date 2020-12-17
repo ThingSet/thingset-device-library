@@ -324,6 +324,19 @@ void test_txt_get_endpoint()
     node = ts.get_endpoint("conf/", strlen("conf/"));
     TEST_ASSERT_NOT_NULL(node);
     TEST_ASSERT_EQUAL(node->id, ID_CONF);
+
+    node = ts.get_endpoint("/", strlen("/"));
+    TEST_ASSERT_NULL(node);
+
+    // special case where the data contains forward slashes
+    node = ts.get_endpoint("conf \"this/is/a/path\"", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(node);
+    TEST_ASSERT_EQUAL(node->id, ID_CONF);
+
+    // special case where the data contains forward slashes
+    node = ts.get_endpoint("exec/reset \"this/is/a/path\"", strlen("exec/reset"));
+    TEST_ASSERT_NOT_NULL(node);
+    TEST_ASSERT_EQUAL(node->id, 0xE1);
 }
 
 void tests_text_mode()

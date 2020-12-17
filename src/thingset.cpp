@@ -120,30 +120,32 @@ DataNode *const ThingSet::get_node(node_id_t id)
 
 DataNode *const ThingSet::get_endpoint(const char *path, size_t len)
 {
-    const DataNode *node;
+    DataNode *node;
     const char *start = path;
-    const char *end = strchr(path, '/');
+    const char *end;
     uint16_t parent = 0;
 
     // maximum depth of 10 assumed
     for (int i = 0; i < 10; i++) {
-        if (end != NULL) {
-            if (end - path != (int)len - 1) {
-                node = get_node(start, end - start, parent);
-                if (!node) {
-                    return NULL;
-                }
-                parent = node->id;
-                start = end + 1;
-                end = strchr(start, '/');
-            }
-            else {
-                // resource ends with trailing slash
-                return get_node(start, end - start, parent);
-            }
+        end = strchr(start, '/');
+        if (end == NULL || end >= path + len) {
+            // we are at the end of the path
+            return get_node(start, path + len - start, parent);
+        }
+        else if (end == path + len - 1) {
+            // path ends with slash
+            return get_node(start, end - start, parent);
         }
         else {
-            return get_node(start, path + len - start, parent);
+            // go further down the path
+            node = get_node(start, end - start, parent);
+            if (node) {
+                parent = node->id;
+                start = end + 1;
+            }
+            else {
+                return NULL;
+            }
         }
     }
     return NULL;
