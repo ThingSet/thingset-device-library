@@ -362,8 +362,8 @@ public:
     /**
      * Get the endpoint node of a provided path
      *
-     * @param path Path of with multiple node names divided by forward slash
-     * @param len Length of the node name
+     * @param path Path with multiple node names separated by forward slash
+     * @param len Length of the entire path
      *
      * @returns Pointer to data node or NULL if node is not found
      */
