@@ -477,14 +477,12 @@ int ThingSet::bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id,
     uint32_t &msg_id, uint8_t (&msg_data)[8])
 {
     int msg_len = -1;
-    const int msg_priority = 6;
 
     for (unsigned int i = start_pos; i < num_nodes; i++) {
         if (data_nodes[i].pubsub & pub_ch) {
-            msg_id = msg_priority << 26
-                | (1U << 24) | (1U << 25)   // identify as publication message
-                | data_nodes[i].id << 8
-                | can_dev_id;
+            msg_id = TS_CAN_BASE_PUBSUB | TS_CAN_PRIO_PUBSUB_LOW
+                | TS_CAN_DATA_ID_SET(data_nodes[i].id)
+                | TS_CAN_SOURCE_SET(can_dev_id);
 
             msg_len = cbor_serialize_data_node(msg_data, 8, &data_nodes[i]);
 
