@@ -72,6 +72,10 @@ int ThingSet::txt_response(int code)
         case TS_STATUS_NOT_IMPLEMENTED:
             pos = snprintf((char *)resp, resp_size, ":%.2X Not Implemented.", code);
             break;
+        // ThingSet specific errors
+        case TS_STATUS_RESPONSE_TOO_LARGE:
+            pos = snprintf((char *)resp, resp_size, ":%.2X Response too large.", code);
+            break;
         default:
             pos = snprintf((char *)resp, resp_size, ":%.2X Error.", code);
             break;
@@ -200,8 +204,11 @@ int ThingSet::json_serialize_name_value(char *buf, size_t size, const DataNode* 
 {
     size_t pos = snprintf(buf, size, "\"%s\":", node->name);
 
-    if (pos < size) {
-        return pos + json_serialize_value(&buf[pos], size - pos, node);
+    int len_value = json_serialize_value(&buf[pos], size - pos, node);
+    pos += len_value;
+
+    if (len_value > 0 && pos < size) {
+        return pos;
     }
     else {
         return 0;
@@ -570,8 +577,14 @@ int ThingSet::txt_get(const DataNode *parent_node, bool include_values)
                     // bad request, as we can't read nternal path node's values
                     return txt_response(TS_STATUS_BAD_REQUEST);
                 }
-                len += json_serialize_name_value((char *)&resp[len], resp_size - len,
+                int ret = json_serialize_name_value((char *)&resp[len], resp_size - len,
                     &data_nodes[i]);
+                if (ret > 0) {
+                    len += ret;
+                }
+                else {
+                    return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
+                }
             }
             else {
                 len += snprintf((char *)&resp[len],
