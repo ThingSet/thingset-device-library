@@ -8,6 +8,7 @@
 #include "thingset.h"
 #include "jsmn.h"
 
+#include <math.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -15,6 +16,62 @@
 #include <errno.h>
 #include <cinttypes>
 
+#if !TS_PRINTF_FLOAT_SUPPORT
+
+/*
+ * Custom and simplified float to string conversion to avoid enabling float support for printf
+ *
+ * This function only supports the basic features required for JSON. Not all edge cases may have
+ * been tested. For 100% safe way use lib-c implementation.
+ */
+static int f2json(float value, int precision, char *buf, size_t size)
+{
+    int32_t integer;        // digits before the comma
+    int32_t fraction;       // digits behind the comma
+
+    if (isnan(value) || isinf(value)) {
+        /* JSON spec does not support NaN and Inf, so we need to use null instead */
+        return snprintf(buf, size, "null");
+    }
+
+    if (precision > 10) {
+        // an int32 can store max. 10 digits
+        return 0;
+    }
+
+    if (precision > 0) {
+        integer = (int32_t)value;
+
+        /* Using possibly less efficient for loop instead of pow function with large footprint to
+         * get multiplier for desired precision. Precision is increased by 1 digit to implement
+         * correct rounding prior to casting below
+         */
+        int32_t factor = 1;
+        for (int i = 0; i <= precision; i++) {
+            factor *= 10;
+        }
+
+        if (value > 0) {
+            fraction = (int32_t)((value - integer) * factor);
+        }
+        else {
+            fraction = (int32_t)((-value + integer) * factor);
+        }
+
+        /* +5 instead of +0.5 for rounding as we multiplied by 10 before */
+        fraction = (fraction + 5) / 10;
+
+        return snprintf(buf, size, "%" PRIi32 ".%.*" PRIi32,
+            (int32_t)value, precision, fraction);
+    }
+    else {
+        /* negative sign has to be treated separately for correct rounding */
+        return snprintf(buf, size, "%" PRIi32, value > 0 ?
+            (int32_t)(value + 0.5) : (int32_t)(value - 0.5));
+    }
+}
+
+#endif /* !TS_PRINTF_FLOAT_SUPPORT */
 
 int ThingSet::txt_response(int code)
 {
@@ -93,6 +150,7 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
 {
     size_t pos = 0;
     const DataNode *sub_node;
+    float value;
 
     switch (node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -116,8 +174,21 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
         pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ",", *((int16_t *)node->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&buf[pos], size - pos, "%.*f,", node->detail,
-                *((float *)node->data));
+        value = *((float *)node->data);
+#if TS_PRINTF_FLOAT_SUPPORT
+        if (isnan(value) || isinf(value)) {
+            /* JSON spec does not support NaN and Inf, so we need to use null instead */
+            return snprintf(buf, size, "null,");
+        }
+        else {
+            pos = snprintf(&buf[pos], size - pos, "%.*f,", node->detail, value);
+        }
+#else
+        pos = f2json(value, node->detail, &buf[pos], size - pos - 1);
+        if (pos > 0) {
+            buf[pos++] = ',';
+        }
+#endif
         break;
     case TS_T_BOOL:
         pos = snprintf(&buf[pos], size - pos, "%s,",

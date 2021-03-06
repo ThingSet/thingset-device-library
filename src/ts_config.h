@@ -36,4 +36,20 @@
 #define TS_64BIT_TYPES_SUPPORT 0        // default: no support
 #endif
 
+/*
+ * Specify if the used lib-c implementation supports printing floats
+ *
+ * If float is not supported, a low-footprint custom implementation will be used for JSON output.
+ *
+ * Important: The custom implementation is not guaranteed to produce correct results under all
+ * circumstances (e.g. very large or small numbers). If unsure, enable lib-c float support!
+ */
+#ifndef TS_PRINTF_FLOAT_SUPPORT
+#ifdef CONFIG_NEWLIB_LIBC_FLOAT_PRINTF
+#define TS_PRINTF_FLOAT_SUPPORT 1       // float support provided by Zephyr
+#else
+#define TS_PRINTF_FLOAT_SUPPORT 0       // use custom implementation
+#endif
+#endif
+
 #endif /* __TS_CONFIG_H_ */
