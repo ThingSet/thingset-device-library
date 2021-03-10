@@ -40,6 +40,9 @@ static int cbor_deserialize_data_node(uint8_t *buf, const DataNode *data_node)
         return cbor_deserialize_bool(buf, (bool *)data_node->data);
     case TS_T_STRING:
         return cbor_deserialize_string(buf, (char *)data_node->data, data_node->detail);
+    case TS_T_BYTES:
+        return cbor_deserialize_bytes(buf, ((TsBytesBuffer *)data_node->data)->bytes,
+            data_node->detail, &(((TsBytesBuffer *)data_node->data)->num_bytes));
     case TS_T_ARRAY:
         return cbor_deserialize_array_type(buf, data_node);
     default:
@@ -129,6 +132,9 @@ static int cbor_serialize_data_node(uint8_t *buf, size_t size, const DataNode *d
         return cbor_serialize_bool(buf, *((bool *)data_node->data), size);
     case TS_T_STRING:
         return cbor_serialize_string(buf, (char *)data_node->data, size);
+    case TS_T_BYTES:
+        return cbor_serialize_bytes(buf, ((TsBytesBuffer *)data_node->data)->bytes,
+            ((TsBytesBuffer *)data_node->data)->num_bytes, size);
     case TS_T_ARRAY:
         return cbor_serialize_array_type(buf, size, data_node);
     default:

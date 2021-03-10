@@ -66,6 +66,9 @@ ArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
 float B[100] = {2.27, 3.44};
 ArrayInfo float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
 
+uint8_t bytes[300] = {};
+TsBytesBuffer bytes_buf = { bytes, 0 };
+
 void dummy(void);
 void conf_callback(void);
 
@@ -211,6 +214,8 @@ static DataNode data_nodes[] = {
     TS_NODE_ARRAY(0x7003, "arrayi32", &int32_array, 0, ID_CONF, TS_ANY_RW, 0),
     // data_node->detail will specify the number of decimal places for float
     TS_NODE_ARRAY(0x7004, "arrayfloat", &float32_array, 2, ID_CONF, TS_ANY_RW, 0),
+
+    TS_NODE_BYTES(0x8000, "bytesbuf", &bytes_buf, sizeof(bytes), ID_CONF, TS_ANY_RW, 0),
 };
 
 #endif

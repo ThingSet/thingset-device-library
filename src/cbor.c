@@ -140,6 +140,31 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
     }
 }
 
+int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, size_t max_len)
+{
+    if (num_bytes < 24 && num_bytes + 1 <= max_len) {
+        data[0] = CBOR_BYTES | (uint8_t)num_bytes;
+        memcpy(&data[1], bytes, num_bytes);
+        return num_bytes + 1;
+    }
+    else if (num_bytes < 0xFF && num_bytes + 2 <= max_len) {
+        data[0] = CBOR_BYTES | CBOR_UINT8_FOLLOWS;
+        data[1] = (uint8_t)num_bytes;
+        memcpy((char*)&data[2], bytes, num_bytes);
+        return num_bytes + 2;
+    }
+    else if (num_bytes < 0xFFFF && num_bytes + 3 <= max_len) {
+        data[0] = CBOR_BYTES | CBOR_UINT16_FOLLOWS;
+        data[1] = (uint16_t)num_bytes >> 8;
+        data[2] = (uint16_t)num_bytes;
+        memcpy((char*)&data[3], bytes, num_bytes);
+        return num_bytes + 3;
+    }
+    else {    // too many bytes (more than 65535)
+        return 0;
+    }
+}
+
 int _serialize_num_elements(uint8_t *data, size_t num_elements, size_t max_len)
 {
     if (num_elements < 24 && max_len > 0) {
@@ -462,6 +487,42 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
         }
     }
     return 0;   // longer string not supported
+}
+
+int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes)
+{
+    uint8_t type = data[0] & CBOR_TYPE_MASK;
+    uint8_t info = data[0] & CBOR_INFO_MASK;
+    uint16_t len;
+
+    if (!bytes || type != CBOR_BYTES)
+        return 0;
+
+    if (info < 24) {
+        len = info;
+        if (len <= buf_size) {
+            memcpy(bytes, &data[1], len);
+            *num_bytes = len;
+            return len + 1;
+        }
+    }
+    else if (info == CBOR_UINT8_FOLLOWS) {
+        len = data[1];
+        if (len <= buf_size) {
+            memcpy(bytes, &data[2], len);
+            *num_bytes = len;
+            return len + 2;
+        }
+    }
+    else if (info == CBOR_UINT16_FOLLOWS) {
+        len = data[1] << 8 | data[2];
+        if (len <= buf_size) {
+            memcpy(bytes, &data[3], len);
+            *num_bytes = len;
+            return len + 3;
+        }
+    }
+    return 0;   // more bytes not supported
 }
 
 // stores size of map or array in num_elements
