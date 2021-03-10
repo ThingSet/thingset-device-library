@@ -349,14 +349,14 @@ void test_bin_serialize_long_string()
     for (unsigned int i = 0; i < sizeof(str); i++) {
         str[i] = 'T';
     }
-    str[299] = '\0';
+    str[256] = '\0';    // terminate string after 256 bytes
 
     int len_total = cbor_serialize_string(buf, str, sizeof(buf));
 
-    TEST_ASSERT_EQUAL_UINT(302, len_total);
+    TEST_ASSERT_EQUAL_UINT(256 + 3, len_total);     // strlen + below 3 bytes
     TEST_ASSERT_EQUAL_UINT(0x79, buf[0]);
-    TEST_ASSERT_EQUAL_UINT(0x01, buf[1]);   // 0x01 << 8 + 0x2C = 299
-    TEST_ASSERT_EQUAL_UINT(0x2B, buf[2]);
+    TEST_ASSERT_EQUAL_UINT(0x01, buf[1]);
+    TEST_ASSERT_EQUAL_UINT(0x00, buf[2]);           // null-termination is not stored
 }
 
 void tests_binary_mode()

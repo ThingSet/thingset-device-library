@@ -425,7 +425,7 @@ int cbor_deserialize_bool(uint8_t *data, bool *value)
     return 0;
 }
 
-int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
+int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
@@ -433,14 +433,14 @@ int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
 
     //printf("deserialize string: \"%s\", len = %d, max_len = %d\n", (char*)&data[1], len, buf_size);
 
-    if (!value || type != CBOR_TEXT)
+    if (!str || type != CBOR_TEXT)
         return 0;
 
     if (info < 24) {
         len = info;
         if (len < buf_size) {
-            strncpy(value, (char*)&data[1], len);
-            value[len] = '\0';
+            strncpy(str, (char*)&data[1], len);
+            str[len] = '\0';
             //printf("deserialize string: \"%s\", len = %d, max_len = %d\n", (char*)&data[1], len, buf_size);
             return len + 1;
         }
@@ -448,17 +448,17 @@ int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size)
     else if (info == CBOR_UINT8_FOLLOWS) {
         len = data[1];
         if (len < buf_size) {
-            strncpy(value, (char*)&data[2], len);
-            value[len] = '\0';
-            return len + 1;
+            strncpy(str, (char*)&data[2], len);
+            str[len] = '\0';
+            return len + 2;
         }
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
         len = data[1] << 8 | data[2];
         if (len < buf_size) {
-            strncpy(value, (char*)&data[3], len);
-            value[len] = '\0';
-            return len + 1;
+            strncpy(str, (char*)&data[3], len);
+            str[len] = '\0';
+            return len + 3;
         }
     }
     return 0;   // longer string not supported

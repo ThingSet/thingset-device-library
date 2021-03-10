@@ -263,11 +263,12 @@ int cbor_deserialize_bool(uint8_t *data, bool *value);
  * Deserialize string
  *
  * @param data Buffer containing CBOR data with matching type
- * @param value Pointer to the variable where the value should be stored
+ * @param str Pointer to the buffer where the string should be stored
+ * @param buf_size Size of the string buffer including null-termination
  *
- * @returns Number of bytes read from buffer or 0 in case of error
+ * @returns Number of bytes read from data buffer or 0 in case of error
  */
-int cbor_deserialize_string(uint8_t *data, char *value, uint16_t buf_size);
+int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size);
 
 /**
  * Determine the number of elements in a map or an array
