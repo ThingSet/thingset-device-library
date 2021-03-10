@@ -62,6 +62,30 @@ void test_txt_fetch_rounded()
     TEST_ASSERT_EQUAL_STRING(":85 Content. 53", resp_buf);
 }
 
+void test_txt_fetch_nan()
+{
+    int nan = 0x7F800001;
+    f32 = *(float*)&nan;
+
+    TEST_ASSERT(isnan(f32));
+
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"f32\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. null", resp_buf);
+}
+
+void test_txt_fetch_inf()
+{
+    int inf = 0x7F800000;
+    f32 = *(float*)&inf;
+
+    size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"f32\"");
+    int resp_len = ts.process(req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
+    TEST_ASSERT_EQUAL(strlen((char *)resp_buf), resp_len);
+    TEST_ASSERT_EQUAL_STRING(":85 Content. null", resp_buf);
+}
+
 void test_txt_fetch_int32_array()
 {
     size_t req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf [\"arrayi32\"]");
@@ -350,6 +374,8 @@ void tests_text_mode()
     // FETCH request
     RUN_TEST(test_txt_fetch_array);
     RUN_TEST(test_txt_fetch_rounded);
+    RUN_TEST(test_txt_fetch_nan);
+    RUN_TEST(test_txt_fetch_inf);
     RUN_TEST(test_txt_fetch_int32_array);
     RUN_TEST(test_txt_fetch_float_array);
 

@@ -8,6 +8,7 @@
 #include "thingset.h"
 #include "jsmn.h"
 
+#include <math.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -93,6 +94,7 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
 {
     size_t pos = 0;
     const DataNode *sub_node;
+    float value;
 
     switch (node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -116,8 +118,14 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
         pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ",", *((int16_t *)node->data));
         break;
     case TS_T_FLOAT32:
-        pos = snprintf(&buf[pos], size - pos, "%.*f,", node->detail,
-                *((float *)node->data));
+        value = *((float *)node->data);
+        if (isnan(value) || isinf(value)) {
+            /* JSON spec does not support NaN and Inf, so we need to use null instead */
+            return snprintf(buf, size, "null,");
+        }
+        else {
+            pos = snprintf(&buf[pos], size - pos, "%.*f,", node->detail, value);
+        }
         break;
     case TS_T_BOOL:
         pos = snprintf(&buf[pos], size - pos, "%s,",
