@@ -140,6 +140,7 @@ enum TsType {
     TS_T_INT16,
     TS_T_FLOAT32,
     TS_T_STRING,
+    TS_T_BYTES,
     TS_T_ARRAY,
     TS_T_DECFRAC,       // CBOR decimal fraction
     TS_T_PATH,          // internal node to describe URI path
@@ -147,6 +148,14 @@ enum TsType {
     TS_T_EXEC,          // for exec data objects
     TS_T_PUBSUB
 };
+
+/**
+ * Data structure to specify a binary data buffer
+ */
+typedef struct {
+    uint8_t *bytes;             ///< Pointer to the buffer
+    uint16_t num_bytes;         ///< Actual number of bytes in the buffer
+} TsBytesBuffer;
 
 /**
  * Data structure to specify an array data node
@@ -204,6 +213,10 @@ static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
 static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
 #define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     {_id, _parent, _name, _string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
+
+static inline void *_bytes_to_void(TsBytesBuffer *ptr) { return (void *) ptr; }
+#define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, _bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _acc, _pubsub}
 
 static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \

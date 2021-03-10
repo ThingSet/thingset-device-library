@@ -23,6 +23,8 @@ extern ArrayInfo float32_array;
 
 extern ArrayInfo pub_serial_array;
 
+extern TsBytesBuffer bytes_buf;
+
 void test_bin_get_output_ids()
 {
     uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
@@ -359,6 +361,72 @@ void test_bin_serialize_long_string()
     TEST_ASSERT_EQUAL_UINT(0x00, buf[2]);           // null-termination is not stored
 }
 
+void test_bin_serialize_bytes()
+{
+    uint8_t bytes[300];
+    uint8_t cbor[400];
+
+    for (unsigned int i = 0; i < sizeof(bytes); i++) {
+        bytes[i] = i % 256;
+    }
+
+    // this should consider 0 as normal bytes and not terminate there
+    int len_total = cbor_serialize_bytes(cbor, bytes, sizeof(bytes), sizeof(cbor));
+
+    TEST_ASSERT_EQUAL_UINT(303, len_total);
+    TEST_ASSERT_EQUAL_UINT(0x59, cbor[0]);
+    TEST_ASSERT_EQUAL_UINT(0x01, cbor[1]);   // 0x01 << 8 + 0x2C = 300
+    TEST_ASSERT_EQUAL_UINT(0x2C, cbor[2]);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(bytes, &cbor[3], sizeof(bytes));
+}
+
+void test_bin_deserialize_bytes()
+{
+    uint8_t bytes[300];
+    uint8_t cbor[400] = { 0x59, 0x01, 0x2C };
+
+    for (unsigned int i = 0; i < sizeof(bytes); i++) {
+        cbor[i + 3] = i % 256;
+    }
+
+    uint16_t num_bytes;
+    int len_total = cbor_deserialize_bytes(cbor, bytes, sizeof(bytes), &num_bytes);
+
+    TEST_ASSERT_EQUAL_UINT(303, len_total);
+    TEST_ASSERT_EQUAL_UINT(300, num_bytes);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(&cbor[3], bytes, sizeof(bytes));
+}
+
+void test_bin_patch_fetch_bytes()
+{
+    uint8_t resp[100];
+
+    uint8_t req_patch[] = {
+        TS_PATCH,
+        0x18, ID_CONF,
+        0xA1,
+            0x19, 0x80, 0x00,
+            0x48, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07        // write 8 bytes
+    };
+
+    ts.process(req_patch, sizeof(req_patch), resp, 1);
+
+    TEST_ASSERT_EQUAL(0x84, resp[0]);
+    TEST_ASSERT_EQUAL(8, bytes_buf.num_bytes);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(&req_patch[8], bytes_buf.bytes, 8);
+
+    uint8_t req_get[] = { TS_FETCH, 0x18, ID_CONF, /*0x81,*/ 0x19, 0x80, 0x00 };
+
+    ts.process(req_get, sizeof(req_get), resp, sizeof(resp));
+
+    uint8_t resp_expected[] = {
+        0x85, /*0x81,*/
+        0x48, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+    };
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(resp_expected, resp, sizeof(resp_expected));
+}
+
 void tests_binary_mode()
 {
     UNITY_BEGIN();
@@ -389,6 +457,11 @@ void tests_binary_mode()
     // general tests
     RUN_TEST(test_bin_num_elem);
     RUN_TEST(test_bin_serialize_long_string);
+
+    // binary (bytes) data type
+    RUN_TEST(test_bin_serialize_bytes);
+    RUN_TEST(test_bin_deserialize_bytes);
+    RUN_TEST(test_bin_patch_fetch_bytes);
 
     UNITY_END();
 }

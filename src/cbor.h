@@ -135,6 +135,18 @@ int cbor_serialize_bool(uint8_t *data, bool value, size_t max_len);
 int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len);
 
 /**
+ * Serialize bytes
+ *
+ * @param data Buffer where CBOR data shall be stored
+ * @param bytes Pointer to string that should be be serialized
+ * @param num_bytes Number of bytes from the buffer to be serialized
+ * @param max_len Maximum remaining space in buffer (i.e. max length of serialized data)
+ *
+ * @returns Number of bytes added to buffer or 0 in case of error
+ */
+int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, size_t max_len);
+
+/**
  * Serialize the header (length field) of an array
  *
  * Actual elements of the array have to be serialized afterwards
@@ -269,6 +281,18 @@ int cbor_deserialize_bool(uint8_t *data, bool *value);
  * @returns Number of bytes read from data buffer or 0 in case of error
  */
 int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size);
+
+/**
+ * Deserialize bytes
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param bytes Pointer to the buffer where the data should be stored
+ * @param buf_size Size of the buffer
+ * @param num_bytes Pointer to a variable to store the actual number of bytes written to buffer
+ *
+ * @returns Number of bytes read from data buffer or 0 in case of error
+ */
+int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes);
 
 /**
  * Determine the number of elements in a map or an array
