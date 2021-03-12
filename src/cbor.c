@@ -20,25 +20,25 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
     if (max_len < 1) {
         return 0;   // error
     }
-    else if (value < 24) {
+    else if (value <= CBOR_NUM_MAX) {
         data[0] = CBOR_UINT | (uint8_t)value;
-        //printf("serialize: value = %.2X < 24, data: %.2X\n", (uint32_t)value, data[0]);
+        //printf("serialize: value = %.2X <= CBOR_NUM_MAX, data: %.2X\n", (uint32_t)value, data[0]);
         return 1;
     }
-    else if (value <= 0xFF && max_len >= 2) {
+    else if (value <= UINT8_MAX && max_len >= 2) {
         data[0] = CBOR_UINT | CBOR_UINT8_FOLLOWS;
         data[1] = value;
         //printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
         return 2;
     }
-    else if (value <= 0xFFFF && max_len >= 3) {
+    else if (value <= UINT16_MAX && max_len >= 3) {
         data[0] = CBOR_UINT | CBOR_UINT16_FOLLOWS;
         data[1] = value >> 8;
         data[2] = value;
         //printf("serialize: value = 0x%.4X <= 0xFFFF, data: %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2]);
         return 3;
     }
-    else if (value <= 0xFFFFFFFF && max_len >= 5) {
+    else if (value <= UINT32_MAX && max_len >= 5) {
         data[0] = CBOR_UINT | CBOR_UINT32_FOLLOWS;
         data[1] = value >> 24;
         data[2] = value >> 16;
@@ -117,18 +117,18 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
 
     //printf("serialize string: \"%s\", len = %d, max_len = %d\n", value, len, max_len);
 
-    if (len < 24 && len + 1 <= max_len) {
+    if (len <= CBOR_NUM_MAX && len + 1 <= max_len) {
         data[0] = CBOR_TEXT | (uint8_t)len;
         strcpy((char*)&data[1], value);
         return len + 1;
     }
-    else if (len < 0xFF && len + 2 <= max_len) {
+    else if (len < UINT8_MAX && len + 2 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)len;
         strcpy((char*)&data[2], value);
         return len + 2;
     }
-    else if (len < 0xFFFF && len + 3 <= max_len) {
+    else if (len < UINT16_MAX && len + 3 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT16_FOLLOWS;
         data[1] = (uint16_t)len >> 8;
         data[2] = (uint16_t)len;
@@ -142,18 +142,18 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
 
 int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, size_t max_len)
 {
-    if (num_bytes < 24 && num_bytes + 1 <= max_len) {
+    if (num_bytes <= CBOR_NUM_MAX && num_bytes + 1 <= max_len) {
         data[0] = CBOR_BYTES | (uint8_t)num_bytes;
         memcpy(&data[1], bytes, num_bytes);
         return num_bytes + 1;
     }
-    else if (num_bytes < 0xFF && num_bytes + 2 <= max_len) {
+    else if (num_bytes < UINT8_MAX && num_bytes + 2 <= max_len) {
         data[0] = CBOR_BYTES | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)num_bytes;
         memcpy((char*)&data[2], bytes, num_bytes);
         return num_bytes + 2;
     }
-    else if (num_bytes < 0xFFFF && num_bytes + 3 <= max_len) {
+    else if (num_bytes < UINT16_MAX && num_bytes + 3 <= max_len) {
         data[0] = CBOR_BYTES | CBOR_UINT16_FOLLOWS;
         data[1] = (uint16_t)num_bytes >> 8;
         data[2] = (uint16_t)num_bytes;
@@ -167,16 +167,16 @@ int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, 
 
 int _serialize_num_elements(uint8_t *data, size_t num_elements, size_t max_len)
 {
-    if (num_elements < 24 && max_len > 0) {
+    if (num_elements <= CBOR_NUM_MAX && max_len > 0) {
         data[0] |= (uint8_t)num_elements;
         return 1;
     }
-    else if (num_elements < 0xFF && max_len > 1) {
+    else if (num_elements < UINT8_MAX && max_len > 1) {
         data[0] |= CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)num_elements;
         return 2;
     }
-    else if (num_elements < 0xFFFF && max_len > 1) {
+    else if (num_elements < UINT16_MAX && max_len > 1) {
         data[0] |= CBOR_UINT16_FOLLOWS;
         data[1] = (uint16_t)num_elements >> 8;
         data[2] = (uint16_t)num_elements;
@@ -209,7 +209,7 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
 
     //printf("uint_data: %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
 
-    if (info < 24) {
+    if (info <= CBOR_NUM_MAX) {
         *bytes = info;
         return 1;
     }
@@ -461,7 +461,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
     if (!str || type != CBOR_TEXT)
         return 0;
 
-    if (info < 24) {
+    if (info <= CBOR_NUM_MAX) {
         len = info;
         if (len < buf_size) {
             strncpy(str, (char*)&data[1], len);
@@ -498,7 +498,7 @@ int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uin
     if (!bytes || type != CBOR_BYTES)
         return 0;
 
-    if (info < 24) {
+    if (info <= CBOR_NUM_MAX) {
         len = info;
         if (len <= buf_size) {
             memcpy(bytes, &data[1], len);
@@ -542,7 +542,7 @@ int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
         return 0;
     }
 
-    if (info < 24) {
+    if (info <= CBOR_NUM_MAX) {
         *num_elements = info;
         return 1;
     }
@@ -565,7 +565,7 @@ int cbor_size(uint8_t *data)
     uint8_t info = data[0] & CBOR_INFO_MASK;
 
     if (type == CBOR_UINT || type == CBOR_NEGINT) {
-        if (info < 24)
+        if (info <= CBOR_NUM_MAX)
             return 1;
         switch (info) {
         case CBOR_UINT8_FOLLOWS:
@@ -579,7 +579,7 @@ int cbor_size(uint8_t *data)
         }
     }
     else if (type == CBOR_BYTES || type == CBOR_TEXT) {
-        if (info < 24) {
+        if (info <= CBOR_NUM_MAX) {
             return info + 1;
         }
         else {

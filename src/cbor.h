@@ -20,8 +20,6 @@ extern "C" {
 #define CBOR_TYPE_MASK          0xE0    /* top 3 bits */
 #define CBOR_INFO_MASK          0x1F    /* low 5 bits */
 
-#define CBOR_BYTE_FOLLOWS       24      /* indicator that the next byte is part of this item */
-
 /* Jump Table for Initial Byte (cf. table 5) */
 #define CBOR_UINT       0x00            /* type 0 */
 #define CBOR_NEGINT     0x20            /* type 1 */
@@ -31,6 +29,8 @@ extern "C" {
 #define CBOR_MAP        0xA0            /* type 5 */
 #define CBOR_TAG        0xC0            /* type 6 */
 #define CBOR_7          0xE0            /* type 7 (float and other types) */
+
+#define CBOR_NUM_MAX            23      /* maximum number that can be directl encoded */
 
 /* Major types (cf. section 2.1) */
 /* Major type 0: Unsigned integers */
@@ -51,7 +51,7 @@ extern "C" {
 #define CBOR_TRUE       (CBOR_7 | 21)
 #define CBOR_NULL       (CBOR_7 | 22)
 #define CBOR_UNDEFINED  (CBOR_7 | 23)
-/* CBOR_BYTE_FOLLOWS == 24 */
+#define CBOR_SIMPLE     (CBOR_7 | 24)
 #define CBOR_FLOAT16    (CBOR_7 | 25)
 #define CBOR_FLOAT32    (CBOR_7 | 26)
 #define CBOR_FLOAT64    (CBOR_7 | 27)
