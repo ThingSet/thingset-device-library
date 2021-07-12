@@ -19,67 +19,70 @@
 int ts_txt_response(struct ts_context *ts, int code)
 {
     size_t pos = 0;
+
 #ifdef TS_VERBOSE_STATUS_MESSAGES
-    switch(code) {
+    const char *msg;
+    switch (code) {
         // success
         case TS_STATUS_CREATED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Created.", code);
+            msg = "Created";
             break;
         case TS_STATUS_DELETED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Deleted.", code);
+            msg = "Deleted";
             break;
         case TS_STATUS_VALID:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Valid.", code);
+            msg = "Valid";
             break;
         case TS_STATUS_CHANGED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Changed.", code);
+            msg = "Changed";
             break;
         case TS_STATUS_CONTENT:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Content.", code);
+            msg = "Content";
             break;
         // client errors
         case TS_STATUS_BAD_REQUEST:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Bad Request.", code);
+            msg = "Bad Request";
             break;
         case TS_STATUS_UNAUTHORIZED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Unauthorized.", code);
+            msg = "Unauthorized";
             break;
         case TS_STATUS_FORBIDDEN:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Forbidden.", code);
+            msg = "Forbidden";
             break;
         case TS_STATUS_NOT_FOUND:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Not Found.", code);
+            msg = "Not Found";
             break;
         case TS_STATUS_METHOD_NOT_ALLOWED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Method Not Allowed.", code);
+            msg = "Method Not Allowed";
             break;
         case TS_STATUS_REQUEST_INCOMPLETE:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Request Entity Incomplete.", code);
+            msg = "Request Entity Incomplete";
             break;
         case TS_STATUS_CONFLICT:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Conflict.", code);
+            msg = "Conflict";
             break;
         case TS_STATUS_REQUEST_TOO_LARGE:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Request Entity Too Large.", code);
+            msg = "Request Entity Too Large";
             break;
         case TS_STATUS_UNSUPPORTED_FORMAT:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Unsupported Content-Format.", code);
+            msg = "Unsupported Content-Format";
             break;
         // server errors
         case TS_STATUS_INTERNAL_SERVER_ERR:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Internal Server Error.", code);
+            msg = "Internal Server Error";
             break;
         case TS_STATUS_NOT_IMPLEMENTED:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Not Implemented.", code);
+            msg = "Not Implemented";
             break;
         // ThingSet specific errors
         case TS_STATUS_RESPONSE_TOO_LARGE:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Response too large.", code);
+            msg = "Response too large";
             break;
         default:
-            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Error.", code);
+            msg = "Error";
             break;
     };
+    pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X %s.", code, msg);
 #else
     pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X.", code);
 #endif
