@@ -76,11 +76,11 @@ int main()
 {
     uint8_t resp_buf[1000];
 
-    printf("\n----------------- Data node tree ---------------------\n");
+    printf("\n----------------- Data node tree ---------------------\n\n");
 
     thing.dump_json();
 
-    printf("\n----------------- ThingSet shell ---------------------\n");
+    printf("\n----------------- ThingSet shell ---------------------\n\n");
 
     linenoiseHistoryLoad(".thingset-shell-history.txt"); /* Load the history at startup */
 

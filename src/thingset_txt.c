@@ -135,19 +135,34 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
                 (*((bool *)node->data) == true ? "true" : "false"));
         break;
     case TS_T_EXEC:
-        pos = snprintf(&buf[pos], size - pos, "null,");
+        pos = snprintf(&buf[pos], size - pos, "[");
+        for (unsigned int i = 0; i < ts->num_nodes; i++) {
+            if (ts->data_nodes[i].parent == node->id) {
+                pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_nodes[i].name);
+            }
+        }
+        if (pos > 1) {
+            pos--; // remove trailing comma
+            pos += snprintf(&buf[pos], size - pos, "],");
+        }
+        else {
+            pos = 0;
+            pos = snprintf(&buf[pos], size - pos, "null,");
+        }
         break;
     case TS_T_STRING:
         pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char *)node->data);
         break;
     case TS_T_PUBSUB:
-        pos = snprintf(&buf[pos], size - pos, "[]") - 1;
+        pos = snprintf(&buf[pos], size - pos, "[");
         for (unsigned int i = 0; i < ts->num_nodes; i++) {
             if (ts->data_nodes[i].pubsub & (uint16_t)node->detail) {
                 pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_nodes[i].name);
             }
         }
-        pos--; // remove trailing comma
+        if (pos > 1) {
+            pos--; // remove trailing comma
+        }
         pos += snprintf(&buf[pos], size - pos, "],");
         break;
     case TS_T_ARRAY:
@@ -230,8 +245,11 @@ void ts_dump_json(struct ts_context *ts, ts_node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
+    if (node_id == 0) {
+        printf("{");
+    }
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
-        if (ts->data_nodes[i].parent == node_id) {
+        if (ts->data_nodes[i].parent == node_id && ts->data_nodes[i].type != TS_T_BYTES) {
             if (!first) {
                 printf(",\n");
             }
@@ -240,21 +258,21 @@ void ts_dump_json(struct ts_context *ts, ts_node_id_t node_id, int level)
                 first = false;
             }
             if (ts->data_nodes[i].type == TS_T_PATH) {
-                LOG_DBG("%*s\"%s\" {", 4 * level, "", ts->data_nodes[i].name);
+                LOG_DBG("%*s\"%s\": {", 4 * (level + 1), "", ts->data_nodes[i].name);
                 ts_dump_json(ts, ts->data_nodes[i].id, level + 1);
-                LOG_DBG("\n%*s}", 4 * level, "");
+                LOG_DBG("\n%*s}", 4 * (level + 1), "");
             }
             else {
                 int pos = ts_json_serialize_name_value(ts, (char *)buf, sizeof(buf), &ts->data_nodes[i]);
                 if (pos > 0) {
                     buf[pos-1] = '\0';  // remove trailing comma
-                    LOG_DBG("%*s%s", 4 * level, "", LOG_ALLOC_STR((char *)buf));
+                    LOG_DBG("%*s%s", 4 * (level + 1), "", LOG_ALLOC_STR((char *)buf));
                 }
             }
         }
     }
     if (node_id == 0) {
-        LOG_DBG("\n");
+        LOG_DBG("\n}\n");
     }
 }
 
