@@ -16,6 +16,14 @@ The implementation is tested vs. newlib-nano and the default newlib provided by 
 
 An example program is implemented in `src/main.cpp`, which provides a shell to access the data via ThingSet protocol if run on a computer.
 
+The sample can be compiled via PlatformIO:
+
+    pio run -e native-std
+
+Afterwards, run the binary with:
+
+    .pio/build/native-std/program
+
 Most important is the setup of the data node tree in `test/test_data.h`.
 
 Assuming the data is stored in a static array `data_nodes` as in the example, a ThingSet object is created by:
