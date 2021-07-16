@@ -6,9 +6,9 @@
 
 #include "test.h"
 
-void test_bin_get_output_ids(void)
+void test_bin_get_meas_ids(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
+    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0xF7 };
     const char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "18 71 "
@@ -18,9 +18,9 @@ void test_bin_get_output_ids(void)
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_get_output_names(void)
+void test_bin_get_meas_names(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
+    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0x80 };
     const char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "65 42 61 74 5F 56 "
@@ -30,9 +30,9 @@ void test_bin_get_output_names(void)
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_get_output_names_values(void)
+void test_bin_get_meas_names_values(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
+    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0xA0 };
     const char resp_hex[] =
         "85 A3 "     // successful response: map with 3 elements
         "65 42 61 74 5F 56 "
@@ -48,7 +48,7 @@ void test_bin_get_output_names_values(void)
 void test_bin_patch_multiple_nodes(void)
 {
     const char req_hex[] =
-        "07 18 30 "
+        "07 06 "
         #if TS_64BIT_TYPES_SUPPORT
         "A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
@@ -73,7 +73,7 @@ void test_bin_fetch_multiple_nodes(void)
     f32 = 7.89;
 
     char req_hex[] =
-        "05 18 30 "
+        "05 06 "
         #if TS_64BIT_TYPES_SUPPORT
         "89 "      // read array with 9 elements
         "19 60 01 "

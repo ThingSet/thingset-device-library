@@ -30,8 +30,8 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_patch_bin_fetch, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_txt_fetch, setup, teardown),
         /* Text mode: GET request */
-        ztest_unit_test_setup_teardown(test_txt_get_output_names, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_get_output_names_values, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_get_meas_names, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_get_meas_names_values, setup, teardown),
         /* Text mode: FETCH request */
         ztest_unit_test_setup_teardown(test_txt_fetch_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_fetch_rounded, setup, teardown),
@@ -61,9 +61,9 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_wrong_command, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_endpoint, setup, teardown),
         /* Bin mode: GET request */
-        ztest_unit_test_setup_teardown(test_bin_get_output_ids, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_get_output_names, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_get_output_names_values, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_get_meas_ids, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_get_meas_names, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_get_meas_names_values, setup, teardown),
         /* Bin mode: PATCH request */
         ztest_unit_test_setup_teardown(test_bin_patch_multiple_nodes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_float_array, setup, teardown),

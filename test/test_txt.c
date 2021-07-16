@@ -8,14 +8,14 @@
 
 #include "test.h"
 
-void test_txt_get_output_names()
+void test_txt_get_meas_names()
 {
-    TEST_ASSERT_TXT_REQ("?output/", ":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?meas/", ":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
 
-void test_txt_get_output_names_values()
+void test_txt_get_meas_names_values()
 {
-    TEST_ASSERT_TXT_REQ("?output", ":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_REQ("?meas", ":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
 void test_txt_fetch_array()
@@ -104,7 +104,7 @@ void test_txt_exec(void)
 {
     dummy_called_flag = 0;
 
-    TEST_ASSERT_TXT_REQ("!exec/dummy", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-dummy", ":83 Valid.");
 
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
@@ -118,14 +118,14 @@ void test_txt_pub_msg(void)
 
 void test_txt_pub_list_channels(void)
 {
-    TEST_ASSERT_TXT_REQ("?pub/", ":85 Content. [\"serial\",\"can\"]");
+    TEST_ASSERT_TXT_REQ("?.pub/", ":85 Content. [\"serial\",\"can\"]");
 }
 
 void test_txt_pub_enable(void)
 {
     pub_serial_enable = false;
 
-    TEST_ASSERT_TXT_REQ("=pub/serial {\"Enable\":true}", ":84 Changed.");
+    TEST_ASSERT_TXT_REQ("=.pub/serial {\"Enable\":true}", ":84 Changed.");
 
     TEST_ASSERT_TRUE(pub_serial_enable);
 }
@@ -133,21 +133,21 @@ void test_txt_pub_enable(void)
 void test_txt_pub_delete_append_node(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
     /* delete "Ambient_degC" */
-    TEST_ASSERT_TXT_REQ("-pub/serial/IDs \"Ambient_degC\"", ":82 Deleted.");
+    TEST_ASSERT_TXT_REQ("-report/serial \"Ambient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
+    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
     /* append "Ambient_degC" again */
-    TEST_ASSERT_TXT_REQ("+pub/serial/IDs \"Ambient_degC\"", ":81 Created.");
+    TEST_ASSERT_TXT_REQ("+report/serial \"Ambient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
 
 void test_txt_auth_user(void)
 {
     /* authorize as expert user */
-    TEST_ASSERT_TXT_REQ("!auth \"expert123\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"expert123\"", ":83 Valid.");
     /* write expert user data */
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":84 Changed.");
     /* attempt to write maker data */
@@ -157,7 +157,7 @@ void test_txt_auth_user(void)
 void test_txt_auth_root(void)
 {
     /* authorize as maker */
-    TEST_ASSERT_TXT_REQ("!auth \"maker456\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"maker456\"", ":83 Valid.");
     /* write expert user data */
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":84 Changed.");
     /* write maker data */
@@ -166,19 +166,19 @@ void test_txt_auth_root(void)
 
 void test_txt_auth_long_password(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
 }
 
 void test_txt_auth_failure(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"abc\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"abc\"", ":83 Valid.");
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":A1 Unauthorized.");
 }
 
 void test_txt_auth_reset(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"expert123\"", ":83 Valid.");
-    TEST_ASSERT_TXT_REQ("!auth \"wrong\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"expert123\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"wrong\"", ":83 Valid.");
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":A1 Unauthorized.");
 }
 
@@ -208,7 +208,7 @@ void test_txt_get_endpoint(void)
     TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
 
     /* special case where the data contains forward slashes */
-    node = ts_get_node_by_path(&ts, "exec/reset \"this/is/a/path\"", strlen("exec/reset"));
+    node = ts_get_node_by_path(&ts, "rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
     TEST_ASSERT_NOT_NULL(node);
     TEST_ASSERT_EQUAL_UINT16(0xE1, node->id);
 }
