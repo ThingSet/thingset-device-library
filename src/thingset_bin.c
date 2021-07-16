@@ -558,6 +558,11 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_
     unsigned int len = 0;       // current length of response
     len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
+    if (parent->type != TS_T_PATH) {
+        len += cbor_serialize_data_node(&ts->resp[len], ts->resp_size - len, parent);
+        return len;
+    }
+
     // find out number of elements
     int num_elements = 0;
     for (unsigned int i = 0; i < ts->num_nodes; i++) {

@@ -18,6 +18,11 @@ void test_txt_get_meas_names_values()
     TEST_ASSERT_TXT_REQ("?meas", ":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
+void test_txt_get_single_value()
+{
+    TEST_ASSERT_TXT_REQ("?meas/Bat_V", ":85 Content. 14.10");
+}
+
 void test_txt_fetch_array()
 {
     f32 = 52.80;

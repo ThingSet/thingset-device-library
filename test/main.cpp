@@ -39,6 +39,7 @@ void tests_text_mode()
     // GET request
     RUN_TEST(test_txt_get_meas_names);
     RUN_TEST(test_txt_get_meas_names_values);
+    RUN_TEST(test_txt_get_single_value);
 
     // FETCH request
     RUN_TEST(test_txt_fetch_array);
@@ -88,6 +89,7 @@ void tests_binary_mode()
     // GET request
     RUN_TEST(test_bin_get_meas_ids_values);
     RUN_TEST(test_bin_get_meas_names_values);
+    RUN_TEST(test_bin_get_single_value);
 
     // PATCH request
     RUN_TEST(test_bin_patch_multiple_nodes);

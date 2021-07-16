@@ -36,6 +36,14 @@ void test_bin_get_meas_names_values()
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
+void test_bin_get_single_value()
+{
+    const uint8_t req[] = { TS_GET, 0x18, 0x71 };
+    const char resp_hex[] = "85 FA 41 61 99 9A "; // 14.1
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
 void test_bin_fetch_meas_ids(void)
 {
     const uint8_t req[] = { TS_FETCH, ID_MEAS, 0xF7 };
