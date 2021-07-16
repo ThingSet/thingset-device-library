@@ -78,7 +78,7 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_
  *
  * @param ts Pointer to ThingSet context.
  */
-int ts_txt_fetch(struct ts_context *ts, ts_node_id_t parent_id);
+int ts_txt_fetch(struct ts_context *ts,  const struct ts_data_node *parent);
 
 /**
  * FETCH request (binary mode).
@@ -97,7 +97,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, uint3
  *
  * @param ts Pointer to ThingSet context.
  */
-int ts_txt_patch(struct ts_context *ts, ts_node_id_t parent_id);
+int ts_txt_patch(struct ts_context *ts,  const struct ts_data_node *parent);
 
 /**
  * PATCH request (binary mode).

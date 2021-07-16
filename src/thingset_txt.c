@@ -329,10 +329,10 @@ int ts_txt_process(struct ts_context *ts)
     }
     else {
         if (ts->req[0] == '?') {
-            return ts_txt_fetch(ts, endpoint->id);
+            return ts_txt_fetch(ts, endpoint);
         }
         else if (ts->req[0] == '=') {
-            int len = ts_txt_patch(ts, endpoint->id);
+            int len = ts_txt_patch(ts, endpoint);
 
             // check if endpoint has a callback assigned
             if (endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
@@ -355,10 +355,12 @@ int ts_txt_process(struct ts_context *ts)
     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ts_txt_fetch(struct ts_context *ts, ts_node_id_t parent_id)
+int ts_txt_fetch(struct ts_context *ts, const struct ts_data_node *parent)
 {
     size_t pos = 0;
     int tok = 0;       // current token
+
+    ts_node_id_t parent_id = (parent == NULL) ? 0 : parent->id;
 
     // initialize response with success message
     pos += ts_txt_response(ts, TS_STATUS_CONTENT);
@@ -474,13 +476,15 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ts_txt_patch(struct ts_context *ts, ts_node_id_t parent_id)
+int ts_txt_patch(struct ts_context *ts, const struct ts_data_node *parent)
 {
     int tok = 0;       // current token
 
     // buffer for data node value (largest negative 64bit integer has 20 digits)
     char value_buf[21];
     size_t value_len;   // length of value in buffer
+
+    ts_node_id_t parent_id = (parent == NULL) ? 0 : parent->id;
 
     if (ts->tok_count < 2) {
         if (ts->tok_count == JSMN_ERROR_NOMEM) {
@@ -573,26 +577,26 @@ int ts_txt_patch(struct ts_context *ts, ts_node_id_t parent_id)
     return ts_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, uint32_t ret_type)
+int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_t ret_type)
 {
     bool include_values = (ret_type & TS_RET_VALUES);
 
     // initialize response with success message
     size_t len = ts_txt_response(ts, TS_STATUS_CONTENT);
 
-    ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
+    ts_node_id_t parent_id = (parent == NULL) ? 0 : parent->id;
 
-    if (parent_node != NULL && parent_node->type != TS_T_PATH &&
-        parent_node->type != TS_T_EXEC)
+    if (parent != NULL && parent->type != TS_T_PATH &&
+        parent->type != TS_T_EXEC)
     {
         // get value of data node
         ts->resp[len++] = ' ';
-        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent_node);
+        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent);
         ts->resp[--len] = '\0';     // remove trailing comma again
         return len;
     }
 
-    if (parent_node != NULL && parent_node->type == TS_T_EXEC && include_values) {
+    if (parent != NULL && parent->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec node's values
         return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
@@ -601,7 +605,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, ui
     int nodes_found = 0;
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if ((ts->data_nodes[i].access & TS_READ_MASK) &&
-            (ts->data_nodes[i].parent == parent_node_id))
+            (ts->data_nodes[i].parent == parent_id))
         {
             if (include_values) {
                 if (ts->data_nodes[i].type == TS_T_PATH) {
