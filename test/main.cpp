@@ -86,8 +86,7 @@ void tests_binary_mode()
     UNITY_BEGIN();
 
     // GET request
-    RUN_TEST(test_bin_get_meas_ids);
-    RUN_TEST(test_bin_get_meas_names);
+    RUN_TEST(test_bin_get_meas_ids_values);
     RUN_TEST(test_bin_get_meas_names_values);
 
     // PATCH request
@@ -96,6 +95,8 @@ void tests_binary_mode()
     RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
 
     // FETCH request
+    RUN_TEST(test_bin_fetch_meas_ids);
+    RUN_TEST(test_bin_fetch_meas_names);
     RUN_TEST(test_bin_fetch_multiple_nodes);
     RUN_TEST(test_bin_fetch_float_array);
     RUN_TEST(test_bin_fetch_rounded_float);

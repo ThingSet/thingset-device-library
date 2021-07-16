@@ -6,9 +6,39 @@
 
 #include "test.h"
 
-void test_bin_get_meas_ids(void)
+void test_bin_get_meas_ids_values(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0xF7 };
+    const uint8_t req[] = { TS_GET, ID_MEAS };
+    const char resp_hex[] =
+        "85 A3 "     // successful response: map with 3 elements
+        "18 71 "
+        "FA 41 61 99 9A "        // 14.1
+        "18 72 "
+        "FA 40 A4 28 F6 "        // 5.13
+        "18 73 "
+        "16";
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
+void test_bin_get_meas_names_values()
+{
+    const uint8_t req[] = { TS_GET, 0x64, 0x6D, 0x65, 0x61, 0x73 };
+    const char resp_hex[] =
+        "85 A3 "     // successful response: map with 3 elements
+        "65 42 61 74 5F 56 "
+        "FA 41 61 99 9A "        // 14.1
+        "65 42 61 74 5F 41 "
+        "FA 40 A4 28 F6 "        // 5.13
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
+        "16";
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
+void test_bin_fetch_meas_ids(void)
+{
+    const uint8_t req[] = { TS_FETCH, ID_MEAS, 0xF7 };
     const char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "18 71 "
@@ -18,29 +48,16 @@ void test_bin_get_meas_ids(void)
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_get_meas_names(void)
+void test_bin_fetch_meas_names(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0x80 };
+    const uint8_t req[] = { TS_FETCH,
+        0x64, 0x6D, 0x65, 0x61, 0x73,   // "meas"
+        0xF7 };                         // CBOR undefined
     const char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
         "65 42 61 74 5F 56 "
         "65 42 61 74 5F 41 "
         "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
-
-    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
-}
-
-void test_bin_get_meas_names_values(void)
-{
-    const uint8_t req[] = { TS_GET, 0x18, ID_MEAS, 0xA0 };
-    const char resp_hex[] =
-        "85 A3 "     // successful response: map with 3 elements
-        "65 42 61 74 5F 56 "
-        "FA 41 61 99 9A "        // 14.1
-        "65 42 61 74 5F 41 "
-        "FA 40 A4 28 F6 "        // 5.13
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
-        "16";
 
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }

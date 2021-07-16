@@ -212,18 +212,22 @@ int ts_bin_response(struct ts_context *ts, uint8_t code)
 int ts_bin_process(struct ts_context *ts)
 {
     int pos = 1;    // current position during data processing
+    uint32_t ret_type = 0;
 
     // get endpoint (first parameter of the request)
     const struct ts_data_node *endpoint = NULL;
     if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
-        uint16_t path_len;
-        pos += cbor_num_elements(&ts->req[pos], &path_len);
-        endpoint = ts_get_node_by_path(ts, (char *)ts->req + pos, path_len);
+        char *str_start;
+        uint16_t str_len;
+        pos += cbor_deserialize_string_zero_copy(&ts->req[pos], &str_start, &str_len);
+        endpoint = ts_get_node_by_path(ts, str_start, str_len);
+        ret_type |= TS_RET_NAMES;
     }
     else if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
         ts_node_id_t id = 0;
         pos += cbor_deserialize_uint16(&ts->req[pos], &id);
         endpoint = ts_get_node_by_id(ts, id);
+        ret_type |= TS_RET_IDS;
     }
     else if (ts->req[pos] == CBOR_UNDEFINED) {
         pos++;
@@ -234,10 +238,14 @@ int ts_bin_process(struct ts_context *ts)
 
     // process data
     if (ts->req[0] == TS_GET && endpoint) {
-        return ts_bin_get(ts, endpoint, ts->req[pos] == 0xA0, ts->req[pos] == 0xF7);
+        ret_type |= TS_RET_VALUES;
+        return ts_bin_get(ts, endpoint, ret_type);
     }
     else if (ts->req[0] == TS_FETCH) {
-        return ts_bin_fetch(ts, endpoint, pos);
+        if (ts->req[pos] != CBOR_UNDEFINED) {
+            ret_type = TS_RET_VALUES;
+        }
+        return ts_bin_fetch(ts, endpoint, ret_type, pos);
     }
     else if (ts->req[0] == TS_PATCH && endpoint) {
         int response = ts_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0);
@@ -256,15 +264,18 @@ int ts_bin_process(struct ts_context *ts)
     return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, unsigned int pos_payload)
+/*
+* Remark: the parent node is currently still ignored. Any found data object is fetched.
+*/
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, uint32_t ret_type, unsigned int pos_payload)
 {
-    /*
-     * Remark: the parent node is currently still ignored. Any found data object is fetched.
-     */
-
     unsigned int pos_req = pos_payload;
     unsigned int pos_resp = 0;
     uint16_t num_elements, element = 0;
+
+    if (!(ret_type & TS_RET_VALUES)) {
+        return ts_bin_get(ts, parent, ret_type);
+    }
 
     pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
@@ -542,7 +553,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, bool values, bool ids_only)
+int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_t ret_type)
 {
     unsigned int len = 0;       // current length of response
     len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
@@ -557,7 +568,7 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, bool va
         }
     }
 
-    if (values && !ids_only) {
+    if (ret_type & TS_RET_VALUES) {
         len += cbor_serialize_map(&ts->resp[len], num_elements, ts->resp_size - len);
     }
     else {
@@ -569,21 +580,22 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, bool va
             && (ts->data_nodes[i].parent == parent->id))
         {
             int num_bytes = 0;
-            if (ids_only) {
+            if (ret_type & TS_RET_IDS) {
                 num_bytes = cbor_serialize_uint(&ts->resp[len], ts->data_nodes[i].id, ts->resp_size - len);
             }
-            else {
+            else if (ret_type & TS_RET_NAMES) {
                 num_bytes = cbor_serialize_string(&ts->resp[len], ts->data_nodes[i].name,
                     ts->resp_size - len);
-                if (values) {
-                    num_bytes += cbor_serialize_data_node(&ts->resp[len + num_bytes],
-                        ts->resp_size - len - num_bytes, &ts->data_nodes[i]);
-                }
+            }
+            if (ret_type & TS_RET_VALUES) {
+                num_bytes += cbor_serialize_data_node(&ts->resp[len + num_bytes],
+                    ts->resp_size - len - num_bytes, &ts->data_nodes[i]);
             }
 
             if (num_bytes == 0) {
                 return ts_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
-            } else {
+            }
+            else {
                 len += num_bytes;
             }
         }

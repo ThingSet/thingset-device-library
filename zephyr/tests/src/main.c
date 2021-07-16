@@ -63,14 +63,15 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_wrong_command, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_endpoint, setup, teardown),
         /* Bin mode: GET request */
-        ztest_unit_test_setup_teardown(test_bin_get_meas_ids, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_get_meas_names, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_get_meas_ids_values, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_get_meas_names_values, setup, teardown),
         /* Bin mode: PATCH request */
         ztest_unit_test_setup_teardown(test_bin_patch_multiple_nodes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_rounded_float, setup, teardown),
         /* Text mode: FETCH request */
+        ztest_unit_test_setup_teardown(test_bin_fetch_meas_ids, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_meas_names, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_multiple_nodes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_rounded_float, setup, teardown),

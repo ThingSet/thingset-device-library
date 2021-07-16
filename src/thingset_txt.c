@@ -287,7 +287,7 @@ int ts_txt_process(struct ts_context *ts)
     const struct ts_data_node *endpoint = ts_get_node_by_path(ts, (char *)ts->req + 1, path_len);
     if (!endpoint) {
         if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
-            return ts_txt_get(ts, NULL, false);
+            return ts_txt_get(ts, NULL, TS_RET_NAMES);
         }
         else {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -312,7 +312,7 @@ int ts_txt_process(struct ts_context *ts)
             // no payload data
             if ((char)ts->req[path_len] == '/') {
                 if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
-                    return ts_txt_get(ts, endpoint, false);
+                    return ts_txt_get(ts, endpoint, TS_RET_NAMES);
                 }
                 else {
                     // device discovery is only allowed for internal nodes
@@ -320,7 +320,7 @@ int ts_txt_process(struct ts_context *ts)
                 }
             }
             else {
-                return ts_txt_get(ts, endpoint, true);
+                return ts_txt_get(ts, endpoint, TS_RET_NAMES | TS_RET_VALUES);
             }
         }
         else if (ts->req[0] == '!') {
@@ -573,8 +573,10 @@ int ts_txt_patch(struct ts_context *ts, ts_node_id_t parent_id)
     return ts_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, bool include_values)
+int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, uint32_t ret_type)
 {
+    bool include_values = (ret_type & TS_RET_VALUES);
+
     // initialize response with success message
     size_t len = ts_txt_response(ts, TS_STATUS_CONTENT);
 

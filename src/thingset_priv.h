@@ -36,6 +36,13 @@ extern "C" {
 #endif /* CONFIG_THINGSET_ZEPHYR */
 
 /**
+ * Internal return type flags for payload data
+ */
+#define TS_RET_IDS              (1U << 0)
+#define TS_RET_NAMES            (1U << 1)
+#define TS_RET_VALUES           (1U << 2)
+
+/**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
  * functions.
  */
@@ -53,7 +60,7 @@ int ts_bin_process(struct ts_context *ts);
  *
  * @param ts Pointer to ThingSet context.
  */
-int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, bool include_values);
+int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, uint32_t ret_type);
 
 /**
  * GET request (binary mode).
@@ -62,7 +69,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, bo
  *
  * @param ts Pointer to ThingSet context.
  */
-int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, bool values, bool ids_only);
+int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_t ret_type);
 
 /**
  * FETCH request (text mode).
@@ -80,7 +87,8 @@ int ts_txt_fetch(struct ts_context *ts, ts_node_id_t parent_id);
  *
  * @param ts Pointer to ThingSet context.
  */
-int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, unsigned int pos_payload);
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, uint32_t ret_type,
+                 unsigned int pos_payload);
 
 /**
  * PATCH request (text mode).
