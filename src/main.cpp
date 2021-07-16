@@ -64,11 +64,11 @@ void pub_thread()
     char pub_msg[1000];
 
     while (1) {
-        if (pub_serial_enable) {
-            thing.txt_pub(pub_msg, sizeof(pub_msg), PUB_SER);
+        if (pub_report_enable) {
+            thing.txt_pub(pub_msg, sizeof(pub_msg), PUB_REPORT);
             printf("%s\r\n", pub_msg);
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(pub_serial_interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(pub_report_interval));
     }
 }
 

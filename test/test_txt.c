@@ -109,39 +109,53 @@ void test_txt_exec(void)
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-void test_txt_pub_msg(void)
+void test_txt_pub_report(void)
 {
-    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
+    int resp_len = ts_txt_pub_endpoint(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}
+
+void test_txt_pub_info(void)
+{
+    int resp_len = ts_txt_pub_endpoint(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+}
+
+void test_txt_pub_deprecated(void)
+{
+    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_REPORT);
 
     TEST_ASSERT_TXT_RESP(resp_len, "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
 void test_txt_pub_list_channels(void)
 {
-    TEST_ASSERT_TXT_REQ("?.pub/", ":85 Content. [\"serial\",\"can\"]");
+    TEST_ASSERT_TXT_REQ("?.pub/", ":85 Content. [\"report\",\"info\"]");
 }
 
 void test_txt_pub_enable(void)
 {
-    pub_serial_enable = false;
+    pub_report_enable = false;
 
-    TEST_ASSERT_TXT_REQ("=.pub/serial {\"Enable\":true}", ":84 Changed.");
+    TEST_ASSERT_TXT_REQ("=.pub/report {\"Enable\":true}", ":84 Changed.");
 
-    TEST_ASSERT_TRUE(pub_serial_enable);
+    TEST_ASSERT_TRUE(pub_report_enable);
 }
 
 void test_txt_pub_delete_append_node(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
     /* delete "Ambient_degC" */
-    TEST_ASSERT_TXT_REQ("-report/serial \"Ambient_degC\"", ":82 Deleted.");
+    TEST_ASSERT_TXT_REQ("-report \"Ambient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
-    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
     /* append "Ambient_degC" again */
-    TEST_ASSERT_TXT_REQ("+report/serial \"Ambient_degC\"", ":81 Created.");
+    TEST_ASSERT_TXT_REQ("+report \"Ambient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?report/serial", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
 
 void test_txt_auth_user(void)

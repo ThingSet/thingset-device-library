@@ -48,7 +48,9 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_conf_callback, setup, teardown),
         /* Text mode: POLL request */
         ztest_unit_test_setup_teardown(test_txt_exec, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_pub_msg, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_pub_report, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_pub_info, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_list_channels, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_enable, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_delete_append_node, setup, teardown),

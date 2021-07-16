@@ -34,11 +34,9 @@ static float bat_energy_day = 123;
 static int16_t ambient_temp_max_day = 28;
 
 // pub
-bool pub_serial_enable = false;
-uint16_t pub_serial_interval = 1000;
-
-bool pub_can_enable = true;
-uint16_t pub_can_interval = 100;
+bool pub_report_enable = false;
+uint16_t pub_report_interval = 1000;
+bool pub_info_enable = true;
 
 // exec
 void reset_function(void);
@@ -80,7 +78,7 @@ struct ts_data_node data_nodes[] = {
     TS_NODE_PATH(ID_INFO, "info", 0, NULL),
 
     TS_NODE_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
-    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, PUB_SER),
+    TS_NODE_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, PUB_REPORT),
     TS_NODE_STRING(0x1B, "DeviceID", device_id, sizeof(device_id), ID_INFO, TS_ANY_R | TS_MKR_W, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
@@ -100,9 +98,9 @@ struct ts_data_node data_nodes[] = {
 
     TS_NODE_PATH(ID_MEAS, "meas", 0, NULL),
 
-    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R, PUB_SER | PUB_CAN),
-    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_MEAS, TS_ANY_R, PUB_SER | PUB_CAN),
-    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_MEAS, TS_ANY_R, PUB_SER),
+    TS_NODE_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R, PUB_REPORT | PUB_CAN),
+    TS_NODE_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_MEAS, TS_ANY_R, PUB_REPORT | PUB_CAN),
+    TS_NODE_INT16(0x73, "Ambient_degC", &ambient_temp, ID_MEAS, TS_ANY_R, PUB_REPORT),
 
     // RECORDED DATA //////////////////////////////////////////////////////////
 
@@ -122,21 +120,18 @@ struct ts_data_node data_nodes[] = {
 
     // REPORTS ////////////////////////////////////////////////////////////////
 
-    TS_NODE_PATH(ID_REPORT, "report", 0, NULL),
-    TS_NODE_PUBSUB(0xF4, "serial", PUB_SER, ID_REPORT, TS_ANY_RW, 0),
-    TS_NODE_PUBSUB(0xF8, "can", PUB_CAN, ID_REPORT, TS_ANY_RW, 0),
+    TS_NODE_PUBSUB(0xF4, "report", PUB_REPORT, 0, TS_ANY_RW, 0),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
 
     TS_NODE_PATH(ID_PUB, ".pub", 0, NULL),
 
-    TS_NODE_PATH(0xF1, "serial", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
-    TS_NODE_UINT16(0xF3, "Interval_ms", &pub_serial_interval, 0xF1, TS_ANY_RW, 0),
+    TS_NODE_PATH(0xF1, "report", ID_PUB, NULL),
+    TS_NODE_BOOL(0xF2, "Enable", &pub_report_enable, 0xF1, TS_ANY_RW, 0),
+    TS_NODE_UINT16(0xF3, "Interval_ms", &pub_report_interval, 0xF1, TS_ANY_RW, 0),
 
-    TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
-    TS_NODE_UINT16(0xF7, "Interval_ms", &pub_can_interval, 0xF5, TS_ANY_RW, 0),
+    TS_NODE_PATH(0xF5, "info", ID_PUB, NULL),
+    TS_NODE_BOOL(0xF6, "OnChange", &pub_info_enable, 0xF5, TS_ANY_RW, 0),
 
     // UNIT TEST DATA /////////////////////////////////////////////////////////
     // using IDs >= 0x1000

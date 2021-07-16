@@ -60,7 +60,9 @@ void tests_text_mode()
     RUN_TEST(test_txt_exec);
 
     // pub/sub messages
-    RUN_TEST(test_txt_pub_msg);
+    RUN_TEST(test_txt_pub_report);
+    RUN_TEST(test_txt_pub_info);
+    RUN_TEST(test_txt_pub_deprecated);
     RUN_TEST(test_txt_pub_list_channels);
     RUN_TEST(test_txt_pub_enable);
     RUN_TEST(test_txt_pub_delete_append_node);

@@ -466,6 +466,18 @@ void ts_set_authentication(struct ts_context *ts, uint16_t flags);
 int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t pub_ch);
 
 /**
+ * Generate publication message in JSON format based on endpoint.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param endpoint Endpoint which is used as a parent for published nodes
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const char *endpoint);
+
+/**
  * Generate publication message in CBOR format.
  *
  * @param ts Pointer to ThingSet context.
@@ -599,6 +611,11 @@ public:
     inline int txt_pub(char *buf, size_t size, const uint16_t pub_ch)
     {
         return ts_txt_pub(&ts, buf, size, pub_ch);
+    };
+
+    inline int txt_pub_endpoint(char *buf, size_t size, const char *endpoint)
+    {
+        return ts_txt_pub_endpoint(&ts, buf, size, endpoint);
     };
 
     inline int bin_pub(uint8_t *buf, size_t size, const uint16_t pub_ch)

@@ -787,6 +787,47 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_node *node)
     return ts_txt_response(ts, TS_STATUS_VALID);
 }
 
+int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const char *endpoint)
+{
+    unsigned int len;
+    const struct ts_data_node *node = ts_get_node_by_path(ts, endpoint, strlen(endpoint));
+
+    if (!node) {
+        return 0;
+    }
+
+    len = snprintf(buf, buf_size, "#%s {", endpoint);
+
+    if (node->type == TS_T_PUBSUB) {
+        uint16_t pub_ch = node->detail;
+        for (unsigned int i = 0; i < ts->num_nodes; i++) {
+            if (ts->data_nodes[i].pubsub & pub_ch) {
+                len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
+            }
+            if (len >= buf_size - 1) {
+                return 0;
+            }
+        }
+    }
+    else if (node->type == TS_T_PATH) {
+        for (unsigned int i = 0; i < ts->num_nodes; i++) {
+            if (ts->data_nodes[i].parent == node->id) {
+                len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
+            }
+            if (len >= buf_size - 1) {
+                return 0;
+            }
+        }
+    }
+    else {
+        return 0;
+    }
+
+    buf[len-1] = '}';    // overwrite comma
+
+    return len;
+}
+
 int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");

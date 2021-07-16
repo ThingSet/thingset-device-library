@@ -197,7 +197,7 @@ void test_bin_pub(void)
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
 
-    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), PUB_SER);
+    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), PUB_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }
@@ -243,12 +243,12 @@ void test_bin_pub_can(void)
 void test_bin_sub(void)
 {
     const char req_hex[] =
-        "1F A2 "     // map with 4 elements
+        "1F A2 "     // map with 2 elements
         "18 31 FA 41 61 99 9a "     // float 14.10
         "18 32 FA 40 a4 28 f6 ";    // float 5.13
     int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
 
-    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, PUB_SER);
+    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, PUB_REPORT);
 
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }

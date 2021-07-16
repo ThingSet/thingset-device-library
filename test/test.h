@@ -34,12 +34,12 @@ extern "C" {
 #define ID_RPC      0x0E        // remote procedure calls
 #define ID_PUB      0x0F        // publication setup
 
-#define PUB_SER     (1U << 0)   // UART serial
+#define PUB_REPORT  (1U << 0)   // report group for publication
 #define PUB_CAN     (1U << 1)   // CAN bus
 #define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
 
 extern char manufacturer[];
-extern bool pub_serial_enable;
+extern bool pub_report_enable;
 extern uint16_t pub_serial_interval;
 extern bool pub_can_enable;
 extern uint16_t pub_can_interval;
@@ -143,7 +143,9 @@ void test_txt_patch_wrong_path(void);
 void test_txt_patch_unknown_node(void);
 void test_txt_conf_callback(void);
 void test_txt_exec(void);
-void test_txt_pub_msg(void);
+void test_txt_pub_report(void);
+void test_txt_pub_info(void);
+void test_txt_pub_deprecated(void);
 void test_txt_pub_list_channels(void);
 void test_txt_pub_enable(void);
 void test_txt_pub_delete_append_node(void);
