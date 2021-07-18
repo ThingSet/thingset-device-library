@@ -14,7 +14,7 @@
 
 #define DEBUG 0
 
-static void _check_id_duplicates(const DataNode *data, size_t num)
+static void _check_id_duplicates(const TsDataNode *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         for (unsigned int j = i + 1; j < num; j++) {
@@ -32,16 +32,16 @@ static void _check_id_duplicates(const DataNode *data, size_t num)
  * Currently only supporting uint16_t (node_id_t) arrays as we need the size of each element
  * to iterate through the array.
  */
-static void _count_array_elements(const DataNode *data, size_t num)
+static void _count_array_elements(const TsDataNode *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         if (data[i].type == TS_T_ARRAY) {
-            ArrayInfo *arr = (ArrayInfo *)data[i].data;
+            TsArrayInfo *arr = (TsArrayInfo *)data[i].data;
             if (arr->num_elements == TS_AUTODETECT_ARRLEN) {
                 arr->num_elements = 0;  // set to safe default
                 if (arr->type == TS_T_NODE_ID) {
                     for (int elem = arr->max_elements - 1; elem >= 0; elem--) {
-                        if (((node_id_t *)arr->ptr)[elem] != 0) {
+                        if (((ts_node_id_t *)arr->ptr)[elem] != 0) {
                             arr->num_elements = elem + 1;
                             //printf("%s num elements: %d\n", data[i].name, arr->num_elements);
                             break;
@@ -56,7 +56,7 @@ static void _count_array_elements(const DataNode *data, size_t num)
     }
 }
 
-ThingSet::ThingSet(DataNode *data, size_t num)
+ThingSet::ThingSet(TsDataNode *data, size_t num)
 {
     _check_id_duplicates(data, num);
 
@@ -93,7 +93,7 @@ int ThingSet::process(uint8_t *request, size_t request_len, uint8_t *response, s
     }
 }
 
-DataNode *const ThingSet::get_node(const char *str, size_t len, int32_t parent)
+TsDataNode *const ThingSet::get_node(const char *str, size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (parent != -1 && data_nodes[i].parent != parent) {
@@ -108,7 +108,7 @@ DataNode *const ThingSet::get_node(const char *str, size_t len, int32_t parent)
     return NULL;
 }
 
-DataNode *const ThingSet::get_node(node_id_t id)
+TsDataNode *const ThingSet::get_node(ts_node_id_t id)
 {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (data_nodes[i].id == id) {
@@ -118,9 +118,9 @@ DataNode *const ThingSet::get_node(node_id_t id)
     return NULL;
 }
 
-DataNode *const ThingSet::get_endpoint(const char *path, size_t len)
+TsDataNode *const ThingSet::get_endpoint(const char *path, size_t len)
 {
-    DataNode *node;
+    TsDataNode *node;
     const char *start = path;
     const char *end;
     uint16_t parent = 0;

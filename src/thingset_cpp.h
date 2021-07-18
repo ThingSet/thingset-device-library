@@ -20,10 +20,10 @@ public:
     /**
      * Initialize a ThingSet object
      *
-     * @param data Pointer to array of DataNode type containing the entire node database
+     * @param data Pointer to array of TsDataNode type containing the entire node database
      * @param num Number of elements in that array
      */
-    ThingSet(DataNode *data, size_t num);
+    ThingSet(TsDataNode *data, size_t num);
 
     /**
      * Process ThingSet request
@@ -48,12 +48,12 @@ public:
      * @param node_id Root node ID where to start with printing
      * @param level Indentation level (=depth inside the data node tree)
      */
-    void dump_json(node_id_t node_id = 0, int level = 0);
+    void dump_json(ts_node_id_t node_id = 0, int level = 0);
 
     /**
      * Sets current authentication level
      *
-     * The authentication flags must match with access flags specified in DataNode to allow
+     * The authentication flags must match with access flags specified in TsDataNode to allow
      * read/write access to a data node.
      *
      * @param flags Flags to define authentication level (1 = access allowed)
@@ -123,7 +123,7 @@ public:
      *
      * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_node(node_id_t id);
+    TsDataNode *const get_node(ts_node_id_t id);
 
     /**
      * Get data node by name
@@ -136,7 +136,7 @@ public:
      *
      * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_node(const char *name, size_t len, int32_t parent = -1);
+    TsDataNode *const get_node(const char *name, size_t len, int32_t parent = -1);
 
     /**
      * Get the endpoint node of a provided path
@@ -146,7 +146,7 @@ public:
      *
      * @returns Pointer to data node or NULL if node is not found
      */
-    DataNode *const get_endpoint(const char *path, size_t len);
+    TsDataNode *const get_endpoint(const char *path, size_t len);
 
 private:
     /**
@@ -165,35 +165,35 @@ private:
      *
      * List child data nodes (function called without content / parameters)
      */
-    int txt_get(const DataNode *parent, bool include_values = false);
+    int txt_get(const TsDataNode *parent, bool include_values = false);
 
     /**
      * GET request (binary mode)
      *
      * List child data nodes (function called without content)
      */
-    int bin_get(const DataNode *parent, bool values = false, bool ids_only = true);
+    int bin_get(const TsDataNode *parent, bool values = false, bool ids_only = true);
 
     /**
      * FETCH request (text mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int txt_fetch(node_id_t parent_id);
+    int txt_fetch(ts_node_id_t parent_id);
 
     /**
      * FETCH request (binary mode)
      *
      * Read data node values (function called with an array as argument)
      */
-    int bin_fetch(const DataNode *parent, unsigned int pos_payload);
+    int bin_fetch(const TsDataNode *parent, unsigned int pos_payload);
 
     /**
      * PATCH request (text mode)
      *
      * Write data node values in text mode (function called with a map as argument)
      */
-    int txt_patch(node_id_t parent_id);
+    int txt_patch(ts_node_id_t parent_id);
 
     /**
      * PATCH request (binary mode)
@@ -208,23 +208,23 @@ private:
      * @param auth_flags Bitset to specify authentication status for different roles
      * @param sub_ch Bitset to specifiy subscribe channel to be considered, 0 to ignore
      */
-    int bin_patch(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+    int bin_patch(const TsDataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
         uint16_t sub_ch);
 
     /**
      * POST request to append data
      */
-    int txt_create(const DataNode *node);
+    int txt_create(const TsDataNode *node);
 
     /**
      * DELETE request to delete data from node
      */
-    int txt_delete(const DataNode *node);
+    int txt_delete(const TsDataNode *node);
 
     /**
      * Execute command in text mode (function called with a single data node name as argument)
      */
-    int txt_exec(const DataNode *node);
+    int txt_exec(const TsDataNode *node);
 
     /**
      * Execute command in binary mode (function called with a single data node name/id as argument)
@@ -232,7 +232,7 @@ private:
      * @param parent Pointer to executable node
      * @param pos_payload Position of payload in req buffer
      */
-    int bin_exec(const DataNode *node, unsigned int pos_payload);
+    int bin_exec(const TsDataNode *node, unsigned int pos_payload);
 
     /**
      * Fill the resp buffer with a JSON response status message
@@ -259,14 +259,14 @@ private:
      *
      * @returns Length of data written to buffer or 0 in case of error
      */
-    int json_serialize_value(char *buf, size_t size, const DataNode *node);
+    int json_serialize_value(char *buf, size_t size, const TsDataNode *node);
 
     /**
      * Serialize node name and value as JSON object
      *
      * same as json_serialize_value, just that the node name is also serialized
      */
-    int json_serialize_name_value(char *buf, size_t size, const DataNode *node);
+    int json_serialize_name_value(char *buf, size_t size, const TsDataNode *node);
 
     /**
      * Deserialize a node value from a JSON string
@@ -278,12 +278,12 @@ private:
      *
      * @returns Number of tokens processed (always 1) or 0 in case of error
      */
-    int json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node);
+    int json_deserialize_value(char *buf, size_t len, jsmntype_t type, const TsDataNode *node);
 
     /**
      * Array of nodes database provided during initialization
      */
-    DataNode *data_nodes;
+    TsDataNode *data_nodes;
 
     /**
      * Number of nodes in the data_nodes array

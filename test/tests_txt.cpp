@@ -19,12 +19,12 @@ extern ThingSet ts;
 
 extern float f32;
 extern int32_t i32;
-extern ArrayInfo int32_array;
-extern ArrayInfo float32_array;
+extern TsArrayInfo int32_array;
+extern TsArrayInfo float32_array;
 extern bool b;
 
 extern bool pub_serial_enable;
-extern ArrayInfo pub_serial_array;
+extern TsArrayInfo pub_serial_array;
 
 void test_txt_get_output_names()
 {
@@ -339,7 +339,7 @@ void test_txt_wrong_command()
 
 void test_txt_get_endpoint()
 {
-    const DataNode *node;
+    const TsDataNode *node;
 
     node = ts.get_endpoint("conf", strlen("conf"));
     TEST_ASSERT_NOT_NULL(node);

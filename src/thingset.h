@@ -10,6 +10,7 @@
 
 #if !CONFIG_THINGSET_CPP && !CONFIG_THINGSET_C
 /* Default library implementation */
+#define CONFIG_THINGSET_LEGACY 1
 #define CONFIG_THINGSET_CPP 1
 #endif
 
@@ -170,7 +171,7 @@ typedef struct {
     uint16_t max_elements;      ///< Maximum number of elements in the array
     uint16_t num_elements;      ///< Actual number of elements in the array
     uint8_t type;               ///< Type of the array elements
-} ArrayInfo;
+} TsArrayInfo;
 
 /**
  * If TS_AUTODETECT_ARRLEN is assigned to num_elements, the number of elements in the array is
@@ -183,59 +184,59 @@ typedef struct {
  * type is passed
  */
 
-static inline void *_bool_to_void(bool *ptr) { return (void*) ptr; }
+static inline void *ts_bool_to_void(bool *ptr) { return (void*) ptr; }
 #define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
 
-static inline void *_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
 
-static inline void *_int64_to_void(int64_t *ptr) { return (void*) ptr; }
+static inline void *ts_int64_to_void(int64_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
 
-static inline void *_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
 
-static inline void *_int32_to_void(int32_t *ptr) { return (void*) ptr; }
+static inline void *ts_int32_to_void(int32_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
 
-static inline void *_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
 
-static inline void *_int16_to_void(int16_t *ptr) { return (void*) ptr; }
+static inline void *ts_int16_to_void(int16_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
+    {_id, _parent, _name, ts_int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
 
-static inline void *_float_to_void(float *ptr) { return (void*) ptr; }
+static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 #define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
+    {_id, _parent, _name, ts_float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
 
-static inline void *_string_to_void(const char *ptr) { return (void*) ptr; }
+static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 #define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
+    {_id, _parent, _name, ts_string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
 
-static inline void *_bytes_to_void(TsBytesBuffer *ptr) { return (void *) ptr; }
+static inline void *ts_bytes_to_void(TsBytesBuffer *ptr) { return (void *) ptr; }
 #define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _acc, _pubsub}
+    {_id, _parent, _name, ts_bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _acc, _pubsub}
 
-static inline void *_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
+static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
-    {_id, _parent, _name, _function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
+    {_id, _parent, _name, ts_function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
 
-static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
+static inline void *ts_array_to_void(TsArrayInfo *ptr) { return (void *) ptr; }
 #define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, _array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
+    {_id, _parent, _name, ts_array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
 
 #define TS_NODE_PUBSUB(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
     {_id, _parent, _name, NULL, TS_T_PUBSUB, _pubsub_channel, _acc, _pubsub}
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
-    {_id, _parent, _name, _function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
+    {_id, _parent, _name, ts_function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
 
 /*
  * Access right macros for data nodes
@@ -271,21 +272,21 @@ static inline void *_array_to_void(ArrayInfo *ptr) { return (void *) ptr; }
 #define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW)
 
 
-typedef uint16_t node_id_t;
+typedef uint16_t ts_node_id_t;
 
 /**
  * ThingSet data node struct
  */
-typedef struct DataNode {
+typedef struct TsDataNode {
     /**
      * Data node ID
      */
-    const node_id_t id;
+    const ts_node_id_t id;
 
     /**
      * ID of parent node
      */
-    const node_id_t parent;
+    const ts_node_id_t parent;
 
     /**
      * Data Node name
@@ -320,11 +321,19 @@ typedef struct DataNode {
      */
     uint16_t pubsub;
 
-} DataNode;
+} TsDataNode;
 
 
 #if CONFIG_THINGSET_CPP
+
 #include "thingset_cpp.h"
+
+#if CONFIG_THINGSET_LEGACY
+/* compatibility to legacy CPP interface */
+typedef TsArrayInfo ArrayInfo;
+typedef TsDataNode DataNode;
+#endif
+
 #endif
 
 #endif /* THINGSET_H_ */

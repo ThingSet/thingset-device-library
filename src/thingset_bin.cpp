@@ -14,10 +14,10 @@
 #include <sys/types.h>  // for definition of endianness
 #include <math.h>       // for rounding of floats
 
-int cbor_deserialize_array_type(uint8_t *buf, const DataNode *data_node);
-int cbor_serialize_array_type(uint8_t *buf, size_t size, const DataNode *data_node);
+int cbor_deserialize_array_type(uint8_t *buf, const TsDataNode *data_node);
+int cbor_serialize_array_type(uint8_t *buf, size_t size, const TsDataNode *data_node);
 
-static int cbor_deserialize_data_node(uint8_t *buf, const DataNode *data_node)
+static int cbor_deserialize_data_node(uint8_t *buf, const TsDataNode *data_node)
 {
     switch (data_node->type) {
 #if (TS_64BIT_TYPES_SUPPORT == 1)
@@ -50,12 +50,12 @@ static int cbor_deserialize_data_node(uint8_t *buf, const DataNode *data_node)
     }
 }
 
-int cbor_deserialize_array_type(uint8_t *buf, const DataNode *data_node)
+int cbor_deserialize_array_type(uint8_t *buf, const TsDataNode *data_node)
 {
     uint16_t num_elements;
     int pos = 0; // Index of the next value in the buffer
-    ArrayInfo *array_info;
-    array_info = (ArrayInfo *)data_node->data;
+    TsArrayInfo *array_info;
+    array_info = (TsArrayInfo *)data_node->data;
 
     if (!array_info) {
         return 0;
@@ -100,7 +100,7 @@ int cbor_deserialize_array_type(uint8_t *buf, const DataNode *data_node)
     return pos;
 }
 
-static int cbor_serialize_data_node(uint8_t *buf, size_t size, const DataNode *data_node)
+static int cbor_serialize_data_node(uint8_t *buf, size_t size, const TsDataNode *data_node)
 {
     switch (data_node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -142,11 +142,11 @@ static int cbor_serialize_data_node(uint8_t *buf, size_t size, const DataNode *d
     }
 }
 
-int cbor_serialize_array_type(uint8_t *buf, size_t size, const DataNode *data_node)
+int cbor_serialize_array_type(uint8_t *buf, size_t size, const TsDataNode *data_node)
 {
     int pos = 0; // Index of the next value in the buffer
-    ArrayInfo *array_info;
-    array_info = (ArrayInfo *)data_node->data;
+    TsArrayInfo *array_info;
+    array_info = (TsArrayInfo *)data_node->data;
 
     if (!array_info) {
         return 0;
@@ -214,14 +214,14 @@ int ThingSet::bin_process()
     int pos = 1;    // current position during data processing
 
     // get endpoint (first parameter of the request)
-    const DataNode *endpoint = NULL;
+    const TsDataNode *endpoint = NULL;
     if ((req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
         uint16_t path_len;
         pos += cbor_num_elements(&req[pos], &path_len);
         endpoint = get_endpoint((char *)req + pos, path_len);
     }
     else if ((req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
-        node_id_t id = 0;
+        ts_node_id_t id = 0;
         pos += cbor_deserialize_uint16(&req[pos], &id);
         endpoint = get_node(id);
     }
@@ -256,7 +256,7 @@ int ThingSet::bin_process()
     return bin_response(TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::bin_fetch(const DataNode *parent, unsigned int pos_payload)
+int ThingSet::bin_fetch(const TsDataNode *parent, unsigned int pos_payload)
 {
     /*
      * Remark: the parent node is currently still ignored. Any found data object is fetched.
@@ -285,14 +285,14 @@ int ThingSet::bin_fetch(const DataNode *parent, unsigned int pos_payload)
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        node_id_t id;
+        ts_node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
             return bin_response(TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
-        const DataNode* data_node = get_node(id);
+        const TsDataNode* data_node = get_node(id);
         if (data_node == NULL) {
             return bin_response(TS_STATUS_NOT_FOUND);
         }
@@ -327,7 +327,7 @@ int ThingSet::bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint1
     return resp[0];
 }
 
-int ThingSet::bin_patch(const DataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
+int ThingSet::bin_patch(const TsDataNode *parent, unsigned int pos_payload, uint16_t auth_flags,
     uint16_t sub_ch)
 {
     unsigned int pos_req = pos_payload;
@@ -346,14 +346,14 @@ int ThingSet::bin_patch(const DataNode *parent, unsigned int pos_payload, uint16
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
-        node_id_t id;
+        ts_node_id_t id;
         num_bytes = cbor_deserialize_uint16(&req[pos_req], &id);
         if (num_bytes == 0) {
             return bin_response(TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
-        const DataNode* node = get_node(id);
+        const TsDataNode* node = get_node(id);
         if (node) {
             if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (node->access & TS_WRITE_MASK) {
@@ -401,7 +401,7 @@ int ThingSet::bin_patch(const DataNode *parent, unsigned int pos_payload, uint16
     }
 }
 
-int ThingSet::bin_exec(const DataNode *node, unsigned int pos_payload)
+int ThingSet::bin_exec(const TsDataNode *node, unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
@@ -541,7 +541,7 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ThingSet::bin_get(const DataNode *parent, bool values, bool ids_only)
+int ThingSet::bin_get(const TsDataNode *parent, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
     len += bin_response(TS_STATUS_CONTENT);   // init response buffer

@@ -90,10 +90,10 @@ int ThingSet::txt_response(int code)
         return 0;
 }
 
-int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
+int ThingSet::json_serialize_value(char *buf, size_t size, const TsDataNode *node)
 {
     size_t pos = 0;
-    const DataNode *sub_node;
+    const TsDataNode *sub_node;
     float value;
 
     switch (node->type) {
@@ -148,7 +148,7 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
         pos += snprintf(&buf[pos], size - pos, "],");
         break;
     case TS_T_ARRAY:
-        ArrayInfo *array_info = (ArrayInfo *)node->data;
+        TsArrayInfo *array_info = (TsArrayInfo *)node->data;
         if (!array_info) {
             return 0;
         }
@@ -208,7 +208,7 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const DataNode *node)
     }
 }
 
-int ThingSet::json_serialize_name_value(char *buf, size_t size, const DataNode* node)
+int ThingSet::json_serialize_name_value(char *buf, size_t size, const TsDataNode* node)
 {
     size_t pos = snprintf(buf, size, "\"%s\":", node->name);
 
@@ -223,7 +223,7 @@ int ThingSet::json_serialize_name_value(char *buf, size_t size, const DataNode* 
     }
 }
 
-void ThingSet::dump_json(node_id_t node_id, int level)
+void ThingSet::dump_json(ts_node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
@@ -263,7 +263,7 @@ int ThingSet::txt_process()
         path_len = (uint8_t *)path_end - req - 1;
     }
 
-    const DataNode *endpoint = get_endpoint((char *)req + 1, path_len);
+    const TsDataNode *endpoint = get_endpoint((char *)req + 1, path_len);
     if (!endpoint) {
         if (req[0] == '?' && req[1] == '/' && path_len == 1) {
             return txt_get(NULL, false);
@@ -334,7 +334,7 @@ int ThingSet::txt_process()
     return txt_response(TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::txt_fetch(node_id_t parent_id)
+int ThingSet::txt_fetch(ts_node_id_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
@@ -355,7 +355,7 @@ int ThingSet::txt_fetch(node_id_t parent_id)
             return txt_response(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode *node = get_node(
+        const TsDataNode *node = get_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
@@ -395,7 +395,7 @@ int ThingSet::txt_fetch(node_id_t parent_id)
     return pos;
 }
 
-int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, const DataNode *node)
+int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, const TsDataNode *node)
 {
     if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
@@ -453,7 +453,7 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, con
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ThingSet::txt_patch(node_id_t parent_id)
+int ThingSet::txt_patch(ts_node_id_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -481,7 +481,7 @@ int ThingSet::txt_patch(node_id_t parent_id)
             return txt_response(TS_STATUS_BAD_REQUEST);
         }
 
-        const DataNode* node = get_node(
+        const TsDataNode* node = get_node(
             json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
@@ -514,7 +514,7 @@ int ThingSet::txt_patch(node_id_t parent_id)
 
         // create dummy node to test formats
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
-        DataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
+        TsDataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
 
         int res = json_deserialize_value(value_buf, value_len, tokens[tok].type, &dummy_node);
         if (res == 0) {
@@ -533,7 +533,7 @@ int ThingSet::txt_patch(node_id_t parent_id)
     // actually write data
     while (tok + 1 < tok_count) {
 
-        const DataNode *node = get_node(json_str + tokens[tok].start,
+        const TsDataNode *node = get_node(json_str + tokens[tok].start,
             tokens[tok].end - tokens[tok].start, parent_id);
 
         tok++;
@@ -552,12 +552,12 @@ int ThingSet::txt_patch(node_id_t parent_id)
     return txt_response(TS_STATUS_CHANGED);
 }
 
-int ThingSet::txt_get(const DataNode *parent_node, bool include_values)
+int ThingSet::txt_get(const TsDataNode *parent_node, bool include_values)
 {
     // initialize response with success message
     size_t len = txt_response(TS_STATUS_CONTENT);
 
-    node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
+    ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
     if (parent_node != NULL && parent_node->type != TS_T_PATH &&
         parent_node->type != TS_T_EXEC)
@@ -617,7 +617,7 @@ int ThingSet::txt_get(const DataNode *parent_node, bool include_values)
     return len;
 }
 
-int ThingSet::txt_create(const DataNode *node)
+int ThingSet::txt_create(const TsDataNode *node)
 {
     if (tok_count > 1) {
         // only single JSON primitive supported at the moment
@@ -625,16 +625,16 @@ int ThingSet::txt_create(const DataNode *node)
     }
 
     if (node->type == TS_T_ARRAY) {
-        ArrayInfo *arr_info = (ArrayInfo *)node->data;
+        TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
         if (arr_info->num_elements < arr_info->max_elements) {
 
             if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
 
-                const DataNode *new_node = get_node(json_str + tokens[0].start,
+                const TsDataNode *new_node = get_node(json_str + tokens[0].start,
                     tokens[0].end - tokens[0].start);
 
                 if (new_node != NULL) {
-                    node_id_t *node_ids = (node_id_t *)arr_info->ptr;
+                    ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
                     // check if node is already existing in array
                     for (int i = 0; i < arr_info->num_elements; i++) {
                         if (node_ids[i] == new_node->id) {
@@ -660,7 +660,7 @@ int ThingSet::txt_create(const DataNode *node)
     }
     else if (node->type == TS_T_PUBSUB) {
         if (tokens[0].type == JSMN_STRING) {
-            DataNode *del_node = get_node(json_str + tokens[0].start,
+            TsDataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub |= (uint16_t)node->detail;
@@ -672,7 +672,7 @@ int ThingSet::txt_create(const DataNode *node)
     return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::txt_delete(const DataNode *node)
+int ThingSet::txt_delete(const TsDataNode *node)
 {
     if (tok_count > 1) {
         // only single JSON primitive supported at the moment
@@ -680,13 +680,13 @@ int ThingSet::txt_delete(const DataNode *node)
     }
 
     if (node->type == TS_T_ARRAY) {
-        ArrayInfo *arr_info = (ArrayInfo *)node->data;
+        TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
         if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
-            const DataNode *del_node = get_node(json_str + tokens[0].start,
+            const TsDataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 // node found in node database, now look for same ID in the array
-                node_id_t *node_ids = (node_id_t *)arr_info->ptr;
+                ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
                 for (int i = 0; i < arr_info->num_elements; i++) {
                     if (node_ids[i] == del_node->id) {
                         // node also found in array, shift all remaining elements
@@ -706,7 +706,7 @@ int ThingSet::txt_delete(const DataNode *node)
     }
     else if (node->type == TS_T_PUBSUB) {
         if (tokens[0].type == JSMN_STRING) {
-            DataNode *del_node = get_node(json_str + tokens[0].start,
+            TsDataNode *del_node = get_node(json_str + tokens[0].start,
                 tokens[0].end - tokens[0].start);
             if (del_node != NULL) {
                 del_node->pubsub &= ~((uint16_t)node->detail);
@@ -718,7 +718,7 @@ int ThingSet::txt_delete(const DataNode *node)
     return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::txt_exec(const DataNode *node)
+int ThingSet::txt_exec(const TsDataNode *node)
 {
     int tok = 0;            // current token
     int nodes_found = 0;    // number of child nodes found

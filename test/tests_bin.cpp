@@ -18,10 +18,10 @@ extern ThingSet ts;
 
 extern float f32;
 extern int32_t i32;
-extern ArrayInfo int32_array;
-extern ArrayInfo float32_array;
+extern TsArrayInfo int32_array;
+extern TsArrayInfo float32_array;
 
-extern ArrayInfo pub_serial_array;
+extern TsArrayInfo pub_serial_array;
 
 extern TsBytesBuffer bytes_buf;
 
