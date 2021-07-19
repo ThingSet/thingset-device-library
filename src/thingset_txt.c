@@ -1,99 +1,99 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
- *
  * Copyright (c) 2017 Martin Jäger / Libre Solar
+ * Copyright (c) 2021 Bobby Noelte.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "ts_config.h"
-#include "thingset.h"
+#include "thingset_priv.h"
+
 #include "jsmn.h"
 
 #include <math.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <cinttypes>
+#include <inttypes.h>
 
-
-int ThingSet::txt_response(int code)
+int ts_priv_txt_response(ts_object_t *ts, int code)
 {
     size_t pos = 0;
 #ifdef TS_VERBOSE_STATUS_MESSAGES
     switch(code) {
         // success
         case TS_STATUS_CREATED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Created.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Created.", code);
             break;
         case TS_STATUS_DELETED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Deleted.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Deleted.", code);
             break;
         case TS_STATUS_VALID:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Valid.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Valid.", code);
             break;
         case TS_STATUS_CHANGED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Changed.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Changed.", code);
             break;
         case TS_STATUS_CONTENT:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Content.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Content.", code);
             break;
         // client errors
         case TS_STATUS_BAD_REQUEST:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Bad Request.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Bad Request.", code);
             break;
         case TS_STATUS_UNAUTHORIZED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Unauthorized.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Unauthorized.", code);
             break;
         case TS_STATUS_FORBIDDEN:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Forbidden.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Forbidden.", code);
             break;
         case TS_STATUS_NOT_FOUND:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Not Found.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Not Found.", code);
             break;
         case TS_STATUS_METHOD_NOT_ALLOWED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Method Not Allowed.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Method Not Allowed.", code);
             break;
         case TS_STATUS_REQUEST_INCOMPLETE:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Request Entity Incomplete.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Request Entity Incomplete.", code);
             break;
         case TS_STATUS_CONFLICT:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Conflict.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Conflict.", code);
             break;
         case TS_STATUS_REQUEST_TOO_LARGE:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Request Entity Too Large.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Request Entity Too Large.", code);
             break;
         case TS_STATUS_UNSUPPORTED_FORMAT:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Unsupported Content-Format.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Unsupported Content-Format.", code);
             break;
         // server errors
         case TS_STATUS_INTERNAL_SERVER_ERR:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Internal Server Error.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Internal Server Error.", code);
             break;
         case TS_STATUS_NOT_IMPLEMENTED:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Not Implemented.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Not Implemented.", code);
             break;
         // ThingSet specific errors
         case TS_STATUS_RESPONSE_TOO_LARGE:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Response too large.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Response too large.", code);
             break;
         default:
-            pos = snprintf((char *)resp, resp_size, ":%.2X Error.", code);
+            pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X Error.", code);
             break;
     };
 #else
-    pos = snprintf((char *)resp, resp_size, ":%.2X.", code);
+    pos = snprintf((char *)ts->resp, ts->resp_size, ":%.2X.", code);
 #endif
-    if (pos < resp_size)
+    if (pos < ts->resp_size)
         return pos;
     else
         return 0;
 }
 
-int ThingSet::json_serialize_value(char *buf, size_t size, const TsDataNode *node)
+int ts_priv_json_serialize_value(ts_object_t *ts, char *buf, size_t size, const TsDataNode *node)
 {
     size_t pos = 0;
     const TsDataNode *sub_node;
+    TsArrayInfo *array_info;
     float value;
 
     switch (node->type) {
@@ -139,16 +139,16 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const TsDataNode *nod
         break;
     case TS_T_PUBSUB:
         pos = snprintf(&buf[pos], size - pos, "[]") - 1;
-        for (unsigned int i = 0; i < num_nodes; i++) {
-            if (data_nodes[i].pubsub & (uint16_t)node->detail) {
-                pos += snprintf(&buf[pos], size - pos, "\"%s\",", data_nodes[i].name);
+        for (unsigned int i = 0; i < ts->num_nodes; i++) {
+            if (ts->data_nodes[i].pubsub & (uint16_t)node->detail) {
+                pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_nodes[i].name);
             }
         }
         pos--; // remove trailing comma
         pos += snprintf(&buf[pos], size - pos, "],");
         break;
     case TS_T_ARRAY:
-        TsArrayInfo *array_info = (TsArrayInfo *)node->data;
+        array_info = (TsArrayInfo *)node->data;
         if (!array_info) {
             return 0;
         }
@@ -184,7 +184,7 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const TsDataNode *nod
                         ((float *)array_info->ptr)[i]);
                 break;
             case TS_T_NODE_ID:
-                sub_node = get_node(((uint16_t *)array_info->ptr)[i]);
+                sub_node = ts_get_node_by_id(ts, ((uint16_t *)array_info->ptr)[i]);
                 if (sub_node) {
                     pos += snprintf(&buf[pos], size - pos, "\"%s\",", sub_node->name);
                 }
@@ -208,11 +208,11 @@ int ThingSet::json_serialize_value(char *buf, size_t size, const TsDataNode *nod
     }
 }
 
-int ThingSet::json_serialize_name_value(char *buf, size_t size, const TsDataNode* node)
+int ts_priv_json_serialize_name_value(ts_object_t *ts, char *buf, size_t size, const TsDataNode *node)
 {
     size_t pos = snprintf(buf, size, "\"%s\":", node->name);
 
-    int len_value = json_serialize_value(&buf[pos], size - pos, node);
+    int len_value = ts_priv_json_serialize_value(ts, &buf[pos], size - pos, node);
     pos += len_value;
 
     if (len_value > 0 && pos < size) {
@@ -223,12 +223,12 @@ int ThingSet::json_serialize_name_value(char *buf, size_t size, const TsDataNode
     }
 }
 
-void ThingSet::dump_json(ts_node_id_t node_id, int level)
+void ts_dump_json(ts_object_t *ts, ts_node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
-    for (unsigned int i = 0; i < num_nodes; i++) {
-        if (data_nodes[i].parent == node_id) {
+    for (unsigned int i = 0; i < ts->num_nodes; i++) {
+        if (ts->data_nodes[i].parent == node_id) {
             if (!first) {
                 printf(",\n");
             }
@@ -236,166 +236,166 @@ void ThingSet::dump_json(ts_node_id_t node_id, int level)
                 printf("\n");
                 first = false;
             }
-            if (data_nodes[i].type == TS_T_PATH) {
-                printf("%*s\"%s\" {", 4 * level, "", data_nodes[i].name);
-                dump_json(data_nodes[i].id, level + 1);
-                printf("\n%*s}", 4 * level, "");
+            if (ts->data_nodes[i].type == TS_T_PATH) {
+                LOG_DBG("%*s\"%s\" {", 4 * level, "", ts->data_nodes[i].name);
+                ts_dump_json(ts, ts->data_nodes[i].id, level + 1);
+                LOG_DBG("\n%*s}", 4 * level, "");
             }
             else {
-                int pos = json_serialize_name_value((char *)buf, sizeof(buf), &data_nodes[i]);
+                int pos = ts_priv_json_serialize_name_value(ts, (char *)buf, sizeof(buf), &ts->data_nodes[i]);
                 if (pos > 0) {
                     buf[pos-1] = '\0';  // remove trailing comma
-                    printf("%*s%s", 4 * level, "", (char *)buf);
+                    LOG_DBG("%*s%s", 4 * level, "", LOG_ALLOC_STR((char *)buf));
                 }
             }
         }
     }
     if (node_id == 0) {
-        printf("\n");
+        LOG_DBG("\n");
     }
 }
 
-int ThingSet::txt_process()
+int ts_priv_txt_process(ts_object_t *ts)
 {
-    int path_len = req_len - 1;
-    char *path_end = strchr((char *)req + 1, ' ');
+    int path_len = ts->req_len - 1;
+    char *path_end = strchr((char *)ts->req + 1, ' ');
     if (path_end) {
-        path_len = (uint8_t *)path_end - req - 1;
+        path_len = (uint8_t *)path_end - ts->req - 1;
     }
 
-    const TsDataNode *endpoint = get_endpoint((char *)req + 1, path_len);
+    const TsDataNode *endpoint = ts_get_endpoint(ts, (char *)ts->req + 1, path_len);
     if (!endpoint) {
-        if (req[0] == '?' && req[1] == '/' && path_len == 1) {
-            return txt_get(NULL, false);
+        if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
+            return ts_priv_txt_get(ts, NULL, false);
         }
         else {
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
 
     jsmn_parser parser;
     jsmn_init(&parser);
 
-    json_str = (char *)req + 1 + path_len;
-    tok_count = jsmn_parse(&parser, json_str, req_len - path_len - 1, tokens, sizeof(tokens));
+    ts->json_str = (char *)ts->req + 1 + path_len;
+    ts->tok_count = jsmn_parse(&parser, ts->json_str, ts->req_len - path_len - 1, ts->tokens, sizeof(ts->tokens));
 
-    if (tok_count == JSMN_ERROR_NOMEM) {
-        return txt_response(TS_STATUS_REQUEST_TOO_LARGE);
+    if (ts->tok_count == JSMN_ERROR_NOMEM) {
+        return ts_priv_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
     }
-    else if (tok_count < 0) {
+    else if (ts->tok_count < 0) {
         // other parsing error
-        return txt_response(TS_STATUS_BAD_REQUEST);
+        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
-    else if (tok_count == 0) {
-        if (req[0] == '?') {
+    else if (ts->tok_count == 0) {
+        if (ts->req[0] == '?') {
             // no payload data
-            if ((char)req[path_len] == '/') {
+            if ((char)ts->req[path_len] == '/') {
                 if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
-                    return txt_get(endpoint, false);
+                    return ts_priv_txt_get(ts, endpoint, false);
                 }
                 else {
                     // device discovery is only allowed for internal nodes
-                    return txt_response(TS_STATUS_BAD_REQUEST);
+                    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
             }
             else {
-                return txt_get(endpoint, true);
+                return ts_priv_txt_get(ts, endpoint, true);
             }
         }
-        else if (req[0] == '!') {
-            return txt_exec(endpoint);
+        else if (ts->req[0] == '!') {
+            return ts_priv_txt_exec(ts, endpoint);
         }
     }
     else {
-        if (req[0] == '?') {
-            return txt_fetch(endpoint->id);
+        if (ts->req[0] == '?') {
+            return ts_priv_txt_fetch(ts, endpoint->id);
         }
-        else if (req[0] == '=') {
-            int len = txt_patch(endpoint->id);
+        else if (ts->req[0] == '=') {
+            int len = ts_priv_txt_patch(ts, endpoint->id);
 
             // check if endpoint has a callback assigned
-            if (endpoint->data != NULL && strncmp((char *)resp, ":84", 3) == 0) {
+            if (endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
                 // create function pointer and call function
-                void (*fun)(void) = reinterpret_cast<void(*)()>(endpoint->data);
+                void (*fun)(void) = (void(*)(void))endpoint->data;
                 fun();
             }
             return len;
         }
-        else if (req[0] == '!' && endpoint->type == TS_T_EXEC) {
-            return txt_exec(endpoint);
+        else if (ts->req[0] == '!' && endpoint->type == TS_T_EXEC) {
+            return ts_priv_txt_exec(ts, endpoint);
         }
-        else if (req[0] == '+') {
-            return txt_create(endpoint);
+        else if (ts->req[0] == '+') {
+            return ts_priv_txt_create(ts, endpoint);
         }
-        else if (req[0] == '-') {
-            return txt_delete(endpoint);
+        else if (ts->req[0] == '-') {
+            return ts_priv_txt_delete(ts, endpoint);
         }
     }
-    return txt_response(TS_STATUS_BAD_REQUEST);
+    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ThingSet::txt_fetch(ts_node_id_t parent_id)
+int ts_priv_txt_fetch(ts_object_t *ts, ts_node_id_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
 
     // initialize response with success message
-    pos += txt_response(TS_STATUS_CONTENT);
+    pos += ts_priv_txt_response(ts, TS_STATUS_CONTENT);
 
-    if (tokens[0].type == JSMN_ARRAY) {
-        pos += snprintf((char *)&resp[pos], resp_size - pos, " [");
+    if (ts->tokens[0].type == JSMN_ARRAY) {
+        pos += snprintf((char *)&ts->resp[pos], ts->resp_size - pos, " [");
         tok++;
     } else {
-        pos += snprintf((char *)&resp[pos], resp_size - pos, " ");
+        pos += snprintf((char *)&ts->resp[pos], ts->resp_size - pos, " ");
     }
 
-    while (tok < tok_count) {
+    while (tok < ts->tok_count) {
 
-        if (tokens[tok].type != JSMN_STRING) {
-            return txt_response(TS_STATUS_BAD_REQUEST);
+        if (ts->tokens[tok].type != JSMN_STRING) {
+            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const TsDataNode *node = get_node(
-            json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, parent_id);
+        const TsDataNode *node = ts_get_node_by_name(ts,
+            ts->json_str + ts->tokens[tok].start,
+            ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
         else if (node->type == TS_T_PATH) {
             // bad request, as we can't read internal path node's values
-            return txt_response(TS_STATUS_BAD_REQUEST);
+            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        if ((node->access & TS_READ_MASK & _auth_flags) == 0) {
+        if ((node->access & TS_READ_MASK & ts->_auth_flags) == 0) {
             if (node->access & TS_READ_MASK) {
-                return txt_response(TS_STATUS_UNAUTHORIZED);
+                return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return txt_response(TS_STATUS_FORBIDDEN);
+                return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
             }
         }
 
-        pos += json_serialize_value((char *)&resp[pos], resp_size - pos, node);
+        pos += ts_priv_json_serialize_value(ts, (char *)&ts->resp[pos], ts->resp_size - pos, node);
 
-        if (pos >= resp_size - 2) {
-            return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
+        if (pos >= ts->resp_size - 2) {
+            return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
         }
         tok++;
     }
 
     pos--;  // remove trailing comma
-    if (tokens[0].type == JSMN_ARRAY) {
+    if (ts->tokens[0].type == JSMN_ARRAY) {
         // buffer will be long enough as we dropped last 2 characters --> sprintf allowed
-        pos += sprintf((char *)&resp[pos], "]");
+        pos += sprintf((char *)&ts->resp[pos], "]");
     } else {
-        resp[pos] = '\0';    // terminate string
+        ts->resp[pos] = '\0';    // terminate string
     }
 
     return pos;
 }
 
-int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, const TsDataNode *node)
+int ts_priv_json_deserialize_value(ts_object_t *ts, char *buf, size_t len, jsmntype_t type, const TsDataNode *node)
 {
     if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
@@ -453,7 +453,7 @@ int ThingSet::json_deserialize_value(char *buf, size_t len, jsmntype_t type, con
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ThingSet::txt_patch(ts_node_id_t parent_id)
+int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -461,54 +461,54 @@ int ThingSet::txt_patch(ts_node_id_t parent_id)
     char value_buf[21];
     size_t value_len;   // length of value in buffer
 
-    if (tok_count < 2) {
-        if (tok_count == JSMN_ERROR_NOMEM) {
-            return txt_response(TS_STATUS_REQUEST_TOO_LARGE);
+    if (ts->tok_count < 2) {
+        if (ts->tok_count == JSMN_ERROR_NOMEM) {
+            return ts_priv_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
         } else {
-            return txt_response(TS_STATUS_BAD_REQUEST);
+            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
     }
 
-    if (tokens[0].type == JSMN_OBJECT) {    // object = map
+    if (ts->tokens[0].type == JSMN_OBJECT) {    // object = map
         tok++;
     }
 
     // loop through all elements to check if request is valid
-    while (tok + 1 < tok_count) {
+    while (tok + 1 < ts->tok_count) {
 
-        if (tokens[tok].type != JSMN_STRING ||
-            (tokens[tok+1].type != JSMN_PRIMITIVE && tokens[tok+1].type != JSMN_STRING)) {
-            return txt_response(TS_STATUS_BAD_REQUEST);
+        if (ts->tokens[tok].type != JSMN_STRING ||
+            (ts->tokens[tok+1].type != JSMN_PRIMITIVE && ts->tokens[tok+1].type != JSMN_STRING)) {
+            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const TsDataNode* node = get_node(
-            json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, parent_id);
+        const TsDataNode* node = ts_get_node_by_name(ts,
+            ts->json_str + ts->tokens[tok].start,
+            ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
 
-        if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
+        if ((node->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
             if (node->access & TS_WRITE_MASK) {
-                return txt_response(TS_STATUS_UNAUTHORIZED);
+                return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return txt_response(TS_STATUS_FORBIDDEN);
+                return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
             }
         }
 
         tok++;
 
         // extract the value and check buffer lengths
-        value_len = tokens[tok].end - tokens[tok].start;
+        value_len = ts->tokens[tok].end - ts->tokens[tok].start;
         if ((node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
             (node->type == TS_T_STRING && value_len >= (size_t)node->detail))
         {
-            return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
+            return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
         else {
-            strncpy(value_buf, &json_str[tokens[tok].start], value_len);
+            strncpy(value_buf, &ts->json_str[ts->tokens[tok].start], value_len);
             value_buf[value_len] = '\0';
         }
 
@@ -516,14 +516,14 @@ int ThingSet::txt_patch(ts_node_id_t parent_id)
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
         TsDataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
 
-        int res = json_deserialize_value(value_buf, value_len, tokens[tok].type, &dummy_node);
+        int res = ts_priv_json_deserialize_value(ts, value_buf, value_len, ts->tokens[tok].type, &dummy_node);
         if (res == 0) {
-            return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
+            return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
         tok += res;
     }
 
-    if (tokens[0].type == JSMN_OBJECT) {
+    if (ts->tokens[0].type == JSMN_OBJECT) {
         tok = 1;
     }
     else {
@@ -531,31 +531,31 @@ int ThingSet::txt_patch(ts_node_id_t parent_id)
     }
 
     // actually write data
-    while (tok + 1 < tok_count) {
+    while (tok + 1 < ts->tok_count) {
 
-        const TsDataNode *node = get_node(json_str + tokens[tok].start,
-            tokens[tok].end - tokens[tok].start, parent_id);
+        const TsDataNode *node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[tok].start,
+            ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         tok++;
 
         // extract the value again (max. size was checked before)
-        value_len = tokens[tok].end - tokens[tok].start;
+        value_len = ts->tokens[tok].end - ts->tokens[tok].start;
         if (value_len < sizeof(value_buf)) {
-            strncpy(value_buf, &json_str[tokens[tok].start], value_len);
+            strncpy(value_buf, &ts->json_str[ts->tokens[tok].start], value_len);
             value_buf[value_len] = '\0';
         }
 
-        tok += json_deserialize_value(&json_str[tokens[tok].start], value_len, tokens[tok].type,
+        tok += ts_priv_json_deserialize_value(ts, &ts->json_str[ts->tokens[tok].start], value_len, ts->tokens[tok].type,
             node);
     }
 
-    return txt_response(TS_STATUS_CHANGED);
+    return ts_priv_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ThingSet::txt_get(const TsDataNode *parent_node, bool include_values)
+int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include_values)
 {
     // initialize response with success message
-    size_t len = txt_response(TS_STATUS_CONTENT);
+    size_t len = ts_priv_txt_response(ts, TS_STATUS_CONTENT);
 
     ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
@@ -563,46 +563,46 @@ int ThingSet::txt_get(const TsDataNode *parent_node, bool include_values)
         parent_node->type != TS_T_EXEC)
     {
         // get value of data node
-        resp[len++] = ' ';
-        len += json_serialize_value((char *)&resp[len], resp_size - len, parent_node);
-        resp[--len] = '\0';     // remove trailing comma again
+        ts->resp[len++] = ' ';
+        len += ts_priv_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent_node);
+        ts->resp[--len] = '\0';     // remove trailing comma again
         return len;
     }
 
     if (parent_node != NULL && parent_node->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec node's values
-        return txt_response(TS_STATUS_BAD_REQUEST);
+        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
-    len += sprintf((char *)&resp[len], include_values ? " {" : " [");
+    len += sprintf((char *)&ts->resp[len], include_values ? " {" : " [");
     int nodes_found = 0;
-    for (unsigned int i = 0; i < num_nodes; i++) {
-        if ((data_nodes[i].access & TS_READ_MASK) &&
-            (data_nodes[i].parent == parent_node_id))
+    for (unsigned int i = 0; i < ts->num_nodes; i++) {
+        if ((ts->data_nodes[i].access & TS_READ_MASK) &&
+            (ts->data_nodes[i].parent == parent_node_id))
         {
             if (include_values) {
-                if (data_nodes[i].type == TS_T_PATH) {
+                if (ts->data_nodes[i].type == TS_T_PATH) {
                     // bad request, as we can't read nternal path node's values
-                    return txt_response(TS_STATUS_BAD_REQUEST);
+                    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
-                int ret = json_serialize_name_value((char *)&resp[len], resp_size - len,
-                    &data_nodes[i]);
+                int ret = ts_priv_json_serialize_name_value(ts, (char *)&ts->resp[len], ts->resp_size - len,
+                    &ts->data_nodes[i]);
                 if (ret > 0) {
                     len += ret;
                 }
                 else {
-                    return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
+                    return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
                 }
             }
             else {
-                len += snprintf((char *)&resp[len],
-                    resp_size - len,
-                    "\"%s\",", data_nodes[i].name);
+                len += snprintf((char *)&ts->resp[len],
+                    ts->resp_size - len,
+                    "\"%s\",", ts->data_nodes[i].name);
             }
             nodes_found++;
 
-            if (len >= resp_size - 1) {
-                return txt_response(TS_STATUS_RESPONSE_TOO_LARGE);
+            if (len >= ts->resp_size - 1) {
+                return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
             }
         }
     }
@@ -611,79 +611,79 @@ int ThingSet::txt_get(const TsDataNode *parent_node, bool include_values)
     if (nodes_found == 0) {
         len++;
     }
-    resp[len-1] = include_values ? '}' : ']';
-    resp[len] = '\0';
+    ts->resp[len-1] = include_values ? '}' : ']';
+    ts->resp[len] = '\0';
 
     return len;
 }
 
-int ThingSet::txt_create(const TsDataNode *node)
+int ts_priv_txt_create(ts_object_t *ts, const TsDataNode *node)
 {
-    if (tok_count > 1) {
+    if (ts->tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return txt_response(TS_STATUS_NOT_IMPLEMENTED);
+        return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
         TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
         if (arr_info->num_elements < arr_info->max_elements) {
 
-            if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
+            if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
 
-                const TsDataNode *new_node = get_node(json_str + tokens[0].start,
-                    tokens[0].end - tokens[0].start);
+                const TsDataNode *new_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+                    ts->tokens[0].end - ts->tokens[0].start, -1);
 
                 if (new_node != NULL) {
                     ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
                     // check if node is already existing in array
                     for (int i = 0; i < arr_info->num_elements; i++) {
                         if (node_ids[i] == new_node->id) {
-                            return txt_response(TS_STATUS_CONFLICT);
+                            return ts_priv_txt_response(ts, TS_STATUS_CONFLICT);
                         }
                     }
                     // otherwise append it
                     node_ids[arr_info->num_elements] = new_node->id;
                     arr_info->num_elements++;
-                    return txt_response(TS_STATUS_CREATED);
+                    return ts_priv_txt_response(ts, TS_STATUS_CREATED);
                 }
                 else {
-                    return txt_response(TS_STATUS_NOT_FOUND);
+                    return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
                 }
             }
             else {
-                return txt_response(TS_STATUS_NOT_IMPLEMENTED);
+                return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
             }
         }
         else {
-            return txt_response(TS_STATUS_INTERNAL_SERVER_ERR);
+            return ts_priv_txt_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
-        if (tokens[0].type == JSMN_STRING) {
-            TsDataNode *del_node = get_node(json_str + tokens[0].start,
-                tokens[0].end - tokens[0].start);
+        if (ts->tokens[0].type == JSMN_STRING) {
+            TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+                ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 del_node->pubsub |= (uint16_t)node->detail;
-                return txt_response(TS_STATUS_CREATED);
+                return ts_priv_txt_response(ts, TS_STATUS_CREATED);
             }
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
-    return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
+    return ts_priv_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::txt_delete(const TsDataNode *node)
+int ts_priv_txt_delete(ts_object_t *ts, const TsDataNode *node)
 {
-    if (tok_count > 1) {
+    if (ts->tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return txt_response(TS_STATUS_NOT_IMPLEMENTED);
+        return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
         TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
-        if (arr_info->type == TS_T_NODE_ID && tokens[0].type == JSMN_STRING) {
-            const TsDataNode *del_node = get_node(json_str + tokens[0].start,
-                tokens[0].end - tokens[0].start);
+        if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
+            const TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+                ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 // node found in node database, now look for same ID in the array
                 ts_node_id_t *node_ids = (ts_node_id_t *)arr_info->ptr;
@@ -694,85 +694,85 @@ int ThingSet::txt_delete(const TsDataNode *node)
                             node_ids[j] = node_ids[j+1];
                         }
                         arr_info->num_elements--;
-                        return txt_response(TS_STATUS_DELETED);
+                        return ts_priv_txt_response(ts, TS_STATUS_DELETED);
                     }
                 }
             }
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
         else {
-            return txt_response(TS_STATUS_NOT_IMPLEMENTED);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
-        if (tokens[0].type == JSMN_STRING) {
-            TsDataNode *del_node = get_node(json_str + tokens[0].start,
-                tokens[0].end - tokens[0].start);
+        if (ts->tokens[0].type == JSMN_STRING) {
+            TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+                ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 del_node->pubsub &= ~((uint16_t)node->detail);
-                return txt_response(TS_STATUS_DELETED);
+                return ts_priv_txt_response(ts, TS_STATUS_DELETED);
             }
-            return txt_response(TS_STATUS_NOT_FOUND);
+            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
-    return txt_response(TS_STATUS_METHOD_NOT_ALLOWED);
+    return ts_priv_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ThingSet::txt_exec(const TsDataNode *node)
+int ts_priv_txt_exec(ts_object_t *ts, const TsDataNode *node)
 {
     int tok = 0;            // current token
     int nodes_found = 0;    // number of child nodes found
 
-    if (tok_count > 0 && tokens[tok].type == JSMN_ARRAY) {
+    if (ts->tok_count > 0 && ts->tokens[tok].type == JSMN_ARRAY) {
         tok++;      // go to first element of array
     }
 
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
-        if ((node->access & TS_WRITE_MASK & _auth_flags) == 0) {
-            return txt_response(TS_STATUS_UNAUTHORIZED);
+        if ((node->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
+            return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
         }
     }
     else {
-        return txt_response(TS_STATUS_FORBIDDEN);
+        return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
     }
 
-    for (unsigned int i = 0; i < num_nodes; i++) {
-        if (data_nodes[i].parent == node->id) {
-            if (tok >= tok_count) {
+    for (unsigned int i = 0; i < ts->num_nodes; i++) {
+        if (ts->data_nodes[i].parent == node->id) {
+            if (tok >= ts->tok_count) {
                 // more child nodes found than parameters were passed
-                return txt_response(TS_STATUS_BAD_REQUEST);
+                return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
             }
-            int res = json_deserialize_value(json_str + tokens[tok].start,
-                tokens[tok].end - tokens[tok].start, tokens[tok].type, &data_nodes[i]);
+            int res = ts_priv_json_deserialize_value(ts, ts->json_str + ts->tokens[tok].start,
+                ts->tokens[tok].end - ts->tokens[tok].start, ts->tokens[tok].type, &ts->data_nodes[i]);
             if (res == 0) {
                 // deserializing the value was not successful
-                return txt_response(TS_STATUS_UNSUPPORTED_FORMAT);
+                return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
             }
             tok += res;
             nodes_found++;
         }
     }
 
-    if (tok_count > tok) {
+    if (ts->tok_count > tok) {
         // more parameters passed than child nodes found
-        return txt_response(TS_STATUS_BAD_REQUEST);
+        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     // if we got here, finally create function pointer and call function
-    void (*fun)(void) = reinterpret_cast<void(*)()>(node->data);
+    void (*fun)(void) = (void(*)(void))node->data;
     fun();
 
-    return txt_response(TS_STATUS_VALID);
+    return ts_priv_txt_response(ts, TS_STATUS_VALID);
 }
 
-int ThingSet::txt_pub(char *buf, size_t buf_size, const uint16_t pub_ch)
+int ts_txt_pub(ts_object_t *ts, char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");
 
-    for (unsigned int i = 0; i < num_nodes; i++) {
-        if (data_nodes[i].pubsub & pub_ch) {
-            len += json_serialize_name_value(&buf[len], buf_size - len, &data_nodes[i]);
+    for (unsigned int i = 0; i < ts->num_nodes; i++) {
+        if (ts->data_nodes[i].pubsub & pub_ch) {
+            len += ts_priv_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
         }
         if (len >= buf_size - 1) {
             return 0;

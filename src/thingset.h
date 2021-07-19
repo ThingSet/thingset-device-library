@@ -1,23 +1,38 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
- *
  * Copyright (c) 2017 Martin Jäger / Libre Solar
- * Copyright (c) 2021 Bobby Noelte
+ * Copyright (c) 2021 Bobby Noelte.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef THINGSET_H_
 #define THINGSET_H_
 
-#if !CONFIG_THINGSET_CPP && !CONFIG_THINGSET_C
-/* Default library implementation */
+
+#ifdef __cplusplus
+/* C++ library setup */
+extern "C" {
+
+#include <cstddef>
+#include <cstdint>
+#include <cstdbool>
+
+#ifndef CONFIG_THINGSET_LEGACY
 #define CONFIG_THINGSET_LEGACY 1
-#define CONFIG_THINGSET_CPP 1
 #endif
 
+#else
+/* C library setup */
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
+#endif
+
 #include "ts_config.h"
+
+#include "jsmn.h"
+#include "cbor.h"
 
 /*
  * Protocol function codes (same as CoAP)
@@ -323,10 +338,207 @@ typedef struct TsDataNode {
 
 } TsDataNode;
 
+/**
+ * Main ThingSet data structure
+ *
+ * Stores and handles all data exposed to different communication interfaces
+ */
+typedef struct ts_object {
+    /**
+     * Array of nodes database provided during initialization
+     */
+    TsDataNode *data_nodes;
 
-#if CONFIG_THINGSET_CPP
+    /**
+     * Number of nodes in the data_nodes array
+     */
+    size_t num_nodes;
 
-#include "thingset_cpp.h"
+    /**
+     * Pointer to request buffer (provided in process function)
+     */
+    uint8_t *req;
+
+    /**
+     * Length of the request
+     */
+    size_t req_len;
+
+    /**
+     * Pointer to response buffer (provided in process function)
+     */
+    uint8_t *resp;
+
+    /**
+     * Size of response buffer (i.e. maximum length)
+     */
+    size_t resp_size;
+
+    /**
+     * Pointer to the start of JSON payload in the request
+     */
+    char *json_str;
+
+    /**
+     * JSON tokes in json_str parsed by JSMN
+     */
+    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+
+    /**
+     * Number of JSON tokens parsed by JSMN
+     */
+    int tok_count;
+
+    /**
+     * Stores current authentication status (authentication as "normal" user as default)
+     */
+    uint16_t _auth_flags;
+} ts_object_t;
+
+/**
+ * Initialize a ThingSet object
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param data Pointer to array of TsDataNode type containing the entire node database
+ * @param num Number of elements in that array
+ */
+int ts_init(ts_object_t *ts, TsDataNode *data, size_t num);
+
+/**
+ * Process ThingSet request
+ *
+ * This function also detects if JSON or CBOR format is used
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param request Pointer to the ThingSet request buffer
+ * @param request_len Length of the data in the request buffer
+ * @param response Pointer to the buffer where the ThingSet response should be stored
+ * @param response_size Size of the response buffer, i.e. maximum allowed length of the response
+ *
+ * @returns Actual length of the response written to the buffer or 0 in case of error
+ */
+int ts_process(ts_object_t *ts, uint8_t *request, size_t request_len, uint8_t *response, size_t response_size);
+
+/**
+ * Print all data nodes as a structured JSON text to stdout
+ *
+ * WARNING: This is a recursive function and might cause stack overflows if run in constrained
+ *          devices with large data node tree. Use with care and for testing only!
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param node_id Root node ID where to start with printing
+ * @param level Indentation level (=depth inside the data node tree)
+ */
+void ts_dump_json(ts_object_t *ts, ts_node_id_t node_id, int level);
+
+/**
+ * Sets current authentication level
+ *
+ * The authentication flags must match with access flags specified in TsDataNode to allow
+ * read/write access to a data node.
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param flags Flags to define authentication level (1 = access allowed)
+ */
+inline void ts_set_authentication(ts_object_t *ts, uint16_t flags)
+{
+    ts->_auth_flags = flags;
+};
+
+/**
+ * Generate publication message in JSON format
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_txt_pub(ts_object_t *ts, char *buf, size_t buf_size, const uint16_t pub_ch);
+
+/**
+ * Generate publication message in CBOR format
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_bin_pub(ts_object_t *ts, uint8_t *buf, size_t buf_size, const uint16_t pub_ch);
+
+/**
+ * Encode a publication message in CAN message format for supplied data node
+ *
+ * The data may only be 8 bytes long. If the actual length of a node exceeds the available
+ * length, the node is silently ignored and the function continues with the next one.
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param start_pos Position in data_nodes array to start searching
+ *                  This value is updated with the next node found to allow iterating over all
+ *                  nodes for this channel. It should be set to 0 to start from the beginning.
+ * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+ * @param can_dev_id Device ID on the CAN bus
+ * @param msg_id reference to can message id storage
+ * @param msg_data reference to the buffer where the publication message should be stored
+ *
+ * @returns Actual length of the message_data or -1 if not encodable / in case of error
+ */
+int ts_bin_pub_can(ts_object_t *ts, int *start_pos, uint16_t pub_ch, uint8_t can_dev_id,
+                   uint32_t *msg_id, uint8_t *msg_data);
+
+/**
+ * Update data nodes based on values provided in payload data (e.g. from other pub msg)
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param cbor_data Buffer containing key/value map that should be written to the data nodes
+ * @param len Length of the data in the buffer
+ * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+ * @param sub_ch Subscribe channel (as bitfield)
+ *
+ * @returns ThingSet status code
+ */
+int ts_bin_sub(ts_object_t *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
+               uint16_t sub_ch);
+
+/**
+ * Get data node by ID
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param id Node ID
+ *
+ * @returns Pointer to data node or NULL if node is not found
+ */
+TsDataNode *const ts_get_node_by_id(ts_object_t *ts, ts_node_id_t id);
+
+/**
+ * Get data node by name
+ *
+ * As the names are not necessarily unique in the entire data tree, the parent is needed
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param name Node name
+ * @param len Length of the node name
+ * @param parent Node ID of the parent or -1 for global search
+ *
+ * @returns Pointer to data node or NULL if node is not found
+ */
+TsDataNode *const ts_get_node_by_name(ts_object_t *ts, const char *name, size_t len, int32_t parent);
+
+/**
+ * Get the endpoint node of a provided path
+ *
+ * @param ts Pointer to ts_object_t type ThingSet object.
+ * @param path Path with multiple node names separated by forward slash
+ * @param len Length of the entire path
+ *
+ * @returns Pointer to data node or NULL if node is not found
+ */
+TsDataNode *const ts_get_endpoint(ts_object_t *ts, const char *path, size_t len);
+
+#ifdef __cplusplus
 
 #if CONFIG_THINGSET_LEGACY
 /* compatibility to legacy CPP interface */
@@ -334,6 +546,182 @@ typedef TsArrayInfo ArrayInfo;
 typedef TsDataNode DataNode;
 #endif
 
-#endif
+} /* extern 'C' */
+
+/**
+ * Main ThingSet class
+ *
+ * Stores and handles all data exposed to different communication interfaces
+ */
+class ThingSet
+{
+public:
+    /**
+     * Initialize a ThingSet object
+     *
+     * @param data Pointer to array of TsDataNode type containing the entire node database
+     * @param num Number of elements in that array
+     */
+    inline ThingSet(TsDataNode *data, size_t num)
+    {
+        (void)ts_init(&ts, data, num);
+    };
+
+    /**
+     * Process ThingSet request
+     *
+     * This function also detects if JSON or CBOR format is used
+     *
+     * @param request Pointer to the ThingSet request buffer
+     * @param req_len Length of the data in the request buffer
+     * @param response Pointer to the buffer where the ThingSet response should be stored
+     * @param resp_size Size of the response buffer, i.e. maximum allowed length of the response
+
+     * @returns Actual length of the response written to the buffer or 0 in case of error
+     */
+    inline int process(uint8_t *request, size_t req_len, uint8_t *response, size_t resp_size)
+    {
+        return ts_process(&ts, request, req_len, response, resp_size);
+    };
+
+    /**
+     * Print all data nodes as a structured JSON text to stdout
+     *
+     * WARNING: This is a recursive function and might cause stack overflows if run in constrained
+     *          devices with large data node tree. Use with care and for testing only!
+     *
+     * @param node_id Root node ID where to start with printing
+     * @param level Indentation level (=depth inside the data node tree)
+     */
+    inline void dump_json(ts_node_id_t node_id = 0, int level = 0)
+    {
+        ts_dump_json(&ts, node_id, level);
+    };
+
+    /**
+     * Sets current authentication level
+     *
+     * The authentication flags must match with access flags specified in TsDataNode to allow
+     * read/write access to a data node.
+     *
+     * @param flags Flags to define authentication level (1 = access allowed)
+     */
+    inline void set_authentication(uint16_t flags)
+    {
+        ts_set_authentication(&ts, flags);
+    };
+
+    /**
+     * Generate publication message in JSON format.
+     *
+     * @param buf Pointer to the buffer where the publication message should be stored
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    inline int txt_pub(char *buf, size_t size, const uint16_t pub_ch)
+    {
+        return ts_txt_pub(&ts, buf, size, pub_ch);
+    };
+
+    /**
+     * Generate publication message in CBOR format
+     *
+     * @param buf Pointer to the buffer where the publication message should be stored
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    inline int bin_pub(uint8_t *buf, size_t size, const uint16_t pub_ch)
+    {
+        return ts_bin_pub(&ts, buf, size, pub_ch);
+    };
+
+    /**
+     * Encode a publication message in CAN message format for supplied data node
+     *
+     * The data may only be 8 bytes long. If the actual length of a node exceeds the available
+     * length, the node is silently ignored and the function continues with the next one.
+     *
+     * @param start_pos Position in data_nodes array to start searching
+     *                  This value is updated with the next node found to allow iterating over all
+     *                  nodes for this channel. It should be set to 0 to start from the beginning.
+     * @param pub_ch Flag to select publication channel (must match pubsub of data node)
+     * @param can_dev_id Device ID on the CAN bus
+     * @param msg_id reference to can message id storage
+     * @param msg_data reference to the buffer where the publication message should be stored
+     *
+     * @returns Actual length of the message_data or -1 if not encodable / in case of error
+     */
+    inline int bin_pub_can(int &start_pos, uint16_t pub_ch, uint8_t can_dev_id, uint32_t &msg_id,
+                           uint8_t (&msg_data)[8])
+    {
+        return ts_bin_pub_can(&ts, &start_pos, pub_ch, can_dev_id, &msg_id, &msg_data[0]);
+    };
+
+    /**
+     * Update data nodes based on values provided in payload data (e.g. from other pub msg)
+     *
+     * @param cbor_data Buffer containing key/value map that should be written to the data nodes
+     * @param len Length of the data in the buffer
+     * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+     * @param sub_ch Subscribe channel (as bitfield)
+     *
+     * @returns ThingSet status code
+     */
+    inline int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t sub_ch)
+    {
+        return ts_bin_sub(&ts, cbor_data, len, auth_flags, sub_ch);
+    };
+
+    /**
+     * Get data node by ID
+     *
+     * @param id Node ID
+     *
+     * @returns Pointer to data node or NULL if node is not found
+     */
+    inline TsDataNode *const get_node(ts_node_id_t id)
+    {
+        return ts_get_node_by_id(&ts, id);
+    };
+
+    /**
+     * Get data node by name
+     *
+     * As the names are not necessarily unique in the entire data tree, the parent is needed
+     *
+     * @param name Node name
+     * @param len Length of the node name
+     * @param parent Node ID of the parent or -1 for global search
+     *
+     * @returns Pointer to data node or NULL if node is not found
+     */
+    inline TsDataNode *const get_node(const char *name, size_t len, int32_t parent = -1)
+    {
+        return ts_get_node_by_name(&ts, name, len, parent);
+    };
+
+    /**
+     * Get the endpoint node of a provided path
+     *
+     * @param path Path with multiple node names separated by forward slash
+     * @param len Length of the entire path
+     *
+     * @returns Pointer to data node or NULL if node is not found
+     */
+    inline TsDataNode *const get_endpoint(const char *path, size_t len)
+    {
+        return ts_get_endpoint(&ts, path, len);
+    };
+
+private:
+
+    ts_object_t ts;
+};
+
+#endif /* __cplusplus */
 
 #endif /* THINGSET_H_ */
