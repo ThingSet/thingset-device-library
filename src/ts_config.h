@@ -1,7 +1,8 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
- *
  * Copyright (c) 2017 Martin Jäger / Libre Solar
+ * Copyright (c) 2021 Bobby Noelte.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __TS_CONFIG_H_
@@ -25,26 +26,32 @@
  * Thingset throws an error if maximum number of tokens is reached in a
  * request or response.
  */
-#ifndef TS_NUM_JSON_TOKENS
+#if !defined(TS_NUM_JSON_TOKENS) && !defined(CONFIG_THINGSET_NUM_JSON_TOKENS)
 #define TS_NUM_JSON_TOKENS 50
+#elif !defined(TS_NUM_JSON_TOKENS)
+#define TS_NUM_JSON_TOKENS CONFIG_THINGSET_NUM_JSON_TOKENS
 #endif
 
 /*
  * If verbose status messages are switched on, a response in text-based mode
  * contains not only the status code, but also a message.
  */
-#ifndef TS_VERBOSE_STATUS_MESSAGES
+#if !defined(TS_VERBOSE_STATUS_MESSAGES) && !defined(CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES)
 #define TS_VERBOSE_STATUS_MESSAGES 1
+#elif !defined(TS_VERBOSE_STATUS_MESSAGES)
+#define TS_VERBOSE_STATUS_MESSAGES CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES
 #endif
 
 /*
  * Switch on support for 64 bit variable types (uint64_t, int64_t, double)
  *
- * This should be commented out for most 8-bit microcontrollers to increase
+ * This should be disbaled for most 8-bit microcontrollers to increase
  * performance
  */
-#ifndef TS_64BIT_TYPES_SUPPORT
+#if !defined(TS_64BIT_TYPES_SUPPORT) && !defined(CONFIG_THINGSET_64BIT_TYPES_SUPPORT)
 #define TS_64BIT_TYPES_SUPPORT 0        // default: no support
+#elif !defined(TS_64BIT_TYPES_SUPPORT)
+#define TS_64BIT_TYPES_SUPPORT CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 #endif
 
 #endif /* __TS_CONFIG_H_ */

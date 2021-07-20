@@ -8,6 +8,7 @@
 #ifndef THINGSET_H_
 #define THINGSET_H_
 
+#include "ts_config.h"
 
 #ifdef __cplusplus
 /* C++ library setup */
@@ -17,10 +18,6 @@ extern "C" {
 #include <cstdint>
 #include <cstdbool>
 
-#ifndef CONFIG_THINGSET_LEGACY
-#define CONFIG_THINGSET_LEGACY 1
-#endif
-
 #else
 /* C library setup */
 #include <stddef.h>
@@ -28,8 +25,6 @@ extern "C" {
 #include <stdbool.h>
 
 #endif
-
-#include "ts_config.h"
 
 #include "jsmn.h"
 #include "cbor.h"

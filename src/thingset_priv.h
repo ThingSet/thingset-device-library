@@ -14,24 +14,9 @@
 extern "C" {
 #endif
 
-#ifdef __ZEPHYR__
-
-/* Logging */
-#define LOG_MODULE_NAME thingset
-#define LOG_LEVEL CONFIG_THINGSET_LOG_LEVEL
-#include <logging/log.h>
-
-#ifdef THINGSET_MAIN
-LOG_MODULE_REGISTER(LOG_MODULE_NAME);
-#else
-LOG_MODULE_DECLARE(LOG_MODULE_NAME);
-#endif
-
-#define LOG_ALLOC_STR(str)	((str == NULL) ? log_strdup("null") : \
-                                                log_strdup(str))
-
-#include <zephyr.h>
-
+/* ThingSet adaptations to environment */
+#if __ZEPHYR__
+#include "../zephyr/thingset_zephyr.h"
 #else /* ! __ZEPHYR */
 
 #define DEBUG 0
