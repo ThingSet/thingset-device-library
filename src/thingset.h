@@ -528,7 +528,9 @@ TsDataNode *const ts_get_node_by_id(ts_object_t *ts, ts_node_id_t id);
 TsDataNode *const ts_get_node_by_name(ts_object_t *ts, const char *name, size_t len, int32_t parent);
 
 /**
- * Get the endpoint node of a provided path
+ * Get data node by path.
+ *
+ * Get the endpoint node of a provided path.
  *
  * @param ts Pointer to ts_object_t type ThingSet object.
  * @param path Path with multiple node names separated by forward slash
@@ -536,7 +538,7 @@ TsDataNode *const ts_get_node_by_name(ts_object_t *ts, const char *name, size_t 
  *
  * @returns Pointer to data node or NULL if node is not found
  */
-TsDataNode *const ts_get_endpoint(ts_object_t *ts, const char *path, size_t len);
+TsDataNode *const ts_get_node_by_path(ts_object_t *ts, const char *path, size_t len);
 
 #ifdef __cplusplus
 
@@ -714,7 +716,7 @@ public:
      */
     inline TsDataNode *const get_endpoint(const char *path, size_t len)
     {
-        return ts_get_endpoint(&ts, path, len);
+        return ts_get_node_by_path(&ts, path, len);
     };
 
 private:

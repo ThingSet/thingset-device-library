@@ -263,7 +263,7 @@ int ts_priv_txt_process(ts_object_t *ts)
         path_len = (uint8_t *)path_end - ts->req - 1;
     }
 
-    const TsDataNode *endpoint = ts_get_endpoint(ts, (char *)ts->req + 1, path_len);
+    const TsDataNode *endpoint = ts_get_node_by_path(ts, (char *)ts->req + 1, path_len);
     if (!endpoint) {
         if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
             return ts_priv_txt_get(ts, NULL, false);

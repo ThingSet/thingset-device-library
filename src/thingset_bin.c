@@ -218,7 +218,7 @@ int ts_priv_bin_process(ts_object_t *ts)
     if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
         uint16_t path_len;
         pos += cbor_num_elements(&ts->req[pos], &path_len);
-        endpoint = ts_get_endpoint(ts, (char *)ts->req + pos, path_len);
+        endpoint = ts_get_node_by_path(ts, (char *)ts->req + pos, path_len);
     }
     else if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
         ts_node_id_t id = 0;

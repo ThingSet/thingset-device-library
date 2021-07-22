@@ -119,7 +119,7 @@ TsDataNode *const ts_get_node_by_id(ts_object_t *ts, ts_node_id_t id)
     return NULL;
 }
 
-TsDataNode *const ts_get_endpoint(ts_object_t *ts, const char *path, size_t len)
+TsDataNode *const ts_get_node_by_path(ts_object_t *ts, const char *path, size_t len)
 {
     TsDataNode *node;
     const char *start = path;
