@@ -8,6 +8,17 @@
 #define __TS_CONFIG_H_
 
 /*
+ * Enable legacy C++ interface.
+ *
+ * This option enables the legacy C++ interface of the
+ * ThingSet protocol library. Enable if your C++ code uses
+ * DataNode or ArrayInfo instead of ThingSetDataNode or ThingSetArrayInfo.
+ */
+#if defined(__cplusplus) && !defined(CONFIG_THINGSET_CPP_LEGACY)
+#define CONFIG_THINGSET_CPP_LEGACY 1
+#endif
+
+/*
  * Maximum number of expected JSON tokens (i.e. arrays, map keys, values,
  * primitives, etc.)
  *

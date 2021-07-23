@@ -18,12 +18,12 @@ extern ThingSet ts;
 
 extern float f32;
 extern int32_t i32;
-extern ArrayInfo int32_array;
-extern ArrayInfo float32_array;
+extern ThingSetArrayInfo int32_array;
+extern ThingSetArrayInfo float32_array;
 
-extern ArrayInfo pub_serial_array;
+extern ThingSetArrayInfo pub_serial_array;
 
-extern TsBytesBuffer bytes_buf;
+extern ThingSetBytesBuffer bytes_buf;
 
 void test_bin_get_output_ids()
 {

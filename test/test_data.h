@@ -61,13 +61,13 @@ static int16_t i16;
 bool b;
 
 int32_t A[100] = {4, 2, 8, 4};
-ArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
+ThingSetArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
 
 float B[100] = {2.27, 3.44};
-ArrayInfo float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
+ThingSetArrayInfo float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
 
 uint8_t bytes[300] = {};
-TsBytesBuffer bytes_buf = { bytes, 0 };
+ThingSetBytesBuffer bytes_buf = { bytes, 0 };
 
 void dummy(void);
 void conf_callback(void);
@@ -92,7 +92,7 @@ void conf_callback(void);
 #define PUB_CAN     (1U << 1)   // CAN bus
 #define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
 
-static DataNode data_nodes[] = {
+static ThingSetDataNode data_nodes[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
