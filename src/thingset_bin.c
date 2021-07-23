@@ -14,10 +14,10 @@
 #include <sys/types.h>  // for definition of endianness
 #include <math.h>       // for rounding of floats
 
-int cbor_deserialize_array_type(uint8_t *buf, const TsDataNode *data_node);
-int cbor_serialize_array_type(uint8_t *buf, size_t size, const TsDataNode *data_node);
+int cbor_deserialize_array_type(uint8_t *buf, const struct ts_data_node *data_node);
+int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_node *data_node);
 
-static int cbor_deserialize_data_node(uint8_t *buf, const TsDataNode *data_node)
+static int cbor_deserialize_data_node(uint8_t *buf, const struct ts_data_node *data_node)
 {
     switch (data_node->type) {
 #if (TS_64BIT_TYPES_SUPPORT == 1)
@@ -41,8 +41,8 @@ static int cbor_deserialize_data_node(uint8_t *buf, const TsDataNode *data_node)
     case TS_T_STRING:
         return cbor_deserialize_string(buf, (char *)data_node->data, data_node->detail);
     case TS_T_BYTES:
-        return cbor_deserialize_bytes(buf, ((TsBytesBuffer *)data_node->data)->bytes,
-            data_node->detail, &(((TsBytesBuffer *)data_node->data)->num_bytes));
+        return cbor_deserialize_bytes(buf, ((struct ts_bytes_buffer *)data_node->data)->bytes,
+            data_node->detail, &(((struct ts_bytes_buffer *)data_node->data)->num_bytes));
     case TS_T_ARRAY:
         return cbor_deserialize_array_type(buf, data_node);
     default:
@@ -50,12 +50,12 @@ static int cbor_deserialize_data_node(uint8_t *buf, const TsDataNode *data_node)
     }
 }
 
-int cbor_deserialize_array_type(uint8_t *buf, const TsDataNode *data_node)
+int cbor_deserialize_array_type(uint8_t *buf, const struct ts_data_node *data_node)
 {
     uint16_t num_elements;
     int pos = 0; // Index of the next value in the buffer
-    TsArrayInfo *array_info;
-    array_info = (TsArrayInfo *)data_node->data;
+    struct ts_array_info *array_info;
+    array_info = (struct ts_array_info *)data_node->data;
 
     if (!array_info) {
         return 0;
@@ -100,7 +100,7 @@ int cbor_deserialize_array_type(uint8_t *buf, const TsDataNode *data_node)
     return pos;
 }
 
-static int cbor_serialize_data_node(uint8_t *buf, size_t size, const TsDataNode *data_node)
+static int cbor_serialize_data_node(uint8_t *buf, size_t size, const struct ts_data_node *data_node)
 {
     switch (data_node->type) {
 #ifdef TS_64BIT_TYPES_SUPPORT
@@ -133,8 +133,8 @@ static int cbor_serialize_data_node(uint8_t *buf, size_t size, const TsDataNode 
     case TS_T_STRING:
         return cbor_serialize_string(buf, (char *)data_node->data, size);
     case TS_T_BYTES:
-        return cbor_serialize_bytes(buf, ((TsBytesBuffer *)data_node->data)->bytes,
-            ((TsBytesBuffer *)data_node->data)->num_bytes, size);
+        return cbor_serialize_bytes(buf, ((struct ts_bytes_buffer *)data_node->data)->bytes,
+            ((struct ts_bytes_buffer *)data_node->data)->num_bytes, size);
     case TS_T_ARRAY:
         return cbor_serialize_array_type(buf, size, data_node);
     default:
@@ -142,11 +142,11 @@ static int cbor_serialize_data_node(uint8_t *buf, size_t size, const TsDataNode 
     }
 }
 
-int cbor_serialize_array_type(uint8_t *buf, size_t size, const TsDataNode *data_node)
+int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_node *data_node)
 {
     int pos = 0; // Index of the next value in the buffer
-    TsArrayInfo *array_info;
-    array_info = (TsArrayInfo *)data_node->data;
+    struct ts_array_info *array_info;
+    array_info = (struct ts_array_info *)data_node->data;
 
     if (!array_info) {
         return 0;
@@ -198,7 +198,7 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const TsDataNode *data_
     return pos;
 }
 
-int ts_priv_bin_response(ts_object_t *ts, uint8_t code)
+int ts_bin_response(struct ts_context *ts, uint8_t code)
 {
     if (ts->resp_size > 0) {
         ts->resp[0] = code;
@@ -209,12 +209,12 @@ int ts_priv_bin_response(ts_object_t *ts, uint8_t code)
     }
 }
 
-int ts_priv_bin_process(ts_object_t *ts)
+int ts_bin_process(struct ts_context *ts)
 {
     int pos = 1;    // current position during data processing
 
     // get endpoint (first parameter of the request)
-    const TsDataNode *endpoint = NULL;
+    const struct ts_data_node *endpoint = NULL;
     if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_TEXT) {
         uint16_t path_len;
         pos += cbor_num_elements(&ts->req[pos], &path_len);
@@ -229,18 +229,18 @@ int ts_priv_bin_process(ts_object_t *ts)
         pos++;
     }
     else {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     // process data
     if (ts->req[0] == TS_GET && endpoint) {
-        return ts_priv_bin_get(ts, endpoint, ts->req[pos] == 0xA0, ts->req[pos] == 0xF7);
+        return ts_bin_get(ts, endpoint, ts->req[pos] == 0xA0, ts->req[pos] == 0xF7);
     }
     else if (ts->req[0] == TS_FETCH) {
-        return ts_priv_bin_fetch(ts, endpoint, pos);
+        return ts_bin_fetch(ts, endpoint, pos);
     }
     else if (ts->req[0] == TS_PATCH && endpoint) {
-        int response = ts_priv_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0);
+        int response = ts_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0);
 
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && ts->resp[0] == TS_STATUS_CHANGED) {
@@ -251,12 +251,12 @@ int ts_priv_bin_process(ts_object_t *ts)
         return response;
     }
     else if (ts->req[0] == TS_POST) {
-        return ts_priv_bin_exec(ts, endpoint, pos);
+        return ts_bin_exec(ts, endpoint, pos);
     }
-    return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+    return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ts_priv_bin_fetch(ts_object_t *ts, const TsDataNode *parent, unsigned int pos_payload)
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_node *parent, unsigned int pos_payload)
 {
     /*
      * Remark: the parent node is currently still ignored. Any found data object is fetched.
@@ -266,11 +266,11 @@ int ts_priv_bin_fetch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
     unsigned int pos_resp = 0;
     uint16_t num_elements, element = 0;
 
-    pos_resp += ts_priv_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
+    pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
     if (num_elements != 1 && (ts->req[pos_payload] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     //printf("fetch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
@@ -288,21 +288,21 @@ int ts_priv_bin_fetch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
         ts_node_id_t id;
         num_bytes = cbor_deserialize_uint16(&ts->req[pos_req], &id);
         if (num_bytes == 0) {
-            return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
-        const TsDataNode* data_node = ts_get_node_by_id(ts, id);
+        const struct ts_data_node* data_node = ts_get_node_by_id(ts, id);
         if (data_node == NULL) {
-            return ts_priv_bin_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
         }
         if (!(data_node->access & TS_READ_MASK)) {
-            return ts_priv_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+            return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
 
         num_bytes = cbor_serialize_data_node(&ts->resp[pos_resp], ts->resp_size - pos_resp, data_node);
         if (num_bytes == 0) {
-            return ts_priv_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+            return ts_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
         }
         pos_resp += num_bytes;
         element++;
@@ -312,11 +312,11 @@ int ts_priv_bin_fetch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
         return pos_resp;
     }
     else {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 }
 
-int ts_bin_sub(ts_object_t *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
+int ts_bin_sub(struct ts_context *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
                uint16_t sub_ch)
 {
     uint8_t resp_tmp[1] = {};   // only one character as response expected
@@ -324,18 +324,18 @@ int ts_bin_sub(ts_object_t *ts, uint8_t *cbor_data, size_t len, uint16_t auth_fl
     ts->req_len = len;
     ts->resp = resp_tmp;
     ts->resp_size = sizeof(resp_tmp);
-    ts_priv_bin_patch(ts, NULL, 1, auth_flags, sub_ch);
+    ts_bin_patch(ts, NULL, 1, auth_flags, sub_ch);
     return ts->resp[0];
 }
 
-int ts_priv_bin_patch(ts_object_t *ts, const TsDataNode *parent, unsigned int pos_payload,
+int ts_bin_patch(struct ts_context *ts, const struct ts_data_node *parent, unsigned int pos_payload,
                       uint16_t auth_flags, uint16_t sub_ch)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
 
     if ((ts->req[pos_req] & CBOR_TYPE_MASK) != CBOR_MAP) {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
 
@@ -350,22 +350,22 @@ int ts_priv_bin_patch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
         ts_node_id_t id;
         num_bytes = cbor_deserialize_uint16(&ts->req[pos_req], &id);
         if (num_bytes == 0) {
-            return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
-        const TsDataNode* node = ts_get_node_by_id(ts, id);
+        const struct ts_data_node* node = ts_get_node_by_id(ts, id);
         if (node) {
             if ((node->access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (node->access & TS_WRITE_MASK) {
-                    return ts_priv_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+                    return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
                 }
                 else {
-                    return ts_priv_bin_response(ts, TS_STATUS_FORBIDDEN);
+                    return ts_bin_response(ts, TS_STATUS_FORBIDDEN);
                 }
             }
             else if (parent && node->parent != parent->id) {
-                return ts_priv_bin_response(ts, TS_STATUS_NOT_FOUND);
+                return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
             }
             else if (sub_ch && !(node->pubsub & sub_ch)) {
                 // ignore element
@@ -383,12 +383,12 @@ int ts_priv_bin_patch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
                 num_bytes = cbor_size(&ts->req[pos_req]);
             }
             else {
-                return ts_priv_bin_response(ts, TS_STATUS_NOT_FOUND);
+                return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
             }
         }
 
         if (num_bytes == 0) {
-            return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
         }
         pos_req += num_bytes;
 
@@ -396,42 +396,42 @@ int ts_priv_bin_patch(ts_object_t *ts, const TsDataNode *parent, unsigned int po
     }
 
     if (element == num_elements) {
-        return ts_priv_bin_response(ts, TS_STATUS_CHANGED);
+        return ts_bin_response(ts, TS_STATUS_CHANGED);
     } else {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 }
 
-int ts_priv_bin_exec(ts_object_t *ts, const TsDataNode *node, unsigned int pos_payload)
+int ts_bin_exec(struct ts_context *ts, const struct ts_data_node *node, unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
 
     if ((ts->req[pos_req] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
 
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
         if ((node->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
-            return ts_priv_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+            return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
     }
     else {
-        return ts_priv_bin_response(ts, TS_STATUS_FORBIDDEN);
+        return ts_bin_response(ts, TS_STATUS_FORBIDDEN);
     }
 
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if (ts->data_nodes[i].parent == node->id) {
             if (element >= num_elements) {
                 // more child nodes found than parameters were passed
-                return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+                return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
             }
             int num_bytes = cbor_deserialize_data_node(&ts->req[pos_req], &ts->data_nodes[i]);
             if (num_bytes == 0) {
                 // deserializing the value was not successful
-                return ts_priv_bin_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
+                return ts_bin_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
             }
             pos_req += num_bytes;
             element++;
@@ -440,17 +440,17 @@ int ts_priv_bin_exec(ts_object_t *ts, const TsDataNode *node, unsigned int pos_p
 
     if (num_elements > element) {
         // more parameters passed than child nodes found
-        return ts_priv_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     // if we got here, finally create function pointer and call function
     void (*fun)(void) = (void(*)(void))node->data;
     fun();
 
-    return ts_priv_bin_response(ts, TS_STATUS_VALID);
+    return ts_bin_response(ts, TS_STATUS_VALID);
 }
 
-int ts_bin_pub(ts_object_t *ts, uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
+int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
 {
     buf[0] = TS_PUBMSG;
     int len = 1;
@@ -480,7 +480,7 @@ int ts_bin_pub(ts_object_t *ts, uint8_t *buf, size_t buf_size, const uint16_t pu
     return len;
 }
 
-int ts_bin_pub_can(ts_object_t *ts, int *start_pos, uint16_t pub_ch, uint8_t can_dev_id,
+int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t pub_ch, uint8_t can_dev_id,
                    uint32_t *msg_id, uint8_t *msg_data)
 {
     int msg_len = -1;
@@ -542,10 +542,10 @@ int ThingSet::name_cbor(void)
 }
 */
 
-int ts_priv_bin_get(ts_object_t *ts, const TsDataNode *parent, bool values, bool ids_only)
+int ts_bin_get(struct ts_context *ts, const struct ts_data_node *parent, bool values, bool ids_only)
 {
     unsigned int len = 0;       // current length of response
-    len += ts_priv_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
+    len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
     // find out number of elements
     int num_elements = 0;
@@ -582,7 +582,7 @@ int ts_priv_bin_get(ts_object_t *ts, const TsDataNode *parent, bool values, bool
             }
 
             if (num_bytes == 0) {
-                return ts_priv_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+                return ts_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
             } else {
                 len += num_bytes;
             }

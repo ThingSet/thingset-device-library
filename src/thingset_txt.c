@@ -16,7 +16,7 @@
 #include <errno.h>
 #include <inttypes.h>
 
-int ts_priv_txt_response(ts_object_t *ts, int code)
+int ts_txt_response(struct ts_context *ts, int code)
 {
     size_t pos = 0;
 #ifdef TS_VERBOSE_STATUS_MESSAGES
@@ -89,11 +89,11 @@ int ts_priv_txt_response(ts_object_t *ts, int code)
         return 0;
 }
 
-int ts_priv_json_serialize_value(ts_object_t *ts, char *buf, size_t size, const TsDataNode *node)
+int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const struct ts_data_node *node)
 {
     size_t pos = 0;
-    const TsDataNode *sub_node;
-    TsArrayInfo *array_info;
+    const struct ts_data_node *sub_node;
+    struct ts_array_info *array_info;
     float value;
 
     switch (node->type) {
@@ -148,7 +148,7 @@ int ts_priv_json_serialize_value(ts_object_t *ts, char *buf, size_t size, const 
         pos += snprintf(&buf[pos], size - pos, "],");
         break;
     case TS_T_ARRAY:
-        array_info = (TsArrayInfo *)node->data;
+        array_info = (struct ts_array_info *)node->data;
         if (!array_info) {
             return 0;
         }
@@ -208,11 +208,11 @@ int ts_priv_json_serialize_value(ts_object_t *ts, char *buf, size_t size, const 
     }
 }
 
-int ts_priv_json_serialize_name_value(ts_object_t *ts, char *buf, size_t size, const TsDataNode *node)
+int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size, const struct ts_data_node *node)
 {
     size_t pos = snprintf(buf, size, "\"%s\":", node->name);
 
-    int len_value = ts_priv_json_serialize_value(ts, &buf[pos], size - pos, node);
+    int len_value = ts_json_serialize_value(ts, &buf[pos], size - pos, node);
     pos += len_value;
 
     if (len_value > 0 && pos < size) {
@@ -223,7 +223,7 @@ int ts_priv_json_serialize_name_value(ts_object_t *ts, char *buf, size_t size, c
     }
 }
 
-void ts_dump_json(ts_object_t *ts, ts_node_id_t node_id, int level)
+void ts_dump_json(struct ts_context *ts, ts_node_id_t node_id, int level)
 {
     uint8_t buf[100];
     bool first = true;
@@ -242,7 +242,7 @@ void ts_dump_json(ts_object_t *ts, ts_node_id_t node_id, int level)
                 LOG_DBG("\n%*s}", 4 * level, "");
             }
             else {
-                int pos = ts_priv_json_serialize_name_value(ts, (char *)buf, sizeof(buf), &ts->data_nodes[i]);
+                int pos = ts_json_serialize_name_value(ts, (char *)buf, sizeof(buf), &ts->data_nodes[i]);
                 if (pos > 0) {
                     buf[pos-1] = '\0';  // remove trailing comma
                     LOG_DBG("%*s%s", 4 * level, "", LOG_ALLOC_STR((char *)buf));
@@ -255,7 +255,7 @@ void ts_dump_json(ts_object_t *ts, ts_node_id_t node_id, int level)
     }
 }
 
-int ts_priv_txt_process(ts_object_t *ts)
+int ts_txt_process(struct ts_context *ts)
 {
     int path_len = ts->req_len - 1;
     char *path_end = strchr((char *)ts->req + 1, ' ');
@@ -263,13 +263,13 @@ int ts_priv_txt_process(ts_object_t *ts)
         path_len = (uint8_t *)path_end - ts->req - 1;
     }
 
-    const TsDataNode *endpoint = ts_get_node_by_path(ts, (char *)ts->req + 1, path_len);
+    const struct ts_data_node *endpoint = ts_get_node_by_path(ts, (char *)ts->req + 1, path_len);
     if (!endpoint) {
         if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
-            return ts_priv_txt_get(ts, NULL, false);
+            return ts_txt_get(ts, NULL, false);
         }
         else {
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
 
@@ -280,38 +280,38 @@ int ts_priv_txt_process(ts_object_t *ts)
     ts->tok_count = jsmn_parse(&parser, ts->json_str, ts->req_len - path_len - 1, ts->tokens, sizeof(ts->tokens));
 
     if (ts->tok_count == JSMN_ERROR_NOMEM) {
-        return ts_priv_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
+        return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
     }
     else if (ts->tok_count < 0) {
         // other parsing error
-        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
     else if (ts->tok_count == 0) {
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
                 if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
-                    return ts_priv_txt_get(ts, endpoint, false);
+                    return ts_txt_get(ts, endpoint, false);
                 }
                 else {
                     // device discovery is only allowed for internal nodes
-                    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+                    return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
             }
             else {
-                return ts_priv_txt_get(ts, endpoint, true);
+                return ts_txt_get(ts, endpoint, true);
             }
         }
         else if (ts->req[0] == '!') {
-            return ts_priv_txt_exec(ts, endpoint);
+            return ts_txt_exec(ts, endpoint);
         }
     }
     else {
         if (ts->req[0] == '?') {
-            return ts_priv_txt_fetch(ts, endpoint->id);
+            return ts_txt_fetch(ts, endpoint->id);
         }
         else if (ts->req[0] == '=') {
-            int len = ts_priv_txt_patch(ts, endpoint->id);
+            int len = ts_txt_patch(ts, endpoint->id);
 
             // check if endpoint has a callback assigned
             if (endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
@@ -322,25 +322,25 @@ int ts_priv_txt_process(ts_object_t *ts)
             return len;
         }
         else if (ts->req[0] == '!' && endpoint->type == TS_T_EXEC) {
-            return ts_priv_txt_exec(ts, endpoint);
+            return ts_txt_exec(ts, endpoint);
         }
         else if (ts->req[0] == '+') {
-            return ts_priv_txt_create(ts, endpoint);
+            return ts_txt_create(ts, endpoint);
         }
         else if (ts->req[0] == '-') {
-            return ts_priv_txt_delete(ts, endpoint);
+            return ts_txt_delete(ts, endpoint);
         }
     }
-    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+    return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ts_priv_txt_fetch(ts_object_t *ts, ts_node_id_t parent_id)
+int ts_txt_fetch(struct ts_context *ts, ts_node_id_t parent_id)
 {
     size_t pos = 0;
     int tok = 0;       // current token
 
     // initialize response with success message
-    pos += ts_priv_txt_response(ts, TS_STATUS_CONTENT);
+    pos += ts_txt_response(ts, TS_STATUS_CONTENT);
 
     if (ts->tokens[0].type == JSMN_ARRAY) {
         pos += snprintf((char *)&ts->resp[pos], ts->resp_size - pos, " [");
@@ -352,34 +352,34 @@ int ts_priv_txt_fetch(ts_object_t *ts, ts_node_id_t parent_id)
     while (tok < ts->tok_count) {
 
         if (ts->tokens[tok].type != JSMN_STRING) {
-            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const TsDataNode *node = ts_get_node_by_name(ts,
+        const struct ts_data_node *node = ts_get_node_by_name(ts,
             ts->json_str + ts->tokens[tok].start,
             ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
         else if (node->type == TS_T_PATH) {
             // bad request, as we can't read internal path node's values
-            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
         if ((node->access & TS_READ_MASK & ts->_auth_flags) == 0) {
             if (node->access & TS_READ_MASK) {
-                return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
+                return ts_txt_response(ts, TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
+                return ts_txt_response(ts, TS_STATUS_FORBIDDEN);
             }
         }
 
-        pos += ts_priv_json_serialize_value(ts, (char *)&ts->resp[pos], ts->resp_size - pos, node);
+        pos += ts_json_serialize_value(ts, (char *)&ts->resp[pos], ts->resp_size - pos, node);
 
         if (pos >= ts->resp_size - 2) {
-            return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+            return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
         }
         tok++;
     }
@@ -395,7 +395,7 @@ int ts_priv_txt_fetch(ts_object_t *ts, ts_node_id_t parent_id)
     return pos;
 }
 
-int ts_priv_json_deserialize_value(ts_object_t *ts, char *buf, size_t len, jsmntype_t type, const TsDataNode *node)
+int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type, const struct ts_data_node *node)
 {
     if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
@@ -453,7 +453,7 @@ int ts_priv_json_deserialize_value(ts_object_t *ts, char *buf, size_t len, jsmnt
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
+int ts_txt_patch(struct ts_context *ts, ts_node_id_t parent_id)
 {
     int tok = 0;       // current token
 
@@ -463,9 +463,9 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
 
     if (ts->tok_count < 2) {
         if (ts->tok_count == JSMN_ERROR_NOMEM) {
-            return ts_priv_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
+            return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
         } else {
-            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
     }
 
@@ -478,23 +478,23 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
 
         if (ts->tokens[tok].type != JSMN_STRING ||
             (ts->tokens[tok+1].type != JSMN_PRIMITIVE && ts->tokens[tok+1].type != JSMN_STRING)) {
-            return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+            return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const TsDataNode* node = ts_get_node_by_name(ts,
+        const struct ts_data_node* node = ts_get_node_by_name(ts,
             ts->json_str + ts->tokens[tok].start,
             ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         if (node == NULL) {
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
 
         if ((node->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
             if (node->access & TS_WRITE_MASK) {
-                return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
+                return ts_txt_response(ts, TS_STATUS_UNAUTHORIZED);
             }
             else {
-                return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
+                return ts_txt_response(ts, TS_STATUS_FORBIDDEN);
             }
         }
 
@@ -505,7 +505,7 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
         if ((node->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
             (node->type == TS_T_STRING && value_len >= (size_t)node->detail))
         {
-            return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
+            return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
         else {
             strncpy(value_buf, &ts->json_str[ts->tokens[tok].start], value_len);
@@ -514,11 +514,11 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
 
         // create dummy node to test formats
         uint8_t dummy_data[8];          // enough to fit also 64-bit values
-        TsDataNode dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
+        struct ts_data_node dummy_node = {0, 0, "Dummy", (void *)dummy_data, node->type, node->detail};
 
-        int res = ts_priv_json_deserialize_value(ts, value_buf, value_len, ts->tokens[tok].type, &dummy_node);
+        int res = ts_json_deserialize_value(ts, value_buf, value_len, ts->tokens[tok].type, &dummy_node);
         if (res == 0) {
-            return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
+            return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
         tok += res;
     }
@@ -533,7 +533,7 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
     // actually write data
     while (tok + 1 < ts->tok_count) {
 
-        const TsDataNode *node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[tok].start,
+        const struct ts_data_node *node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[tok].start,
             ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
         tok++;
@@ -545,17 +545,17 @@ int ts_priv_txt_patch(ts_object_t *ts, ts_node_id_t parent_id)
             value_buf[value_len] = '\0';
         }
 
-        tok += ts_priv_json_deserialize_value(ts, &ts->json_str[ts->tokens[tok].start], value_len, ts->tokens[tok].type,
+        tok += ts_json_deserialize_value(ts, &ts->json_str[ts->tokens[tok].start], value_len, ts->tokens[tok].type,
             node);
     }
 
-    return ts_priv_txt_response(ts, TS_STATUS_CHANGED);
+    return ts_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include_values)
+int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent_node, bool include_values)
 {
     // initialize response with success message
-    size_t len = ts_priv_txt_response(ts, TS_STATUS_CONTENT);
+    size_t len = ts_txt_response(ts, TS_STATUS_CONTENT);
 
     ts_node_id_t parent_node_id = (parent_node == NULL) ? 0 : parent_node->id;
 
@@ -564,14 +564,14 @@ int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include
     {
         // get value of data node
         ts->resp[len++] = ' ';
-        len += ts_priv_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent_node);
+        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent_node);
         ts->resp[--len] = '\0';     // remove trailing comma again
         return len;
     }
 
     if (parent_node != NULL && parent_node->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec node's values
-        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     len += sprintf((char *)&ts->resp[len], include_values ? " {" : " [");
@@ -583,15 +583,15 @@ int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include
             if (include_values) {
                 if (ts->data_nodes[i].type == TS_T_PATH) {
                     // bad request, as we can't read nternal path node's values
-                    return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+                    return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
-                int ret = ts_priv_json_serialize_name_value(ts, (char *)&ts->resp[len], ts->resp_size - len,
+                int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len], ts->resp_size - len,
                     &ts->data_nodes[i]);
                 if (ret > 0) {
                     len += ret;
                 }
                 else {
-                    return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+                    return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
                 }
             }
             else {
@@ -602,7 +602,7 @@ int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include
             nodes_found++;
 
             if (len >= ts->resp_size - 1) {
-                return ts_priv_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+                return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
             }
         }
     }
@@ -617,20 +617,20 @@ int ts_priv_txt_get(ts_object_t *ts, const TsDataNode *parent_node, bool include
     return len;
 }
 
-int ts_priv_txt_create(ts_object_t *ts, const TsDataNode *node)
+int ts_txt_create(struct ts_context *ts, const struct ts_data_node *node)
 {
     if (ts->tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
+        return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
-        TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
+        struct ts_array_info *arr_info = (struct ts_array_info *)node->data;
         if (arr_info->num_elements < arr_info->max_elements) {
 
             if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
 
-                const TsDataNode *new_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+                const struct ts_data_node *new_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                     ts->tokens[0].end - ts->tokens[0].start, -1);
 
                 if (new_node != NULL) {
@@ -638,51 +638,51 @@ int ts_priv_txt_create(ts_object_t *ts, const TsDataNode *node)
                     // check if node is already existing in array
                     for (int i = 0; i < arr_info->num_elements; i++) {
                         if (node_ids[i] == new_node->id) {
-                            return ts_priv_txt_response(ts, TS_STATUS_CONFLICT);
+                            return ts_txt_response(ts, TS_STATUS_CONFLICT);
                         }
                     }
                     // otherwise append it
                     node_ids[arr_info->num_elements] = new_node->id;
                     arr_info->num_elements++;
-                    return ts_priv_txt_response(ts, TS_STATUS_CREATED);
+                    return ts_txt_response(ts, TS_STATUS_CREATED);
                 }
                 else {
-                    return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+                    return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
                 }
             }
             else {
-                return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
+                return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
             }
         }
         else {
-            return ts_priv_txt_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
+            return ts_txt_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
         if (ts->tokens[0].type == JSMN_STRING) {
-            TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+            struct ts_data_node *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                 ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 del_node->pubsub |= (uint16_t)node->detail;
-                return ts_priv_txt_response(ts, TS_STATUS_CREATED);
+                return ts_txt_response(ts, TS_STATUS_CREATED);
             }
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
-    return ts_priv_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
+    return ts_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ts_priv_txt_delete(ts_object_t *ts, const TsDataNode *node)
+int ts_txt_delete(struct ts_context *ts, const struct ts_data_node *node)
 {
     if (ts->tok_count > 1) {
         // only single JSON primitive supported at the moment
-        return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
+        return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
 
     if (node->type == TS_T_ARRAY) {
-        TsArrayInfo *arr_info = (TsArrayInfo *)node->data;
+        struct ts_array_info *arr_info = (struct ts_array_info *)node->data;
         if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
-            const TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+            const struct ts_data_node *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                 ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 // node found in node database, now look for same ID in the array
@@ -694,31 +694,31 @@ int ts_priv_txt_delete(ts_object_t *ts, const TsDataNode *node)
                             node_ids[j] = node_ids[j+1];
                         }
                         arr_info->num_elements--;
-                        return ts_priv_txt_response(ts, TS_STATUS_DELETED);
+                        return ts_txt_response(ts, TS_STATUS_DELETED);
                     }
                 }
             }
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
         else {
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
+            return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
         }
     }
     else if (node->type == TS_T_PUBSUB) {
         if (ts->tokens[0].type == JSMN_STRING) {
-            TsDataNode *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
+            struct ts_data_node *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                 ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_node != NULL) {
                 del_node->pubsub &= ~((uint16_t)node->detail);
-                return ts_priv_txt_response(ts, TS_STATUS_DELETED);
+                return ts_txt_response(ts, TS_STATUS_DELETED);
             }
-            return ts_priv_txt_response(ts, TS_STATUS_NOT_FOUND);
+            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
-    return ts_priv_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
+    return ts_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
-int ts_priv_txt_exec(ts_object_t *ts, const TsDataNode *node)
+int ts_txt_exec(struct ts_context *ts, const struct ts_data_node *node)
 {
     int tok = 0;            // current token
     int nodes_found = 0;    // number of child nodes found
@@ -730,24 +730,24 @@ int ts_priv_txt_exec(ts_object_t *ts, const TsDataNode *node)
     if ((node->access & TS_WRITE_MASK) && (node->type == TS_T_EXEC)) {
         // node is generally executable, but are we authorized?
         if ((node->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
-            return ts_priv_txt_response(ts, TS_STATUS_UNAUTHORIZED);
+            return ts_txt_response(ts, TS_STATUS_UNAUTHORIZED);
         }
     }
     else {
-        return ts_priv_txt_response(ts, TS_STATUS_FORBIDDEN);
+        return ts_txt_response(ts, TS_STATUS_FORBIDDEN);
     }
 
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if (ts->data_nodes[i].parent == node->id) {
             if (tok >= ts->tok_count) {
                 // more child nodes found than parameters were passed
-                return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+                return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
             }
-            int res = ts_priv_json_deserialize_value(ts, ts->json_str + ts->tokens[tok].start,
+            int res = ts_json_deserialize_value(ts, ts->json_str + ts->tokens[tok].start,
                 ts->tokens[tok].end - ts->tokens[tok].start, ts->tokens[tok].type, &ts->data_nodes[i]);
             if (res == 0) {
                 // deserializing the value was not successful
-                return ts_priv_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
+                return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
             }
             tok += res;
             nodes_found++;
@@ -756,23 +756,23 @@ int ts_priv_txt_exec(ts_object_t *ts, const TsDataNode *node)
 
     if (ts->tok_count > tok) {
         // more parameters passed than child nodes found
-        return ts_priv_txt_response(ts, TS_STATUS_BAD_REQUEST);
+        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
     // if we got here, finally create function pointer and call function
     void (*fun)(void) = (void(*)(void))node->data;
     fun();
 
-    return ts_priv_txt_response(ts, TS_STATUS_VALID);
+    return ts_txt_response(ts, TS_STATUS_VALID);
 }
 
-int ts_txt_pub(ts_object_t *ts, char *buf, size_t buf_size, const uint16_t pub_ch)
+int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t pub_ch)
 {
     unsigned int len = sprintf(buf, "# {");
 
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if (ts->data_nodes[i].pubsub & pub_ch) {
-            len += ts_priv_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
+            len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
         }
         if (len >= buf_size - 1) {
             return 0;

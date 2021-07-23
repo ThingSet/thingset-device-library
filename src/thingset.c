@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 
-static void _check_id_duplicates(const TsDataNode *data, size_t num)
+static void _check_id_duplicates(const struct ts_data_node *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         for (unsigned int j = i + 1; j < num; j++) {
@@ -31,11 +31,11 @@ static void _check_id_duplicates(const TsDataNode *data, size_t num)
  * Currently only supporting uint16_t (node_id_t) arrays as we need the size of each element
  * to iterate through the array.
  */
-static void _count_array_elements(const TsDataNode *data, size_t num)
+static void _count_array_elements(const struct ts_data_node *data, size_t num)
 {
     for (unsigned int i = 0; i < num; i++) {
         if (data[i].type == TS_T_ARRAY) {
-            TsArrayInfo *arr = (TsArrayInfo *)data[i].data;
+            struct ts_array_info *arr = (struct ts_array_info *)data[i].data;
             if (arr->num_elements == TS_AUTODETECT_ARRLEN) {
                 arr->num_elements = 0;  // set to safe default
                 if (arr->type == TS_T_NODE_ID) {
@@ -55,7 +55,7 @@ static void _count_array_elements(const TsDataNode *data, size_t num)
     }
 }
 
-int ts_init(ts_object_t *ts, TsDataNode *data, size_t num)
+int ts_init(struct ts_context *ts, struct ts_data_node *data, size_t num)
 {
     _check_id_duplicates(data, num);
 
@@ -68,7 +68,7 @@ int ts_init(ts_object_t *ts, TsDataNode *data, size_t num)
     return 0;
 }
 
-int ts_process(ts_object_t *ts, uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
+int ts_process(struct ts_context *ts, uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
 {
     // check if proper request was set before asking for a response
     if (request == NULL || request_len < 1)
@@ -82,11 +82,11 @@ int ts_process(ts_object_t *ts, uint8_t *request, size_t request_len, uint8_t *r
 
     if (ts->req[0] < 0x20) {
         // binary mode request
-        return ts_priv_bin_process(ts);
+        return ts_bin_process(ts);
     } else if (ts->req[0] == '?' || ts->req[0] == '=' || ts->req[0] == '+'
                || ts->req[0] == '-' || ts->req[0] == '!') {
         // text mode request
-        return ts_priv_txt_process(ts);
+        return ts_txt_process(ts);
     } else {
         // not a thingset command --> ignore and set response to empty string
         response[0] = 0;
@@ -94,7 +94,7 @@ int ts_process(ts_object_t *ts, uint8_t *request, size_t request_len, uint8_t *r
     }
 }
 
-TsDataNode *const ts_get_node_by_name(ts_object_t *ts, const char *name, size_t len, int32_t parent)
+struct ts_data_node *ts_get_node_by_name(struct ts_context *ts, const char *name, size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if (parent != -1 && ts->data_nodes[i].parent != parent) {
@@ -109,7 +109,7 @@ TsDataNode *const ts_get_node_by_name(ts_object_t *ts, const char *name, size_t 
     return NULL;
 }
 
-TsDataNode *const ts_get_node_by_id(ts_object_t *ts, ts_node_id_t id)
+struct ts_data_node *ts_get_node_by_id(struct ts_context *ts, ts_node_id_t id)
 {
     for (unsigned int i = 0; i < ts->num_nodes; i++) {
         if (ts->data_nodes[i].id == id) {
@@ -119,9 +119,9 @@ TsDataNode *const ts_get_node_by_id(ts_object_t *ts, ts_node_id_t id)
     return NULL;
 }
 
-TsDataNode *const ts_get_node_by_path(ts_object_t *ts, const char *path, size_t len)
+struct ts_data_node *ts_get_node_by_path(struct ts_context *ts, const char *path, size_t len)
 {
-    TsDataNode *node;
+    struct ts_data_node *node;
     const char *start = path;
     const char *end;
     uint16_t parent = 0;

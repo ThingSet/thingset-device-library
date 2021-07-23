@@ -22,7 +22,7 @@ void tearDown (void) {}
 uint8_t req_buf[TS_REQ_BUFFER_LEN];
 uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 
-ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(TsDataNode));
+ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(ThingSetDataNode));
 
 int main()
 {
