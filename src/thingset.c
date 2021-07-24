@@ -94,6 +94,11 @@ int ts_process(struct ts_context *ts, uint8_t *request, size_t request_len, uint
     }
 }
 
+void ts_set_authentication(struct ts_context *ts, uint16_t flags)
+{
+    ts->_auth_flags = flags;
+}
+
 struct ts_data_node *ts_get_node_by_name(struct ts_context *ts, const char *name, size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < ts->num_nodes; i++) {

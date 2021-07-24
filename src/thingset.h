@@ -194,51 +194,67 @@ struct ts_array_info {
  * type is passed
  */
 
+#ifdef __cplusplus
 static inline void *ts_bool_to_void(bool *ptr) { return (void*) ptr; }
+static inline void *ts_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
+static inline void *ts_int64_to_void(int64_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
+static inline void *ts_int32_to_void(int32_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
+static inline void *ts_int16_to_void(int16_t *ptr) { return (void*) ptr; }
+static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
+static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
+static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
+static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
+static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *) ptr; }
+#else
+#define ts_bool_to_void(ptr) ((void*)ptr)
+#define ts_uint64_to_void(ptr) ((void*)ptr)
+#define ts_int64_to_void(ptr) ((void*)ptr)
+#define ts_uint32_to_void(ptr) ((void*)ptr)
+#define ts_int32_to_void(ptr) ((void*)ptr)
+#define ts_uint16_to_void(ptr) ((void*)ptr)
+#define ts_int16_to_void(ptr) ((void*)ptr)
+#define ts_float_to_void(ptr) ((void*)ptr)
+#define ts_string_to_void(ptr) ((void*)ptr)
+#define ts_bytes_to_void(ptr) ((void*)ptr)
+#define ts_function_to_void(ptr) ((void*)ptr)
+#define ts_array_to_void(ptr) ((void*)ptr)
+#endif
+
 #define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
 
-static inline void *ts_uint64_to_void(uint64_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
 
-static inline void *ts_int64_to_void(int64_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
 
-static inline void *ts_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
 
-static inline void *ts_int32_to_void(int32_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
 
-static inline void *ts_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
 #define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
 
-static inline void *ts_int16_to_void(int16_t *ptr) { return (void*) ptr; }
 #define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
 
-static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 #define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
 
-static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 #define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
 
-static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
 #define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _acc, _pubsub}
 
-static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
     {_id, _parent, _name, ts_function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
 
-static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *) ptr; }
 #define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
 
@@ -435,10 +451,7 @@ void ts_dump_json(struct ts_context *ts, ts_node_id_t node_id, int level);
  * @param ts Pointer to ThingSet context.
  * @param flags Flags to define authentication level (1 = access allowed)
  */
-inline void ts_set_authentication(struct ts_context *ts, uint16_t flags)
-{
-    ts->_auth_flags = flags;
-};
+void ts_set_authentication(struct ts_context *ts, uint16_t flags);
 
 /**
  * Generate publication message in JSON format.
@@ -528,7 +541,7 @@ struct ts_data_node *ts_get_node_by_name(struct ts_context *ts, const char *name
  * Get the endpoint node of a provided path.
  *
  * @param ts Pointer to ThingSet context.
- * @param path Path with multiple node names separated by forward slash
+ * @param path Path with multiple node names separated by forward slash.
  * @param len Length of the entire path
  *
  * @returns Pointer to data node or NULL if node is not found
