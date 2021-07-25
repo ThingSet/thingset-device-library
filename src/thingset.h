@@ -368,7 +368,7 @@ struct ts_context {
     /**
      * Pointer to request buffer (provided in process function)
      */
-    uint8_t *req;
+    const uint8_t *req;
 
     /**
      * Length of the request
@@ -428,7 +428,7 @@ int ts_init(struct ts_context *ts, struct ts_data_node *data, size_t num);
  *
  * @returns Actual length of the response written to the buffer or 0 in case of error
  */
-int ts_process(struct ts_context *ts, uint8_t *request, size_t request_len, uint8_t *response, size_t response_size);
+int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len, uint8_t *response, size_t response_size);
 
 /**
  * Print all data nodes as a structured JSON text to stdout.
