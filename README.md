@@ -1,6 +1,6 @@
 # C++ library for the ThingSet Protocol
 
-![Travis CI build badge](https://travis-ci.com/LibreSolar/thingset-device-library.svg?branch=master)
+![build badge](https://github.com/LibreSolar/thingset-device-library/actions/workflows/platformio.yml/badge.svg)
 
 The ThingSet protocol provides a consistent, standardized way to configure, monitor and control ressource-constrained devices via different communication interfaces.
 
