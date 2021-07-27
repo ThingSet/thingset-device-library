@@ -19,8 +19,6 @@ zephyr_library_named("ts")
 
 zephyr_include_directories(${THINGSET_BASE}/src)
 
-target_compile_definitions(ts PUBLIC "__ZEPYHR__=1")
-
 target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset.c)
 target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset_bin.c)
 target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset_txt.c)

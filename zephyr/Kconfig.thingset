@@ -8,6 +8,11 @@ config THINGSET
 
 if THINGSET
 
+config THINGSET_ZEPHYR
+        bool
+        default y
+        help
+          ThingSet on Zephyr.
 
 config THINGSET_NUM_JSON_TOKENS
         int "Maximum number of expected JSON tokens."

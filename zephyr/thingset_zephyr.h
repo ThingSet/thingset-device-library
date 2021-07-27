@@ -1,14 +1,13 @@
 /*
  * Copyright (c) 2021 Bobby Noelte.
- *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef THINGSET_ZEPHYR_H_
 #define THINGSET_ZEPHYR_H_
 
-#if !__ZEPYHR__
-#warning "Including thingset_zephyr.h in non Zephyr environment!"
+#if !CONFIG_THINGSET_ZEPHYR
+#error "You need to define CONGIG_THINGSET_ZEPHYR."
 #endif
 
 /* Logging */
@@ -27,7 +26,9 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 #define LOG_ALLOC_STR(str)	((str == NULL) ? log_strdup("null") : \
                                                 log_strdup(str))
 
-#ifdef CONFIG_MINIMAL_LIBC
+#include <zephyr.h>
+
+#if CONFIG_MINIMAL_LIBC
 /*
  * Zephyr's minimal libc is missing some functions.
  * Provide !!sufficient!! replacements here.
@@ -64,6 +65,12 @@ inline unsigned long long strtoull(const char *str, char **endptr, int base)
 };
 #endif
 
-#include <zephyr.h>
+#if CONFIG_ZTEST
+/*
+ * Thingset unit tests are basically made for the Unity test framework.
+ * Provide some adaptations to make them run under the ztest framework.
+ */
+#include "ztest/ztest_unity.h"
+#endif
 
 #endif /* THINGSET_ZEPHYR_H_ */

@@ -1,32 +1,137 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
- *
  * Copyright (c) 2017 Martin Jäger / Libre Solar
+ * Copyright (c) 2021 Bobby Noelte.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "thingset.h"
-#include "unity.h"
+#include "test.h"
 
-#include "test_data.h"
-#include "test_functions.h"
-#include "tests.h"
-
-#ifdef __WIN32__
-
-// To avoid compilation error of unit tests
-void setUp (void) {}
-void tearDown (void) {}
-
+#ifndef UNITY
+#error "You have to include unity.h. Should be done by test.h->thingset_priv.h"
 #endif
 
-uint8_t req_buf[TS_REQ_BUFFER_LEN];
-uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 
-ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(ThingSetDataNode));
+void setUp (void)
+{
+    (void)ts_init(&ts, &data_nodes[0], data_nodes_size);
+}
+
+void tearDown (void)
+{
+    // Nothing to do
+}
+
+void tests_common()
+{
+    UNITY_BEGIN();
+
+    // data conversion tests
+    RUN_TEST(test_txt_patch_bin_fetch);
+    RUN_TEST(test_bin_patch_txt_fetch);
+
+    UNITY_END();
+}
+
+void tests_text_mode()
+{
+    UNITY_BEGIN();
+
+    // GET request
+    RUN_TEST(test_txt_get_output_names);
+    RUN_TEST(test_txt_get_output_names_values);
+
+    // FETCH request
+    RUN_TEST(test_txt_fetch_array);
+    RUN_TEST(test_txt_fetch_rounded);
+    RUN_TEST(test_txt_fetch_nan);
+    RUN_TEST(test_txt_fetch_inf);
+    RUN_TEST(test_txt_fetch_int32_array);
+    RUN_TEST(test_txt_fetch_float_array);
+
+    // PATCH request
+    RUN_TEST(test_txt_patch_wrong_data_structure);
+    RUN_TEST(test_txt_patch_array);
+    RUN_TEST(test_txt_patch_readonly);
+    RUN_TEST(test_txt_patch_wrong_path);
+    RUN_TEST(test_txt_patch_unknown_node);
+    RUN_TEST(test_txt_conf_callback);
+
+    // POST request
+    RUN_TEST(test_txt_exec);
+
+    // pub/sub messages
+    RUN_TEST(test_txt_pub_msg);
+    RUN_TEST(test_txt_pub_list_channels);
+    RUN_TEST(test_txt_pub_enable);
+    RUN_TEST(test_txt_pub_delete_append_node);
+
+    // authentication
+    RUN_TEST(test_txt_auth_user);
+    RUN_TEST(test_txt_auth_root);
+    RUN_TEST(test_txt_auth_long_password);
+    RUN_TEST(test_txt_auth_failure);
+    RUN_TEST(test_txt_auth_reset);
+
+    // general tests
+    RUN_TEST(test_txt_wrong_command);
+    RUN_TEST(test_txt_get_endpoint);
+
+    UNITY_END();
+}
+
+void tests_binary_mode()
+{
+    UNITY_BEGIN();
+
+    // GET request
+    RUN_TEST(test_bin_get_output_ids);
+    RUN_TEST(test_bin_get_output_names);
+    RUN_TEST(test_bin_get_output_names_values);
+
+    // PATCH request
+    RUN_TEST(test_bin_patch_multiple_nodes);
+    RUN_TEST(test_bin_patch_float_array);
+    RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
+
+    // FETCH request
+    RUN_TEST(test_bin_fetch_multiple_nodes);
+    RUN_TEST(test_bin_fetch_float_array);
+    RUN_TEST(test_bin_fetch_rounded_float);
+
+    // POST request
+    RUN_TEST(test_bin_exec);
+
+    // pub/sub messages
+    RUN_TEST(test_bin_pub);
+    RUN_TEST(test_bin_pub_can);
+    RUN_TEST(test_bin_sub);
+
+    // general tests
+    RUN_TEST(test_bin_num_elem);
+    RUN_TEST(test_bin_serialize_long_string);
+
+    // binary (bytes) data type
+    RUN_TEST(test_bin_serialize_bytes);
+    RUN_TEST(test_bin_deserialize_bytes);
+    RUN_TEST(test_bin_patch_fetch_bytes);
+
+    UNITY_END();
+}
+
+void tests_shim()
+{
+    UNITY_BEGIN();
+
+    // data conversion tests
+    RUN_TEST(test_shim_get_node);
+
+    UNITY_END();
+}
 
 int main()
 {
     tests_common();
     tests_text_mode();
     tests_binary_mode();
+    tests_shim();
 }

@@ -2,13 +2,12 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Copyright (c) 2020 Martin Jäger / Libre Solar
+ * Copyright (c) 2021 Bobby Noelte.
  */
 
 #if defined(NATIVE_BUILD) && !defined(UNIT_TEST)
 
-#include "thingset.h"
-#include "../test/test_data.h"
-#include "../test/test_functions.h"
+#include <thingset.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +17,47 @@
 
 #include "linenoise.h"
 
-ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+#include "../test/test_data.c"
+
+
+ThingSet thing(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+
+//
+// Setup functions used in test data included.
+//
+// Note: Test data is created as C data (not C++).
+//
+extern "C" {
+
+void reset_function()
+{
+    printf("Reset function called!\n");
+}
+
+void auth_function()
+{
+    const char pass_exp[] = "expert123";
+    const char pass_mkr[] = "maker456";
+
+    if (strlen(pass_exp) == strlen(auth_password) &&
+        strncmp(auth_password, pass_exp, strlen(pass_exp)) == 0)
+    {
+        thing.set_authentication(TS_EXP_MASK | TS_USR_MASK);
+    }
+    else if (strlen(pass_mkr) == strlen(auth_password) &&
+        strncmp(auth_password, pass_mkr, strlen(pass_mkr)) == 0)
+    {
+        thing.set_authentication(TS_MKR_MASK | TS_USR_MASK);
+    }
+    else {
+        thing.set_authentication(TS_USR_MASK);
+    }
+
+    printf("Auth function called, password: %s\n", auth_password);
+}
+
+} // extern "C"
+
 
 void pub_thread()
 {
@@ -26,7 +65,7 @@ void pub_thread()
 
     while (1) {
         if (pub_serial_enable) {
-            ts.txt_pub(pub_msg, sizeof(pub_msg), PUB_SER);
+            thing.txt_pub(pub_msg, sizeof(pub_msg), PUB_SER);
             printf("%s\r\n", pub_msg);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(pub_serial_interval));
@@ -39,7 +78,7 @@ int main()
 
     printf("\n----------------- Data node tree ---------------------\n");
 
-    ts.dump_json();
+    thing.dump_json();
 
     printf("\n----------------- ThingSet shell ---------------------\n");
 
@@ -52,7 +91,7 @@ int main()
         if (line[0] != '\0') {
             linenoiseHistoryAdd(line);
             linenoiseHistorySave(".thingset-shell-history.txt");
-            ts.process((uint8_t *)line, strlen(line), resp_buf, sizeof(resp_buf));
+            thing.process((uint8_t *)line, strlen(line), resp_buf, sizeof(resp_buf));
             printf("%s\n", (char *)resp_buf);
         }
         free(line);

@@ -15,9 +15,11 @@ extern "C" {
 #endif
 
 /* ThingSet adaptations to environment */
-#if __ZEPHYR__
+#if CONFIG_THINGSET_ZEPHYR
+
 #include "../zephyr/thingset_zephyr.h"
-#else /* ! __ZEPHYR */
+
+#else /* ! CONFIG_THINGSET_ZEPHYR */
 
 #define DEBUG 0
 
@@ -27,7 +29,11 @@ extern "C" {
 
 #include <stdio.h>
 
-#endif /* __ZEPHYR */
+#ifdef UNIT_TEST
+#include <unity.h>
+#endif
+
+#endif /* CONFIG_THINGSET_ZEPHYR */
 
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch

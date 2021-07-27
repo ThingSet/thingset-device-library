@@ -1,15 +1,15 @@
 /*
+ * Copyright (c) 2020 Martin Jäger / Libre Solar
+ * Copyright (c) 2021 Bobby Noelte.
  * SPDX-License-Identifier: Apache-2.0
- *
- * Copyright (c) 2017 Martin Jäger / Libre Solar
  */
 
-#ifndef TEST_DATA_H
-#define TEST_DATA_H
+#include "test.h"
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "thingset.h"
+/* Provide for inclusion in C++ code */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // info
 char manufacturer[] = "Libre Solar";
@@ -61,38 +61,19 @@ static int16_t i16;
 bool b;
 
 int32_t A[100] = {4, 2, 8, 4};
-ThingSetArrayInfo int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
+struct ts_array_info int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
 
 float B[100] = {2.27, 3.44};
-ThingSetArrayInfo float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
+struct ts_array_info float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
 
 uint8_t bytes[300] = {};
-ThingSetBytesBuffer bytes_buf = { bytes, 0 };
+struct ts_bytes_buffer bytes_buf = { bytes, 0 };
 
 void dummy(void);
 void conf_callback(void);
 
 
-/*
- * Categories / first layer node IDs
- */
-#define ID_ROOT     0x00
-#define ID_INFO     0x18        // read-only device information (e.g. manufacturer, device ID)
-#define ID_CONF     0x30        // configurable settings
-#define ID_INPUT    0x60        // input data (e.g. set-points)
-#define ID_OUTPUT   0x70        // output data (e.g. measurement values)
-#define ID_REC      0xA0        // recorded data (history-dependent)
-#define ID_CAL      0xD0        // calibration
-#define ID_EXEC     0xE0        // function call
-#define ID_PUB      0xF0        // publication setup
-#define ID_SUB      0xF1        // subscription setup
-#define ID_LOG      0x100       // access log data
-
-#define PUB_SER     (1U << 0)   // UART serial
-#define PUB_CAN     (1U << 1)   // CAN bus
-#define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
-
-static ThingSetDataNode data_nodes[] = {
+struct ts_data_node data_nodes[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
@@ -218,4 +199,12 @@ static ThingSetDataNode data_nodes[] = {
     TS_NODE_BYTES(0x8000, "bytesbuf", &bytes_buf, sizeof(bytes), ID_CONF, TS_ANY_RW, 0),
 };
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+#endif
+
+size_t data_nodes_size = ARRAY_SIZE(data_nodes);
+
+#ifdef __cplusplus
+} /** extern "C" */
 #endif
