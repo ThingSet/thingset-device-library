@@ -14,10 +14,10 @@
 #include <sys/types.h>  // for definition of endianness
 #include <math.h>       // for rounding of floats
 
-int cbor_deserialize_array_type(uint8_t *buf, const struct ts_data_node *data_node);
-int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_node *data_node);
+static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_node *data_node);
+static int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_node *data_node);
 
-static int cbor_deserialize_data_node(uint8_t *buf, const struct ts_data_node *data_node)
+static int cbor_deserialize_data_node(const uint8_t *buf, const struct ts_data_node *data_node)
 {
     switch (data_node->type) {
 #if (TS_64BIT_TYPES_SUPPORT == 1)
@@ -50,7 +50,7 @@ static int cbor_deserialize_data_node(uint8_t *buf, const struct ts_data_node *d
     }
 }
 
-int cbor_deserialize_array_type(uint8_t *buf, const struct ts_data_node *data_node)
+static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_node *data_node)
 {
     uint16_t num_elements;
     int pos = 0; // Index of the next value in the buffer

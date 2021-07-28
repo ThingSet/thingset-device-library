@@ -14,25 +14,12 @@
 extern "C" {
 #endif
 
-#ifdef __ZEPHYR__
+/* ThingSet adaptations to environment */
+#if CONFIG_THINGSET_ZEPHYR
 
-/* Logging */
-#define LOG_MODULE_NAME thingset
-#define LOG_LEVEL CONFIG_THINGSET_LOG_LEVEL
-#include <logging/log.h>
+#include "../zephyr/thingset_zephyr.h"
 
-#ifdef THINGSET_MAIN
-LOG_MODULE_REGISTER(LOG_MODULE_NAME);
-#else
-LOG_MODULE_DECLARE(LOG_MODULE_NAME);
-#endif
-
-#define LOG_ALLOC_STR(str)	((str == NULL) ? log_strdup("null") : \
-                                                log_strdup(str))
-
-#include <zephyr.h>
-
-#else /* ! __ZEPHYR */
+#else /* ! CONFIG_THINGSET_ZEPHYR */
 
 #define DEBUG 0
 
@@ -42,7 +29,11 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 
 #include <stdio.h>
 
-#endif /* __ZEPHYR */
+#ifdef UNIT_TEST
+#include <unity.h>
+#endif
+
+#endif /* CONFIG_THINGSET_ZEPHYR */
 
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch

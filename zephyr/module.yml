@@ -1,0 +1,7 @@
+# Copyright (c) 2021 Bobby Noelte.
+# SPDX-License-Identifier: Apache-2.0
+
+name: ThingSet
+build:
+  cmake: zephyr
+  kconfig: zephyr/Kconfig.thingset

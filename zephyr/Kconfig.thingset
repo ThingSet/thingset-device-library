@@ -1,0 +1,51 @@
+# Copyright (c) 2021 Bobby Noelte
+# SPDX-License-Identifier: Apache-2.0
+
+config THINGSET
+        bool "ThingSet Protocol Library"
+        help
+          This option enables the ThingSet Protocol Library (TS).
+
+if THINGSET
+
+config THINGSET_ZEPHYR
+        bool
+        default y
+        help
+          ThingSet on Zephyr.
+
+config THINGSET_NUM_JSON_TOKENS
+        int "Maximum number of expected JSON tokens."
+        default 50
+        help
+          The maximum number of expected JSON tokens (i.e. arrays, map keys, values, primitives, etc.).
+          Thingset throws an error if the maximum number of tokens is reached in a request or response.
+
+config THINGSET_VERBOSE_STATUS_MESSAGES
+        bool "Enable verbose status messages."
+        default y
+        help
+          If verbose status messages are switched on, a response in text-based mode
+          contains not only the status code, but also a message.
+
+config THINGSET_64BIT_TYPES_SUPPORT
+        bool "Enable support for 64 bit variable types."
+        default n
+        help
+          Switch on support for 64 bit variable types (uint64_t, int64_t, double).
+          This should be disabled for most 8-bit microcontrollers to increase performance.
+
+config THINGSET_CPP_LEGACY
+        bool "Enable legacy C++ interface."
+        default y
+        help
+          This option enables the legacy C++ interface of the
+          ThingSet protocol library. Enable if your C++ code uses
+          DataNode or ArrayInfo instead of ThingSetDataNode or ThingSetArrayInfo.
+
+module = THINGSET
+module-str = thingset
+source "subsys/logging/Kconfig.template.log_config"
+
+endif
+

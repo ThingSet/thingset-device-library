@@ -185,7 +185,7 @@ int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_uint64(uint8_t *data, uint64_t *value);
+int cbor_deserialize_uint64(const uint8_t *data, uint64_t *value);
 
 /**
  * Deserialize 64-bit signed integer
@@ -195,7 +195,7 @@ int cbor_deserialize_uint64(uint8_t *data, uint64_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_int64(uint8_t *data, int64_t *value);
+int cbor_deserialize_int64(const uint8_t *data, int64_t *value);
 #endif
 
 /**
@@ -206,7 +206,7 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_uint32(uint8_t *data, uint32_t *value);
+int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value);
 
 /**
  * Deserialize 32-bit signed integer
@@ -216,7 +216,7 @@ int cbor_deserialize_uint32(uint8_t *data, uint32_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_int32(uint8_t *data, int32_t *value);
+int cbor_deserialize_int32(const uint8_t *data, int32_t *value);
 
 /**
  * Deserialize 16-bit unsigned integer
@@ -226,7 +226,7 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_uint16(uint8_t *data, uint16_t *value);
+int cbor_deserialize_uint16(const uint8_t *data, uint16_t *value);
 
 /**
  * Deserialize 16-bit signed integer
@@ -236,7 +236,7 @@ int cbor_deserialize_uint16(uint8_t *data, uint16_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_int16(uint8_t *data, int16_t *value);
+int cbor_deserialize_int16(const uint8_t *data, int16_t *value);
 
 /**
  * Deserialize decimal fraction type
@@ -249,7 +249,7 @@ int cbor_deserialize_int16(uint8_t *data, int16_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent);
+int cbor_deserialize_decimal_fraction(const uint8_t *data, int32_t *mantissa, int32_t exponent);
 
 /**
  * Deserialize 32-bit float
@@ -259,7 +259,7 @@ int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t 
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_float(uint8_t *data, float *value);
+int cbor_deserialize_float(const uint8_t *data, float *value);
 
 /**
  * Deserialize bool
@@ -269,7 +269,7 @@ int cbor_deserialize_float(uint8_t *data, float *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_bool(uint8_t *data, bool *value);
+int cbor_deserialize_bool(const uint8_t *data, bool *value);
 
 /**
  * Deserialize string
@@ -280,7 +280,7 @@ int cbor_deserialize_bool(uint8_t *data, bool *value);
  *
  * @returns Number of bytes read from data buffer or 0 in case of error
  */
-int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size);
+int cbor_deserialize_string(const uint8_t *data, char *str, uint16_t buf_size);
 
 /**
  * Deserialize bytes
@@ -292,7 +292,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size);
  *
  * @returns Number of bytes read from data buffer or 0 in case of error
  */
-int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes);
+int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes);
 
 /**
  * Determine the number of elements in a map or an array
@@ -302,7 +302,7 @@ int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uin
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_num_elements(uint8_t *data, uint16_t *num_elements);
+int cbor_num_elements(const uint8_t *data, uint16_t *num_elements);
 
 /**
  * Determine the size of the cbor data item
@@ -311,7 +311,7 @@ int cbor_num_elements(uint8_t *data, uint16_t *num_elements);
  *
  * @returns Size in bytes
  */
-int cbor_size(uint8_t *data);
+int cbor_size(const uint8_t *data);
 
 #ifdef __cplusplus
 }

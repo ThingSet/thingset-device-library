@@ -68,7 +68,7 @@ int ts_init(struct ts_context *ts, struct ts_data_node *data, size_t num)
     return 0;
 }
 
-int ts_process(struct ts_context *ts, uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
+int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
 {
     // check if proper request was set before asking for a response
     if (request == NULL || request_len < 1)
@@ -92,6 +92,11 @@ int ts_process(struct ts_context *ts, uint8_t *request, size_t request_len, uint
         response[0] = 0;
         return 0;
     }
+}
+
+void ts_set_authentication(struct ts_context *ts, uint16_t flags)
+{
+    ts->_auth_flags = flags;
 }
 
 struct ts_data_node *ts_get_node_by_name(struct ts_context *ts, const char *name, size_t len, int32_t parent)

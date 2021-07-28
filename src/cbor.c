@@ -200,9 +200,9 @@ int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len)
 }
 
 #ifdef TS_64BIT_TYPES_SUPPORT
-int _cbor_uint_data(uint8_t *data, uint64_t *bytes)
+int _cbor_uint_data(const uint8_t *data, uint64_t *bytes)
 #else
-int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
+int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
 #endif
 {
     uint8_t info = data[0] & CBOR_INFO_MASK;
@@ -245,7 +245,7 @@ int _cbor_uint_data(uint8_t *data, uint32_t *bytes)
 }
 
 #ifdef TS_64BIT_TYPES_SUPPORT
-int cbor_deserialize_uint64(uint8_t *data, uint64_t *value)
+int cbor_deserialize_uint64(const uint8_t *data, uint64_t *value)
 {
     uint64_t tmp;
     int size;
@@ -262,7 +262,7 @@ int cbor_deserialize_uint64(uint8_t *data, uint64_t *value)
     return 0;
 }
 
-int cbor_deserialize_int64(uint8_t *data, int64_t *value)
+int cbor_deserialize_int64(const uint8_t *data, int64_t *value)
 {
     uint64_t tmp;
     int size;
@@ -299,7 +299,7 @@ int cbor_deserialize_int64(uint8_t *data, int64_t *value)
 #endif
 
 
-int cbor_deserialize_uint32(uint8_t *data, uint32_t *value)
+int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value)
 {
 #ifdef TS_64BIT_TYPES_SUPPORT
     uint64_t tmp;
@@ -323,7 +323,7 @@ int cbor_deserialize_uint32(uint8_t *data, uint32_t *value)
     return 0;
 }
 
-int cbor_deserialize_int32(uint8_t *data, int32_t *value)
+int cbor_deserialize_int32(const uint8_t *data, int32_t *value)
 {
 #ifdef TS_64BIT_TYPES_SUPPORT
     uint64_t tmp;
@@ -362,7 +362,7 @@ int cbor_deserialize_int32(uint8_t *data, int32_t *value)
     return 0;
 }
 
-int cbor_deserialize_uint16(uint8_t *data, uint16_t *value)
+int cbor_deserialize_uint16(const uint8_t *data, uint16_t *value)
 {
     uint32_t tmp;
     int size = cbor_deserialize_uint32(data, &tmp); // also checks value for null-pointer
@@ -374,7 +374,7 @@ int cbor_deserialize_uint16(uint8_t *data, uint16_t *value)
     return 0;
 }
 
-int cbor_deserialize_int16(uint8_t *data, int16_t *value)
+int cbor_deserialize_int16(const uint8_t *data, int16_t *value)
 {
     int32_t tmp;
     int size = cbor_deserialize_int32(data, &tmp); // also checks value for null-pointer
@@ -386,13 +386,13 @@ int cbor_deserialize_int16(uint8_t *data, int16_t *value)
     return 0;
 }
 
-int cbor_deserialize_decimal_fraction(uint8_t *data, int32_t *mantissa, int32_t exponent)
+int cbor_deserialize_decimal_fraction(const uint8_t *data, int32_t *mantissa, int32_t exponent)
 {
     // ToDo: implementation
     return 0;
 }
 
-int cbor_deserialize_float(uint8_t *data, float *value)
+int cbor_deserialize_float(const uint8_t *data, float *value)
 {
     if (!value) {
         return 0;
@@ -434,7 +434,7 @@ int cbor_deserialize_float(uint8_t *data, float *value)
     return 0;
 }
 
-int cbor_deserialize_bool(uint8_t *data, bool *value)
+int cbor_deserialize_bool(const uint8_t *data, bool *value)
 {
     if (!value || !data)
         return 0;
@@ -450,7 +450,7 @@ int cbor_deserialize_bool(uint8_t *data, bool *value)
     return 0;
 }
 
-int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
+int cbor_deserialize_string(const uint8_t *data, char *str, uint16_t buf_size)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
@@ -464,7 +464,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
     if (info <= CBOR_NUM_MAX) {
         len = info;
         if (len < buf_size) {
-            strncpy(str, (char*)&data[1], len);
+            strncpy(str, (const char*)&data[1], len);
             str[len] = '\0';
             //printf("deserialize string: \"%s\", len = %d, max_len = %d\n", (char*)&data[1], len, buf_size);
             return len + 1;
@@ -473,7 +473,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
     else if (info == CBOR_UINT8_FOLLOWS) {
         len = data[1];
         if (len < buf_size) {
-            strncpy(str, (char*)&data[2], len);
+            strncpy(str, (const char*)&data[2], len);
             str[len] = '\0';
             return len + 2;
         }
@@ -481,7 +481,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
     else if (info == CBOR_UINT16_FOLLOWS) {
         len = data[1] << 8 | data[2];
         if (len < buf_size) {
-            strncpy(str, (char*)&data[3], len);
+            strncpy(str, (const char*)&data[3], len);
             str[len] = '\0';
             return len + 3;
         }
@@ -489,7 +489,7 @@ int cbor_deserialize_string(uint8_t *data, char *str, uint16_t buf_size)
     return 0;   // longer string not supported
 }
 
-int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes)
+int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
@@ -526,7 +526,7 @@ int cbor_deserialize_bytes(uint8_t *data, uint8_t *bytes, uint16_t buf_size, uin
 }
 
 // stores size of map or array in num_elements
-int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
+int cbor_num_elements(const uint8_t *data, uint16_t *num_elements)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
@@ -559,7 +559,7 @@ int cbor_num_elements(uint8_t *data, uint16_t *num_elements)
 
 
 // determines the size of a cbor data item starting at given pointer
-int cbor_size(uint8_t *data)
+int cbor_size(const uint8_t *data)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
