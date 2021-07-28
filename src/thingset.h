@@ -159,10 +159,10 @@ enum TsType {
     TS_T_BYTES,
     TS_T_ARRAY,
     TS_T_DECFRAC,       // CBOR decimal fraction
-    TS_T_PATH,          // internal node to describe URI path
+    TS_T_GROUP,          // internal node to describe URI path
     TS_T_NODE_ID,       // internally equal to uint16_t
-    TS_T_EXEC,          // for exec data objects
-    TS_T_PUBSUB
+    TS_T_EXEC,          // functions
+    TS_T_DATA_SET
 };
 
 /**
@@ -222,47 +222,108 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define ts_array_to_void(ptr) ((void*)ptr)
 #endif
 
-#define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_bool_to_void(_data_ptr), TS_T_BOOL, 0, _acc, _pubsub}
 
-#define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint64_to_void(_data_ptr), TS_T_UINT64, 0, _acc, _pubsub}
 
-#define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int64_to_void(_data_ptr), TS_T_INT64, 0, _acc, _pubsub}
 
-#define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint32_to_void(_data_ptr), TS_T_UINT32, 0, _acc, _pubsub}
 
-#define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int32_to_void(_data_ptr), TS_T_INT32, 0, _acc, _pubsub}
 
-#define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_uint16_to_void(_data_ptr), TS_T_UINT16, 0, _acc, _pubsub}
 
-#define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+#define TS_ITEM_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_int16_to_void(_data_ptr), TS_T_INT16, 0, _acc, _pubsub}
 
-#define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+#define TS_ITEM_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _acc, _pubsub}
 
-#define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+#define TS_ITEM_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_string_to_void(_data_ptr), TS_T_STRING, _buf_size, _acc, _pubsub}
 
-#define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+#define TS_ITEM_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _acc, _pubsub}
 
-#define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
+#define TS_FUNCTION(_id, _name, _function_ptr, _parent, _acc) \
     {_id, _parent, _name, ts_function_to_void(_function_ptr), TS_T_EXEC, 0, _acc, 0}
 
-#define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+#define TS_ITEM_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     {_id, _parent, _name, ts_array_to_void(_data_ptr), TS_T_ARRAY, _digits, _acc, _pubsub}
 
+#define TS_DATA_SET(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
+    {_id, _parent, _name, NULL, TS_T_DATA_SET, _pubsub_channel, _acc, _pubsub}
+
+#define TS_GROUP(_id, _name, _parent, _callback) \
+    {_id, _parent, _name, ts_function_to_void(_callback), TS_T_GROUP, 0, TS_READ_MASK, 0}
+
+
+/*
+ * Deprecated defines for spec v0.3 to maintain compatibility
+ */
+
+#define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_BOOL' macro is deprecated, use 'TS_ITEM_BOOL'\"")
+
+#define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_UINT64' macro is deprecated, use 'TS_ITEM_UINT64'\"")
+
+#define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_INT64' macro is deprecated, use 'TS_ITEM_INT64'\"")
+
+#define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_UINT32' macro is deprecated, use 'TS_ITEM_UINT32'\"")
+
+#define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_INT32' macro is deprecated, use 'TS_ITEM_INT32'\"")
+
+#define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_UINT16' macro is deprecated, use 'TS_ITEM_UINT16'\"")
+
+#define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    TS_ITEM_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_INT16' macro is deprecated, use 'TS_ITEM_INT16'\"")
+
+#define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    TS_ITEM_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_FLOAT' macro is deprecated, use 'TS_ITEM_FLOAT'\"")
+
+#define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    TS_ITEM_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_STRING' macro is deprecated, use 'TS_ITEM_STRING'\"")
+
+#define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    TS_ITEM_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_BYTES' macro is deprecated, use 'TS_ITEM_BYTES'\"")
+
+#define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
+    TS_FUNCTION(_id, _name, _function_ptr, _parent, _acc) \
+    _Pragma ("GCC warning \"'TS_NODE_EXEC' macro is deprecated, use 'TS_FUNCTION'\"")
+
+#define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    TS_ITEM_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_ARRAY' macro is deprecated, use 'TS_ITEM_ARRAY'\"")
+
 #define TS_NODE_PUBSUB(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
-    {_id, _parent, _name, NULL, TS_T_PUBSUB, _pubsub_channel, _acc, _pubsub}
+    TS_DATA_SET(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
+    _Pragma ("GCC warning \"'TS_NODE_PUBSUB' macro is deprecated, use 'TS_DATA_SET'\"")
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
-    {_id, _parent, _name, ts_function_to_void(_callback), TS_T_PATH, 0, TS_READ_MASK, 0}
+    TS_GROUP(_id, _name, _parent, _callback) \
+    _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
 
 /*
  * Access right macros for data nodes

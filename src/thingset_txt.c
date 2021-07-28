@@ -153,7 +153,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
     case TS_T_STRING:
         pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char *)node->data);
         break;
-    case TS_T_PUBSUB:
+    case TS_T_DATA_SET:
         pos = snprintf(&buf[pos], size - pos, "[");
         for (unsigned int i = 0; i < ts->num_nodes; i++) {
             if (ts->data_nodes[i].pubsub & (uint16_t)node->detail) {
@@ -257,7 +257,7 @@ void ts_dump_json(struct ts_context *ts, ts_node_id_t node_id, int level)
                 printf("\n");
                 first = false;
             }
-            if (ts->data_nodes[i].type == TS_T_PATH) {
+            if (ts->data_nodes[i].type == TS_T_GROUP) {
                 LOG_DBG("%*s\"%s\": {", 4 * (level + 1), "", ts->data_nodes[i].name);
                 ts_dump_json(ts, ts->data_nodes[i].id, level + 1);
                 LOG_DBG("\n%*s}", 4 * (level + 1), "");
@@ -311,7 +311,7 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
-                if (endpoint->type == TS_T_PATH || endpoint->type == TS_T_EXEC) {
+                if (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC) {
                     return ts_txt_get(ts, endpoint, TS_RET_NAMES);
                 }
                 else {
@@ -385,7 +385,7 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_node *parent)
         if (node == NULL) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
-        else if (node->type == TS_T_PATH) {
+        else if (node->type == TS_T_GROUP) {
             // bad request, as we can't read internal path node's values
             return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
@@ -586,7 +586,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_
 
     ts_node_id_t parent_id = (parent == NULL) ? 0 : parent->id;
 
-    if (parent != NULL && parent->type != TS_T_PATH &&
+    if (parent != NULL && parent->type != TS_T_GROUP &&
         parent->type != TS_T_EXEC)
     {
         // get value of data node
@@ -608,7 +608,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_node *parent, uint32_
             (ts->data_nodes[i].parent == parent_id))
         {
             if (include_values) {
-                if (ts->data_nodes[i].type == TS_T_PATH) {
+                if (ts->data_nodes[i].type == TS_T_GROUP) {
                     // bad request, as we can't read nternal path node's values
                     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
@@ -685,7 +685,7 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_node *node)
             return ts_txt_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
         }
     }
-    else if (node->type == TS_T_PUBSUB) {
+    else if (node->type == TS_T_DATA_SET) {
         if (ts->tokens[0].type == JSMN_STRING) {
             struct ts_data_node *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                 ts->tokens[0].end - ts->tokens[0].start, -1);
@@ -731,7 +731,7 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_node *node)
             return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
         }
     }
-    else if (node->type == TS_T_PUBSUB) {
+    else if (node->type == TS_T_DATA_SET) {
         if (ts->tokens[0].type == JSMN_STRING) {
             struct ts_data_node *del_node = ts_get_node_by_name(ts, ts->json_str + ts->tokens[0].start,
                 ts->tokens[0].end - ts->tokens[0].start, -1);
@@ -804,7 +804,7 @@ int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const
 
     len = snprintf(buf, buf_size, "#%s {", endpoint);
 
-    if (node->type == TS_T_PUBSUB) {
+    if (node->type == TS_T_DATA_SET) {
         uint16_t pub_ch = node->detail;
         for (unsigned int i = 0; i < ts->num_nodes; i++) {
             if (ts->data_nodes[i].pubsub & pub_ch) {
@@ -815,7 +815,7 @@ int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const
             }
         }
     }
-    else if (node->type == TS_T_PATH) {
+    else if (node->type == TS_T_GROUP) {
         for (unsigned int i = 0; i < ts->num_nodes; i++) {
             if (ts->data_nodes[i].parent == node->id) {
                 len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_nodes[i]);
