@@ -20,7 +20,7 @@ extern "C" {
  * Implemented in test_data.c
  */
 
-/* Categories / first layer node IDs */
+/* Categories / first layer object IDs */
 #define ID_ROOT     0x00
 #define ID_INFO     0x01        // read-only device information (e.g. manufacturer, device ID)
 #define ID_MEAS     0x02        // output data (e.g. measurement values)
@@ -54,8 +54,8 @@ extern float B[100];
 extern struct ts_array_info float32_array;
 extern uint8_t bytes[300];
 extern struct ts_bytes_buffer bytes_buf;
-extern struct ts_data_node data_nodes[];
-extern size_t data_nodes_size;
+extern struct ts_data_object data_objects[];
+extern size_t data_objects_size;
 
 /*
  * Context used for testing
@@ -141,7 +141,7 @@ void test_txt_patch_wrong_data_structure(void);
 void test_txt_patch_array(void);
 void test_txt_patch_readonly(void);
 void test_txt_patch_wrong_path(void);
-void test_txt_patch_unknown_node(void);
+void test_txt_patch_unknown_object(void);
 void test_txt_conf_callback(void);
 void test_txt_exec(void);
 void test_txt_pub_report(void);
@@ -149,7 +149,7 @@ void test_txt_pub_info(void);
 void test_txt_pub_deprecated(void);
 void test_txt_pub_list_channels(void);
 void test_txt_pub_enable(void);
-void test_txt_pub_delete_append_node(void);
+void test_txt_pub_delete_append_object(void);
 void test_txt_auth_user(void);
 void test_txt_auth_root(void);
 void test_txt_auth_long_password(void);
@@ -160,10 +160,10 @@ void test_txt_get_endpoint(void);
 void test_bin_get_meas_ids_values(void);
 void test_bin_get_meas_names_values(void);
 void test_bin_get_single_value(void);
-void test_bin_patch_multiple_nodes(void);
+void test_bin_patch_multiple_objects(void);
 void test_bin_fetch_meas_ids(void);
 void test_bin_fetch_meas_names(void);
-void test_bin_fetch_multiple_nodes(void);
+void test_bin_fetch_multiple_objects(void);
 void test_bin_patch_float_array(void);
 void test_bin_fetch_float_array(void);
 void test_bin_patch_rounded_float(void);
@@ -184,7 +184,7 @@ void test_bin_patch_fetch_bytes(void);
 /*
  * Implemented in test_shim.cpp
  */
-void test_shim_get_node(void);
+void test_shim_get_object(void);
 
 #endif
 

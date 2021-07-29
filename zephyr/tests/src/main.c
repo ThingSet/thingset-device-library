@@ -12,7 +12,7 @@
 
 
 void setup(void) {
-    (void)ts_init(&ts, &data_nodes[0], data_nodes_size);
+    (void)ts_init(&ts, &data_objects[0], data_objects_size);
 }
 
 void teardown(void) {
@@ -45,7 +45,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_patch_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_readonly, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_path, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_patch_unknown_node, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_patch_unknown_object, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_conf_callback, setup, teardown),
         /* Text mode: POLL request */
         ztest_unit_test_setup_teardown(test_txt_exec, setup, teardown),
@@ -54,7 +54,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_list_channels, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_enable, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_pub_delete_append_node, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_pub_delete_append_object, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_auth_user, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_auth_root, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_auth_long_password, setup, teardown),
@@ -68,13 +68,13 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_get_meas_names_values, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_get_single_value, setup, teardown),
         /* Bin mode: PATCH request */
-        ztest_unit_test_setup_teardown(test_bin_patch_multiple_nodes, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_patch_multiple_objects, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_rounded_float, setup, teardown),
         /* Text mode: FETCH request */
         ztest_unit_test_setup_teardown(test_bin_fetch_meas_ids, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_meas_names, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_fetch_multiple_nodes, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_multiple_objects, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_rounded_float, setup, teardown),
         /* Bin mode: POST request */

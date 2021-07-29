@@ -13,7 +13,7 @@
 
 void setUp (void)
 {
-    (void)ts_init(&ts, &data_nodes[0], data_nodes_size);
+    (void)ts_init(&ts, &data_objects[0], data_objects_size);
 }
 
 void tearDown (void)
@@ -54,7 +54,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_patch_array);
     RUN_TEST(test_txt_patch_readonly);
     RUN_TEST(test_txt_patch_wrong_path);
-    RUN_TEST(test_txt_patch_unknown_node);
+    RUN_TEST(test_txt_patch_unknown_object);
     RUN_TEST(test_txt_conf_callback);
 
     // POST request
@@ -66,7 +66,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_pub_deprecated);
     RUN_TEST(test_txt_pub_list_channels);
     RUN_TEST(test_txt_pub_enable);
-    RUN_TEST(test_txt_pub_delete_append_node);
+    RUN_TEST(test_txt_pub_delete_append_object);
 
     // authentication
     RUN_TEST(test_txt_auth_user);
@@ -92,14 +92,14 @@ void tests_binary_mode()
     RUN_TEST(test_bin_get_single_value);
 
     // PATCH request
-    RUN_TEST(test_bin_patch_multiple_nodes);
+    RUN_TEST(test_bin_patch_multiple_objects);
     RUN_TEST(test_bin_patch_float_array);
     RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
 
     // FETCH request
     RUN_TEST(test_bin_fetch_meas_ids);
     RUN_TEST(test_bin_fetch_meas_names);
-    RUN_TEST(test_bin_fetch_multiple_nodes);
+    RUN_TEST(test_bin_fetch_multiple_objects);
     RUN_TEST(test_bin_fetch_float_array);
     RUN_TEST(test_bin_fetch_rounded_float);
 
@@ -128,7 +128,7 @@ void tests_shim()
     UNITY_BEGIN();
 
     // data conversion tests
-    RUN_TEST(test_shim_get_node);
+    RUN_TEST(test_shim_get_object);
 
     UNITY_END();
 }

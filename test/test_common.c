@@ -241,7 +241,7 @@ void test_bin_patch_txt_fetch(void)
  */
 void test_ts_init(void)
 {
-    int ret = ts_init(&ts, &data_nodes[0], data_nodes_size);
+    int ret = ts_init(&ts, &data_objects[0], data_objects_size);
 
     TEST_ASSERT_EQUAL(0, ret);
 }

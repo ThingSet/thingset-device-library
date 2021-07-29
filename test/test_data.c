@@ -71,7 +71,7 @@ void dummy(void);
 void conf_callback(void);
 
 
-struct ts_data_node data_nodes[] = {
+struct ts_data_object data_objects[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
 
@@ -158,7 +158,7 @@ struct ts_data_node data_nodes[] = {
     TS_ITEM_UINT32(0x7001, "secret_expert", &ui32, ID_CONF, TS_ANY_R | TS_EXP_W | TS_MKR_W, 0),
     TS_ITEM_UINT32(0x7002, "secret_maker", &ui32, ID_CONF, TS_ANY_R | TS_MKR_W, 0),
     TS_ITEM_ARRAY(0x7003, "arrayi32", &int32_array, 0, ID_CONF, TS_ANY_RW, 0),
-    // data_node->detail will specify the number of decimal places for float
+    // data_obj->detail will specify the number of decimal places for float
     TS_ITEM_ARRAY(0x7004, "arrayfloat", &float32_array, 2, ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_BYTES(0x8000, "bytesbuf", &bytes_buf, sizeof(bytes), ID_CONF, TS_ANY_RW, 0),
@@ -168,7 +168,7 @@ struct ts_data_node data_nodes[] = {
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 #endif
 
-size_t data_nodes_size = ARRAY_SIZE(data_nodes);
+size_t data_objects_size = ARRAY_SIZE(data_objects);
 
 #ifdef __cplusplus
 } /** extern "C" */

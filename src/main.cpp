@@ -20,7 +20,7 @@
 #include "../test/test_data.c"
 
 
-ThingSet thing(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+ThingSet thing(data_objects, sizeof(data_objects)/sizeof(ThingSetDataObject));
 
 //
 // Setup functions used in test data included.
@@ -76,7 +76,7 @@ int main()
 {
     uint8_t resp_buf[1000];
 
-    printf("\n----------------- Data node tree ---------------------\n\n");
+    printf("\n----------------- Data object tree ---------------------\n\n");
 
     thing.dump_json();
 

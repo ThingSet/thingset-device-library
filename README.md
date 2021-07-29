@@ -24,12 +24,12 @@ Afterwards, run the binary with:
 
     .pio/build/native-std/program
 
-Most important is the setup of the data node tree in `test/test_data.h`.
+Most important is the setup of the data object tree in `test/test_data.c`.
 
-Assuming the data is stored in a static array `data_nodes` as in the example, a ThingSet object is created by:
+Assuming the data is stored in a static array `data_objects` as in the example, a ThingSet object is created by:
 
 ```C++
-ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+ThingSet ts(data_objects, sizeof(data_objects)/sizeof(ThingSetDataObject));
 ```
 
 Afterwards, it can be used with any communication interface using the `process` function:
@@ -65,10 +65,10 @@ The following ThingSet functions are fully implemented:
 - PATCH request (first byte '=')
 - POST request (first byte '!' or '+')
 - DELETE request (first byte '-')
-- Execution of functions via callbacks to certain paths or via executable nodes
-- Authentication via callback to 'auth' node
+- Execution of functions via callbacks to certain paths or via executable objects
+- Authentication via callback to 'auth' object
 - Sending of publication messages (# {...})
-- Setup of publication channels (enable/disable, configure data nodes to be published, change interval)
+- Setup of publication channels (enable/disable, configure data objects to be published, change interval)
 
 In order to reduce code size, verbose status messages can be turned off using the TS_VERBOSE_STATUS_MESSAGES = 0 in ts_config.h.
 

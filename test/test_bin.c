@@ -70,7 +70,7 @@ void test_bin_fetch_meas_names(void)
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_patch_multiple_nodes(void)
+void test_bin_patch_multiple_objects(void)
 {
     const char req_hex[] =
         "07 06 "
@@ -93,7 +93,7 @@ void test_bin_patch_multiple_nodes(void)
     TEST_ASSERT_BIN_REQ_HEX(req_hex, resp_hex);
 }
 
-void test_bin_fetch_multiple_nodes(void)
+void test_bin_fetch_multiple_objects(void)
 {
     f32 = 7.89;
 
@@ -260,7 +260,7 @@ void test_bin_pub_can(void)
     TEST_ASSERT(can_pubsub);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_A_hex[0], &can_data[0], sizeof(Bat_A_hex));
 
-    // third call (should not find further nodes)
+    // third call (should not find further objects)
     can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_EQUAL(-1, can_data_len);
 }
@@ -284,7 +284,7 @@ void test_bin_exec(void)
 
     const uint8_t req[] = {
         TS_POST,
-        0x19, 0x50, 0x01,       // node ID as endpoint
+        0x19, 0x50, 0x01,       // object ID as endpoint
         0x80                    // empty array (no parameters)
     };
     const uint8_t resp_expected[] = {

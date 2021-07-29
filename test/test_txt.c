@@ -91,7 +91,7 @@ void test_txt_patch_wrong_path(void)
     TEST_ASSERT_TXT_REQ("=info {\"i32\" : 52}", ":A4 Not Found.");
 }
 
-void test_txt_patch_unknown_node(void)
+void test_txt_patch_unknown_object(void)
 {
     TEST_ASSERT_TXT_REQ("=conf {\"i3\" : 52}", ":A4 Not Found.");
 }
@@ -149,7 +149,7 @@ void test_txt_pub_enable(void)
     TEST_ASSERT_TRUE(pub_report_enable);
 }
 
-void test_txt_pub_delete_append_node(void)
+void test_txt_pub_delete_append_object(void)
 {
     /* before change */
     TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
@@ -208,26 +208,26 @@ void test_txt_wrong_command(void)
 
 void test_txt_get_endpoint(void)
 {
-    const struct ts_data_node *node;
+    const struct ts_data_object *object;
 
-    node = ts_get_node_by_path(&ts, "conf", strlen("conf"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "conf", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    node = ts_get_node_by_path(&ts, "conf/", strlen("conf/"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "conf/", strlen("conf/"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    node = ts_get_node_by_path(&ts, "/", strlen("/"));
-    TEST_ASSERT_NULL(node);
-
-    /* special case where the data contains forward slashes */
-    node = ts_get_node_by_path(&ts, "conf \"this/is/a/path\"", strlen("conf"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "/", strlen("/"));
+    TEST_ASSERT_NULL(object);
 
     /* special case where the data contains forward slashes */
-    node = ts_get_node_by_path(&ts, "rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(0xE1, node->id);
+    object = ts_get_object_by_path(&ts, "conf \"this/is/a/path\"", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
+
+    /* special case where the data contains forward slashes */
+    object = ts_get_object_by_path(&ts, "rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
