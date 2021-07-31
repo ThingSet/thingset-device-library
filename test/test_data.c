@@ -78,7 +78,7 @@ struct ts_data_object data_objects[] = {
     TS_GROUP(ID_INFO, "info", 0, NULL),
 
     TS_ITEM_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
-    TS_ITEM_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, PUB_REPORT),
+    TS_ITEM_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, SUBSET_REPORT),
     TS_ITEM_STRING(0x1B, "DeviceID", device_id, sizeof(device_id), ID_INFO, TS_ANY_R | TS_MKR_W, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
@@ -98,9 +98,13 @@ struct ts_data_object data_objects[] = {
 
     TS_GROUP(ID_MEAS, "meas", 0, NULL),
 
-    TS_ITEM_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R, PUB_REPORT | PUB_CAN),
-    TS_ITEM_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_MEAS, TS_ANY_R, PUB_REPORT | PUB_CAN),
-    TS_ITEM_INT16(0x73, "Ambient_degC", &ambient_temp, ID_MEAS, TS_ANY_R, PUB_REPORT),
+    TS_ITEM_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R,
+        SUBSET_REPORT | SUBSET_CAN),
+
+    TS_ITEM_FLOAT(0x72, "Bat_A", &battery_current, 2, ID_MEAS, TS_ANY_R,
+        SUBSET_REPORT | SUBSET_CAN),
+
+    TS_ITEM_INT16(0x73, "Ambient_degC", &ambient_temp, ID_MEAS, TS_ANY_R, SUBSET_REPORT),
 
     // RECORDED DATA //////////////////////////////////////////////////////////
 
@@ -120,7 +124,7 @@ struct ts_data_object data_objects[] = {
 
     // REPORTS ////////////////////////////////////////////////////////////////
 
-    TS_DATA_SET(0xF4, "report", PUB_REPORT, 0, TS_ANY_RW, 0),
+    TS_SUBSET(0xF4, "report", SUBSET_REPORT, 0, TS_ANY_RW),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
 

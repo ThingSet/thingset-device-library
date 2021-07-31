@@ -65,7 +65,7 @@ void pub_thread()
 
     while (1) {
         if (pub_report_enable) {
-            thing.txt_pub(pub_msg, sizeof(pub_msg), PUB_REPORT);
+            thing.txt_pub(pub_msg, sizeof(pub_msg), SUBSET_REPORT);
             printf("%s\r\n", pub_msg);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(pub_report_interval));

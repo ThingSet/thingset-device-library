@@ -130,7 +130,7 @@ void test_txt_pub_info(void)
 
 void test_txt_pub_deprecated(void)
 {
-    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_REPORT);
+    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
 
     TEST_ASSERT_TXT_RESP(resp_len, "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }

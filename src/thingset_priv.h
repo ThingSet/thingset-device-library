@@ -104,17 +104,17 @@ int ts_txt_patch(struct ts_context *ts,  const struct ts_data_object *parent);
  *
  * Write data object values in binary mode (function called with a map as payload)
  *
- * If sub_ch is specified, objects not found are silently ignored. Otherwise, a NOT_FOUND
+ * If subset is specified, objects not found are silently ignored. Otherwise, a NOT_FOUND
  * error is raised.
  *
  * @param ts Pointer to ThingSet context.
  * @param parent Pointer to path / parent object or NULL to consider any object
  * @param pos_payload Position of payload in req buffer
  * @param auth_flags Bitset to specify authentication status for different roles
- * @param sub_ch Bitset to specifiy subscribe channel to be considered, 0 to ignore
+ * @param subsets Bitset to specifiy data item subsets to be considered, 0 to ignore
  */
-int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent, unsigned int pos_payload, uint16_t auth_flags,
-uint16_t sub_ch);
+int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
+                 unsigned int pos_payload, uint16_t auth_flags, uint16_t subsets);
 
 /**
  * POST request to append data.

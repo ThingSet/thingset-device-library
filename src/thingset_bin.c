@@ -328,19 +328,19 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
 }
 
 int ts_bin_sub(struct ts_context *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
-               uint16_t sub_ch)
+               uint16_t subsets)
 {
     uint8_t resp_tmp[1] = {};   // only one character as response expected
     ts->req = cbor_data;
     ts->req_len = len;
     ts->resp = resp_tmp;
     ts->resp_size = sizeof(resp_tmp);
-    ts_bin_patch(ts, NULL, 1, auth_flags, sub_ch);
+    ts_bin_patch(ts, NULL, 1, auth_flags, subsets);
     return ts->resp[0];
 }
 
-int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent, unsigned int pos_payload,
-                      uint16_t auth_flags, uint16_t sub_ch)
+int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
+                 unsigned int pos_payload, uint16_t auth_flags, uint16_t subsets)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
@@ -378,7 +378,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent, uns
             else if (parent && object->parent != parent->id) {
                 return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
             }
-            else if (sub_ch && !(object->pubsub & sub_ch)) {
+            else if (subsets && !(object->subsets & subsets)) {
                 // ignore element
                 num_bytes = cbor_size(&ts->req[pos_req]);
             }
@@ -389,7 +389,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent, uns
         }
         else {
             // object not found
-            if (sub_ch) {
+            if (subsets) {
                 // ignore element
                 num_bytes = cbor_size(&ts->req[pos_req]);
             }
@@ -461,7 +461,7 @@ int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object, unsi
     return ts_bin_response(ts, TS_STATUS_VALID);
 }
 
-int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t pub_ch)
+int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
 {
     buf[0] = TS_PUBMSG;
     int len = 1;
@@ -469,7 +469,7 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
     // find out number of elements to be published
     int num_ids = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].pubsub & pub_ch) {
+        if (ts->data_objects[i].subsets & subset) {
             num_ids++;
         }
     }
@@ -477,7 +477,7 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
     len += cbor_serialize_map(&buf[len], num_ids, buf_size - len);
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].pubsub & pub_ch) {
+        if (ts->data_objects[i].subsets & subset) {
             len += cbor_serialize_uint(&buf[len], ts->data_objects[i].id, buf_size - len);
             size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len, &ts->data_objects[i]);
             if (num_bytes == 0) {
@@ -491,13 +491,13 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
     return len;
 }
 
-int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t pub_ch, uint8_t can_dev_id,
+int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8_t can_dev_id,
                    uint32_t *msg_id, uint8_t *msg_data)
 {
     int msg_len = -1;
 
     for (unsigned int i = *start_pos; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].pubsub & pub_ch) {
+        if (ts->data_objects[i].subsets & subset) {
             *msg_id = TS_CAN_BASE_PUBSUB | TS_CAN_PRIO_PUBSUB_LOW
                 | TS_CAN_DATA_ID_SET(ts->data_objects[i].id)
                 | TS_CAN_SOURCE_SET(can_dev_id);

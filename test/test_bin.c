@@ -222,7 +222,7 @@ void test_bin_pub(void)
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
 
-    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), PUB_REPORT);
+    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }
@@ -237,31 +237,31 @@ void test_bin_pub_can(void)
     const uint8_t Bat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
 
     // first call (should return Bat_V)
-    int can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    int can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
     uint16_t can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    uint32_t can_pubsub = TS_CAN_PUBSUB(msg_id);
+    uint32_t can_subsets = TS_CAN_PUBSUB(msg_id);
     uint32_t can_prio = msg_id & TS_CAN_PRIO_MASK;
     TEST_ASSERT_EQUAL_UINT16(0x71, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_pubsub);
+    TEST_ASSERT(can_subsets);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_V_hex[0], &can_data[0], sizeof(Bat_V_hex));
 
     // second call (should return Bat_A)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
     can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    can_pubsub = TS_CAN_PUBSUB(msg_id);
+    can_subsets = TS_CAN_PUBSUB(msg_id);
     can_prio = msg_id & TS_CAN_PRIO_MASK;
     TEST_ASSERT_EQUAL_UINT16(0x72, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_pubsub);
+    TEST_ASSERT(can_subsets);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_A_hex[0], &can_data[0], sizeof(Bat_A_hex));
 
     // third call (should not find further objects)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_EQUAL(-1, can_data_len);
 }
 
@@ -273,7 +273,7 @@ void test_bin_sub(void)
         "18 32 FA 40 a4 28 f6 ";    // float 5.13
     int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
 
-    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, PUB_REPORT);
+    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
 
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }

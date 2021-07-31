@@ -152,10 +152,10 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
     case TS_T_STRING:
         pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char *)object->data);
         break;
-    case TS_T_DATA_SET:
+    case TS_T_SUBSET:
         pos = snprintf(&buf[pos], size - pos, "[");
         for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if (ts->data_objects[i].pubsub & (uint16_t)object->detail) {
+            if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
                 pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
             }
         }
@@ -648,12 +648,12 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
-    else if (object->type == TS_T_DATA_SET) {
+    else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
             struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
                 ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_object != NULL) {
-                del_object->pubsub |= (uint16_t)object->detail;
+                del_object->subsets |= (uint16_t)object->detail;
                 return ts_txt_response(ts, TS_STATUS_CREATED);
             }
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -673,12 +673,12 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
-    else if (object->type == TS_T_DATA_SET) {
+    else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
             struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
                 ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_object != NULL) {
-                del_object->pubsub &= ~((uint16_t)object->detail);
+                del_object->subsets &= ~((uint16_t)object->detail);
                 return ts_txt_response(ts, TS_STATUS_DELETED);
             }
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -746,10 +746,10 @@ int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const
 
     len = snprintf(buf, buf_size, "#%s {", endpoint);
 
-    if (object->type == TS_T_DATA_SET) {
-        uint16_t pub_ch = object->detail;
+    if (object->type == TS_T_SUBSET) {
+        uint16_t subset = object->detail;
         for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if (ts->data_objects[i].pubsub & pub_ch) {
+            if (ts->data_objects[i].subsets & subset) {
                 len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
             }
             if (len >= buf_size - 1) {
@@ -776,12 +776,12 @@ int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const
     return len;
 }
 
-int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t pub_ch)
+int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)
 {
     unsigned int len = sprintf(buf, "# {");
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].pubsub & pub_ch) {
+        if (ts->data_objects[i].subsets & subset) {
             len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
         }
         if (len >= buf_size - 1) {
