@@ -24,42 +24,9 @@ static void _check_id_duplicates(const struct ts_data_object *data, size_t num)
     }
 }
 
-/*
- * Counts the number of elements in an an array of object IDs by looking for the first non-zero
- * elements starting from the back.
- *
- * Currently only supporting uint16_t (obj_id_t) arrays as we need the size of each element
- * to iterate through the array.
- */
-static void _count_array_elements(const struct ts_data_object *data, size_t num)
-{
-    for (unsigned int i = 0; i < num; i++) {
-        if (data[i].type == TS_T_ARRAY) {
-            struct ts_array_info *arr = (struct ts_array_info *)data[i].data;
-            if (arr->num_elements == TS_AUTODETECT_ARRLEN) {
-                arr->num_elements = 0;  // set to safe default
-                if (arr->type == TS_T_NODE_ID) {
-                    for (int elem = arr->max_elements - 1; elem >= 0; elem--) {
-                        if (((ts_object_id_t *)arr->ptr)[elem] != 0) {
-                            arr->num_elements = elem + 1;
-                            LOG_DBG("%s num elements: %d\n", data[i].name, arr->num_elements);
-                            break;
-                        }
-                    }
-                }
-                else {
-                    LOG_ERR("Autodetecting array length of object 0x%X not possible.\n", data[i].id);
-                }
-            }
-        }
-    }
-}
-
 int ts_init(struct ts_context *ts, struct ts_data_object *data, size_t num)
 {
     _check_id_duplicates(data, num);
-
-    _count_array_elements(data, num);
 
     ts->data_objects = data;
     ts->num_objects = num;

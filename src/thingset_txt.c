@@ -95,7 +95,6 @@ int ts_txt_response(struct ts_context *ts, int code)
 int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *object)
 {
     size_t pos = 0;
-    const struct ts_data_object *sub_object;
     struct ts_array_info *array_info;
     float value;
 
@@ -200,12 +199,6 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
             case TS_T_FLOAT32:
                 pos += snprintf(&buf[pos], size - pos, "%.*f,", object->detail,
                         ((float *)array_info->ptr)[i]);
-                break;
-            case TS_T_NODE_ID:
-                sub_object = ts_get_object_by_id(ts, ((uint16_t *)array_info->ptr)[i]);
-                if (sub_object) {
-                    pos += snprintf(&buf[pos], size - pos, "\"%s\",", sub_object->name);
-                }
                 break;
             default:
                 break;
@@ -652,43 +645,13 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
     }
 
     if (object->type == TS_T_ARRAY) {
-        struct ts_array_info *arr_info = (struct ts_array_info *)object->data;
-        if (arr_info->num_elements < arr_info->max_elements) {
-
-            if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
-
-                const struct ts_data_object *new_object = ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
-                    ts->tokens[0].end - ts->tokens[0].start, -1);
-
-                if (new_object != NULL) {
-                    ts_object_id_t *obj_ids = (ts_object_id_t *)arr_info->ptr;
-                    // check if object is already existing in array
-                    for (int i = 0; i < arr_info->num_elements; i++) {
-                        if (obj_ids[i] == new_object->id) {
-                            return ts_txt_response(ts, TS_STATUS_CONFLICT);
-                        }
-                    }
-                    // otherwise append it
-                    obj_ids[arr_info->num_elements] = new_object->id;
-                    arr_info->num_elements++;
-                    return ts_txt_response(ts, TS_STATUS_CREATED);
-                }
-                else {
-                    return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
-                }
-            }
-            else {
-                return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
-            }
-        }
-        else {
-            return ts_txt_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
-        }
+        // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
+        return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
     else if (object->type == TS_T_DATA_SET) {
         if (ts->tokens[0].type == JSMN_STRING) {
-            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
-                ts->tokens[0].end - ts->tokens[0].start, -1);
+            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
+                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_object != NULL) {
                 del_object->pubsub |= (uint16_t)object->detail;
                 return ts_txt_response(ts, TS_STATUS_CREATED);
@@ -707,34 +670,13 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
     }
 
     if (object->type == TS_T_ARRAY) {
-        struct ts_array_info *arr_info = (struct ts_array_info *)object->data;
-        if (arr_info->type == TS_T_NODE_ID && ts->tokens[0].type == JSMN_STRING) {
-            const struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
-                ts->tokens[0].end - ts->tokens[0].start, -1);
-            if (del_object != NULL) {
-                // object found in object database, now look for same ID in the array
-                ts_object_id_t *obj_ids = (ts_object_id_t *)arr_info->ptr;
-                for (int i = 0; i < arr_info->num_elements; i++) {
-                    if (obj_ids[i] == del_object->id) {
-                        // object also found in array, shift all remaining elements
-                        for (int j = i; j < arr_info->num_elements - 1; j++) {
-                            obj_ids[j] = obj_ids[j+1];
-                        }
-                        arr_info->num_elements--;
-                        return ts_txt_response(ts, TS_STATUS_DELETED);
-                    }
-                }
-            }
-            return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
-        }
-        else {
-            return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
-        }
+        // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
+        return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
     else if (object->type == TS_T_DATA_SET) {
         if (ts->tokens[0].type == JSMN_STRING) {
-            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
-                ts->tokens[0].end - ts->tokens[0].start, -1);
+            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
+                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
             if (del_object != NULL) {
                 del_object->pubsub &= ~((uint16_t)object->detail);
                 return ts_txt_response(ts, TS_STATUS_DELETED);

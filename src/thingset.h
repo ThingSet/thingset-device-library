@@ -159,8 +159,7 @@ enum TsType {
     TS_T_BYTES,
     TS_T_ARRAY,
     TS_T_DECFRAC,       // CBOR decimal fraction
-    TS_T_GROUP,         // internal object to describe URI path
-    TS_T_NODE_ID,       // internally equal to uint16_t
+    TS_T_GROUP,         // internal object to describe data hierarchy
     TS_T_EXEC,          // functions
     TS_T_DATA_SET
 };
@@ -182,12 +181,6 @@ struct ts_array_info {
     uint16_t num_elements;      ///< Actual number of elements in the array
     uint8_t type;               ///< Type of the array elements
 };
-
-/**
- * If TS_AUTODETECT_ARRLEN is assigned to num_elements, the number of elements in the array is
- * detected in the constructor by counting downwards till the first non-zero element is found.
- */
-#define TS_AUTODETECT_ARRLEN    UINT16_MAX
 
 /*
  * Functions to generate data_objects map and make compiler complain if wrong
