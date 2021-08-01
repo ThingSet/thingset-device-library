@@ -231,3 +231,10 @@ void test_txt_get_endpoint(void)
     TEST_ASSERT_NOT_NULL(object);
     TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
+
+void test_txt_export(void)
+{
+    int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}

@@ -127,6 +127,7 @@ void test_assert(void);
 void test_txt_patch_bin_fetch(void);
 void test_bin_patch_txt_fetch(void);
 void test_ts_init(void);
+
 void test_txt_get_meas_names();
 void test_txt_get_meas_names_values();
 void test_txt_get_single_value(void);
@@ -156,6 +157,8 @@ void test_txt_auth_failure(void);
 void test_txt_auth_reset(void);
 void test_txt_wrong_command(void);
 void test_txt_get_endpoint(void);
+void test_txt_export(void);
+
 void test_bin_get_meas_ids_values(void);
 void test_bin_get_meas_names_values(void);
 void test_bin_get_single_value(void);

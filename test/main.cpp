@@ -79,6 +79,9 @@ void tests_text_mode()
     RUN_TEST(test_txt_wrong_command);
     RUN_TEST(test_txt_get_endpoint);
 
+    // data export
+    RUN_TEST(test_txt_export);
+
     UNITY_END();
 }
 

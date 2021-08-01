@@ -29,6 +29,7 @@ void test_main(void)
         /* data conversion tests */
         ztest_unit_test_setup_teardown(test_txt_patch_bin_fetch, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_txt_fetch, setup, teardown),
+
         /* Text mode: GET request */
         ztest_unit_test_setup_teardown(test_txt_get_meas_names, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_meas_names_values, setup, teardown),
@@ -64,6 +65,9 @@ void test_main(void)
         /* Text mode: general tests */
         ztest_unit_test_setup_teardown(test_txt_wrong_command, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_endpoint, setup, teardown),
+        /* Text mode: exporting of data */
+        ztest_unit_test_setup_teardown(test_txt_export, setup, teardown),
+
         /* Bin mode: GET request */
         ztest_unit_test_setup_teardown(test_bin_get_meas_ids_values, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_get_meas_names_values, setup, teardown),

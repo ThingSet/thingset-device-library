@@ -532,6 +532,21 @@ int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t
     __attribute__((deprecated));
 
 /**
+ * Retrieve data in JSON format for given subset(s).
+ *
+ * This function does not return a complete ThingSet message, but only the payload data as a
+ * name/value map. It can be used e.g. to store data in the EEPROM or other non-volatile memory.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the data should be stored
+ * @param buf_size Size of the buffer, i.e. maximum allowed length of the data
+ * @param subsets Flags to select which subset(s) of data items should be exported
+ *
+ * @returns Actual length of the data written to the buffer or 0 in case of error
+ */
+int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t subsets);
+
+/**
  * Generate statement message in JSON format based on pointer to group or subset.
  *
  * This is the fastest method to generate a statement as it does not require to search through the
@@ -705,6 +720,11 @@ public:
     inline int txt_pub(char *buf, size_t size, const uint16_t subset)
     {
         return ts_txt_pub(&ts, buf, size, subset);
+    };
+
+    inline int txt_export(char *buf, size_t size, const uint16_t subsets)
+    {
+        return ts_txt_export(&ts, buf, size, subsets);
     };
 
     inline int txt_statement(char *buf, size_t size, ThingSetDataObject *object)

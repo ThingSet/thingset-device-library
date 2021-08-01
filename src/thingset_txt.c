@@ -735,6 +735,25 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
     return ts_txt_response(ts, TS_STATUS_VALID);
 }
 
+int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t subsets)
+{
+    unsigned int len = 1;
+    buf[0] = '{';
+
+    for (unsigned int i = 0; i < ts->num_objects; i++) {
+        if (ts->data_objects[i].subsets & subsets) {
+            len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
+        }
+        if (len >= buf_size - 1) {
+            return 0;
+        }
+    }
+
+    buf[len-1] = '}';    // overwrite comma
+
+    return len;
+}
+
 int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
                      struct ts_data_object *object)
 {
@@ -745,20 +764,12 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
         return 0;
     }
 
-    len = snprintf(buf, buf_size, "#%s {", object->name);
-
     if (object->type == TS_T_SUBSET) {
-        uint16_t subset = object->detail;
-        for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if (ts->data_objects[i].subsets & subset) {
-                len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
-            }
-            if (len >= buf_size - 1) {
-                return 0;
-            }
-        }
+        len = snprintf(buf, buf_size, "#%s ", object->name);
+        len += ts_txt_export(ts, &buf[len], buf_size - len, object->detail);
     }
     else if (object->type == TS_T_GROUP) {
+        len = snprintf(buf, buf_size, "#%s {", object->name);
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].parent == object->id) {
                 len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
@@ -767,12 +778,11 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
                 return 0;
             }
         }
+        buf[len-1] = '}';    // overwrite comma
     }
     else {
         return 0;
     }
-
-    buf[len-1] = '}';    // overwrite comma
 
     return len;
 }
@@ -789,17 +799,10 @@ int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts
 
 int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)
 {
-    unsigned int len = sprintf(buf, "# {");
+    buf[0] = '#';
+    buf[1] = ' ';
 
-    for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].subsets & subset) {
-            len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
-        }
-        if (len >= buf_size - 1) {
-            return 0;
-        }
-    }
-    buf[len-1] = '}';    // overwrite comma
+    int ret = ts_txt_export(ts, &buf[2], buf_size - 2, subset);
 
-    return len;
+    return (ret > 0) ? 2 + ret : 0;
 }
