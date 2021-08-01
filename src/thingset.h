@@ -215,47 +215,47 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define ts_array_to_void(ptr) ((void*)ptr)
 #endif
 
-#define TS_ITEM_BOOL(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_bool_to_void(_data_ptr), TS_T_BOOL, 0, _access, _subsets}
+#define TS_ITEM_BOOL(id, name, bool_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_bool_to_void(bool_ptr), TS_T_BOOL, 0, access, subsets}
 
-#define TS_ITEM_UINT64(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_uint64_to_void(_data_ptr), TS_T_UINT64, 0, _access, _subsets}
+#define TS_ITEM_UINT64(id, name, uint64_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_uint64_to_void(uint64_ptr), TS_T_UINT64, 0, access, subsets}
 
-#define TS_ITEM_INT64(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_int64_to_void(_data_ptr), TS_T_INT64, 0, _access, _subsets}
+#define TS_ITEM_INT64(id, name, int64_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_int64_to_void(int64_ptr), TS_T_INT64, 0, access, subsets}
 
-#define TS_ITEM_UINT32(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_uint32_to_void(_data_ptr), TS_T_UINT32, 0, _access, _subsets}
+#define TS_ITEM_UINT32(id, name, uint32_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_uint32_to_void(uint32_ptr), TS_T_UINT32, 0, access, subsets}
 
-#define TS_ITEM_INT32(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_int32_to_void(_data_ptr), TS_T_INT32, 0, _access, _subsets}
+#define TS_ITEM_INT32(id, name, int32_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_int32_to_void(int32_ptr), TS_T_INT32, 0, access, subsets}
 
-#define TS_ITEM_UINT16(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_uint16_to_void(_data_ptr), TS_T_UINT16, 0, _access, _subsets}
+#define TS_ITEM_UINT16(id, name, uint16_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_uint16_to_void(uint16_ptr), TS_T_UINT16, 0, access, subsets}
 
-#define TS_ITEM_INT16(_id, _name, _data_ptr, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_int16_to_void(_data_ptr), TS_T_INT16, 0, _access, _subsets}
+#define TS_ITEM_INT16(id, name, int16_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_int16_to_void(int16_ptr), TS_T_INT16, 0, access, subsets}
 
-#define TS_ITEM_FLOAT(_id, _name, _data_ptr, _digits, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_float_to_void(_data_ptr), TS_T_FLOAT32, _digits, _access, _subsets}
+#define TS_ITEM_FLOAT(id, name, float_ptr, digits, parent_id, access, subsets) \
+    {id, parent_id, name, ts_float_to_void(float_ptr), TS_T_FLOAT32, digits, access, subsets}
 
-#define TS_ITEM_STRING(_id, _name, _data_ptr, _buf_size, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_string_to_void(_data_ptr), TS_T_STRING, _buf_size, _access, _subsets}
+#define TS_ITEM_STRING(id, name, char_ptr, buf_size, parent_id, access, subsets) \
+    {id, parent_id, name, ts_string_to_void(char_ptr), TS_T_STRING, buf_size, access, subsets}
 
-#define TS_ITEM_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_bytes_to_void(_data_ptr), TS_T_BYTES, _buf_size, _access, _subsets}
+#define TS_ITEM_BYTES(id, name, bytes_buffer_ptr, buf_size, parent_id, access, subsets) \
+    {id, parent_id, name, ts_bytes_to_void(bytes_buffer_ptr), TS_T_BYTES, buf_size, access, subsets}
 
-#define TS_FUNCTION(_id, _name, _function_ptr, _parent, _access) \
-    {_id, _parent, _name, ts_function_to_void(_function_ptr), TS_T_EXEC, 0, _access, 0}
+#define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
+    {id, parent_id, name, ts_function_to_void(void_function_ptr), TS_T_EXEC, 0, access, 0}
 
-#define TS_ITEM_ARRAY(_id, _name, _data_ptr, _digits, _parent, _access, _subsets) \
-    {_id, _parent, _name, ts_array_to_void(_data_ptr), TS_T_ARRAY, _digits, _access, _subsets}
+#define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
+    {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
-#define TS_SUBSET(_id, _name, _subset, _parent, _access) \
-    {_id, _parent, _name, NULL, TS_T_SUBSET, _subset, _access, 0}
+#define TS_SUBSET(id, name, subset, parent_id, access) \
+    {id, parent_id, name, NULL, TS_T_SUBSET, subset, access, 0}
 
-#define TS_GROUP(_id, _name, _callback, _parent) \
-    {_id, _parent, _name, ts_function_to_void(_callback), TS_T_GROUP, 0, TS_READ_MASK, 0}
+#define TS_GROUP(id, name, void_function_cb_ptr, parent_id) \
+    {id, parent_id, name, ts_function_to_void(void_function_cb_ptr), TS_T_GROUP, 0, TS_READ_MASK, 0}
 
 /*
  * Deprecated defines for spec v0.3 to maintain compatibility
