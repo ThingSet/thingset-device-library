@@ -519,7 +519,7 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level);
 void ts_set_authentication(struct ts_context *ts, uint16_t flags);
 
 /**
- * Generate publication message in JSON format.
+ * Generate statement (previously known as publication message) in JSON format.
  *
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
@@ -528,22 +528,51 @@ void ts_set_authentication(struct ts_context *ts, uint16_t flags);
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
-int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset);
+int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)
+    __attribute__((deprecated));
 
 /**
- * Generate publication message in JSON format based on endpoint.
+ * Generate statement message in JSON format based on pointer to group or subset.
+ *
+ * This is the fastest method to generate a statement as it does not require to search through the
+ * entire data objects array.
  *
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
  * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param endpoint Endpoint which is used as a parent for published objects
+ * @param object Group or subset object specifying the items to be published
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
-int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const char *endpoint);
+int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
+                     struct ts_data_object *object);
 
 /**
- * Generate publication message in CBOR format.
+ * Generate statement message in JSON format based on path.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param path Path to group or subset object specifying the items to be published
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, const char *path);
+
+/**
+ * Generate statement message in JSON format based on data object ID.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param path ID of group or subset object specifying the items to be published
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts_object_id_t id);
+
+/**
+ * Generate statement (previously known as publication message) in CBOR format.
  *
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
@@ -678,9 +707,19 @@ public:
         return ts_txt_pub(&ts, buf, size, subset);
     };
 
-    inline int txt_pub_endpoint(char *buf, size_t size, const char *endpoint)
+    inline int txt_statement(char *buf, size_t size, ThingSetDataObject *object)
     {
-        return ts_txt_pub_endpoint(&ts, buf, size, endpoint);
+        return ts_txt_statement(&ts, buf, size, object);
+    };
+
+    inline int txt_statement(char *buf, size_t size, const char *path)
+    {
+        return ts_txt_statement_by_path(&ts, buf, size, path);
+    };
+
+    inline int txt_statement(char *buf, size_t size, ThingSetObjId id)
+    {
+        return ts_txt_statement_by_id(&ts, buf, size, id);
     };
 
     inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)

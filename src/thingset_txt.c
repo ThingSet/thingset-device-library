@@ -735,16 +735,17 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
     return ts_txt_response(ts, TS_STATUS_VALID);
 }
 
-int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const char *endpoint)
+int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
+                     struct ts_data_object *object)
 {
     unsigned int len;
-    const struct ts_data_object *object = ts_get_object_by_path(ts, endpoint, strlen(endpoint));
 
-    if (!object) {
+    if (!object || object->parent != 0) {
+        // currently only supporting top level objects
         return 0;
     }
 
-    len = snprintf(buf, buf_size, "#%s {", endpoint);
+    len = snprintf(buf, buf_size, "#%s {", object->name);
 
     if (object->type == TS_T_SUBSET) {
         uint16_t subset = object->detail;
@@ -774,6 +775,16 @@ int ts_txt_pub_endpoint(struct ts_context *ts, char *buf, size_t buf_size, const
     buf[len-1] = '}';    // overwrite comma
 
     return len;
+}
+
+int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, const char *path)
+{
+    return ts_txt_statement(ts, buf, buf_size, ts_get_object_by_path(ts, path, strlen(path)));
+}
+
+int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts_object_id_t id)
+{
+    return ts_txt_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id));
 }
 
 int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)

@@ -114,16 +114,16 @@ void test_txt_exec(void)
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-void test_txt_pub_report(void)
+void test_txt_statement_subset(void)
 {
-    int resp_len = ts_txt_pub_endpoint(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
 
     TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
-void test_txt_pub_info(void)
+void test_txt_statement_group(void)
 {
-    int resp_len = ts_txt_pub_endpoint(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
 
     TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
 }

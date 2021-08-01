@@ -47,10 +47,11 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_path, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_unknown_object, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_conf_callback, setup, teardown),
-        /* Text mode: POLL request */
+        /* Text mode: POST request */
         ztest_unit_test_setup_teardown(test_txt_exec, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_pub_report, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_pub_info, setup, teardown),
+        /* Text mode: statements (pub/sub messages) */
+        ztest_unit_test_setup_teardown(test_txt_statement_subset, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_statement_group, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_list_channels, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_enable, setup, teardown),
