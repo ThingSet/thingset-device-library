@@ -75,7 +75,7 @@ struct ts_data_object data_objects[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
 
-    TS_GROUP(ID_INFO, "info", 0, NULL),
+    TS_GROUP(ID_INFO, "info", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_STRING(0x19, "Manufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
     TS_ITEM_UINT32(0x1A, "Timestamp_s", &timestamp, ID_INFO, TS_ANY_RW, SUBSET_REPORT),
@@ -83,20 +83,20 @@ struct ts_data_object data_objects[] = {
 
     // CONFIGURATION //////////////////////////////////////////////////////////
 
-    TS_GROUP(ID_CONF, "conf", 0, &conf_callback),
+    TS_GROUP(ID_CONF, "conf", &conf_callback, ID_ROOT),
 
     TS_ITEM_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2, ID_CONF, TS_ANY_RW, 0),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
 
-    TS_GROUP(ID_INPUT, "input", 0, NULL),
+    TS_GROUP(ID_INPUT, "input", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_BOOL(0x61, "EnableCharging", &enable_switch, ID_INPUT, TS_ANY_RW, 0),
 
     // MEASUREMENT DATA ///////////////////////////////////////////////////////
 
-    TS_GROUP(ID_MEAS, "meas", 0, NULL),
+    TS_GROUP(ID_MEAS, "meas", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_FLOAT(0x71, "Bat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R,
         SUBSET_REPORT | SUBSET_CAN),
@@ -108,7 +108,7 @@ struct ts_data_object data_objects[] = {
 
     // RECORDED DATA //////////////////////////////////////////////////////////
 
-    TS_GROUP(ID_REC, "rec", 0, NULL),
+    TS_GROUP(ID_REC, "rec", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_FLOAT(0xA1, "BatHour_kWh", &bat_energy_hour, 2, ID_REC, TS_ANY_R, 0),
     TS_ITEM_FLOAT(0xA2, "BatDay_kWh", &bat_energy_day, 2, ID_REC, TS_ANY_R, 0),
@@ -116,7 +116,7 @@ struct ts_data_object data_objects[] = {
 
     // REMOTE PROCEDURE CALLS /////////////////////////////////////////////////
 
-    TS_GROUP(ID_RPC, "rpc", 0, NULL),
+    TS_GROUP(ID_RPC, "rpc", TS_NO_CALLBACK, ID_ROOT),
 
     TS_FUNCTION(0xE1, "x-reset", &reset_function, ID_RPC, TS_ANY_RW),
     TS_FUNCTION(0xE2, "x-auth", &auth_function, ID_RPC, TS_ANY_RW),
@@ -124,23 +124,23 @@ struct ts_data_object data_objects[] = {
 
     // REPORTS ////////////////////////////////////////////////////////////////
 
-    TS_SUBSET(0xF4, "report", SUBSET_REPORT, 0, TS_ANY_RW),
+    TS_SUBSET(0xF4, "report", SUBSET_REPORT, ID_ROOT, TS_ANY_RW),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
 
-    TS_GROUP(ID_PUB, ".pub", 0, NULL),
+    TS_GROUP(ID_PUB, ".pub", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_GROUP(0xF1, "report", ID_PUB, NULL),
+    TS_GROUP(0xF1, "report", TS_NO_CALLBACK, ID_PUB),
     TS_ITEM_BOOL(0xF2, "Enable", &pub_report_enable, 0xF1, TS_ANY_RW, 0),
     TS_ITEM_UINT16(0xF3, "Interval_ms", &pub_report_interval, 0xF1, TS_ANY_RW, 0),
 
-    TS_GROUP(0xF5, "info", ID_PUB, NULL),
+    TS_GROUP(0xF5, "info", TS_NO_CALLBACK, ID_PUB),
     TS_ITEM_BOOL(0xF6, "OnChange", &pub_info_enable, 0xF5, TS_ANY_RW, 0),
 
     // UNIT TEST DATA /////////////////////////////////////////////////////////
     // using IDs >= 0x1000
 
-    TS_GROUP(0x1000, "test", 0, NULL),
+    TS_GROUP(0x1000, "test", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_INT32(0x4001, "i32_readonly", &i32, 0x1000, TS_ANY_R, 0),
 

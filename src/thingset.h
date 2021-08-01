@@ -254,7 +254,7 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define TS_SUBSET(_id, _name, _subset, _parent, _access) \
     {_id, _parent, _name, NULL, TS_T_SUBSET, _subset, _access, 0}
 
-#define TS_GROUP(_id, _name, _parent, _callback) \
+#define TS_GROUP(_id, _name, _callback, _parent) \
     {_id, _parent, _name, ts_function_to_void(_callback), TS_T_GROUP, 0, TS_READ_MASK, 0}
 
 /*
@@ -314,8 +314,13 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
     _Pragma ("GCC warning \"'TS_NODE_PUBSUB' macro is deprecated, use 'TS_SUBSET'\"")
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
-    TS_GROUP(_id, _name, _parent, _callback) \
+    TS_GROUP(_id, _name, _callback, _parent) \
     _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
+
+/*
+ * Defines to make data object definitions more explicit
+ */
+#define TS_NO_CALLBACK  NULL
 
 /*
  * Access right macros for data objects
