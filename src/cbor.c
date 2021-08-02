@@ -316,7 +316,7 @@ int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value)
         return 0;
 
     size = _cbor_uint_data(data, &tmp);
-    if (size > 0 && tmp <= INT32_MAX) {
+    if (size > 0 && tmp <= UINT32_MAX) {
         *value = tmp;
         return size;
     }

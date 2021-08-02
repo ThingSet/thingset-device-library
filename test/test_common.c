@@ -167,7 +167,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("ui32", "65535", 0x6003, "19 FF FF");
     TEST_ASSERT_CBOR2JSON("ui32", "65535", 0x6003, "1A 00 00 FF FF");  // less compact format
     TEST_ASSERT_CBOR2JSON("ui32", "65536", 0x6003, "1A 00 01 00 00");
-    TEST_ASSERT_JSON2CBOR("ui32", "4294967295", 0x6003, "1A FF FF FF FF"); // @TODO ????
+    TEST_ASSERT_CBOR2JSON("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
 
     // uint64
     #if TS_64BIT_TYPES_SUPPORT
