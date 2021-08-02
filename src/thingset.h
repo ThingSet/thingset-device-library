@@ -676,18 +676,35 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
                    uint32_t *msg_id, uint8_t *msg_data);
 
 /**
- * Update data objects based on values provided in payload data (e.g. from other pub msg).
+ * Update data objects based on values provided by from other pub msg.
  *
  * @param ts Pointer to ThingSet context.
- * @param cbor_data Buffer containing key/value map that should be written to the data objects
+ * @param buf Buffer containing pub message and data that should be written to the data objects
  * @param len Length of the data in the buffer
  * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
  * @param subset Subscribe channel (as bitfield)
  *
  * @returns ThingSet status code
  */
-int ts_bin_sub(struct ts_context *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
-               uint16_t subset);
+int ts_bin_sub(struct ts_context *ts, uint8_t *buf, size_t len, uint16_t auth_flags,
+               uint16_t subset) __attribute__((deprecated));
+
+/**
+ * Import data in CBOR format into data objects.
+ *
+ * This function can be used to initialize data objects from previously exported data (using
+ * ts_bin_export function) and stored in the EEPROM or other non-volatile memory.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param data Buffer containing ID/value map that should be written to the data objects
+ * @param len Length of the data in the buffer
+ * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+ * @param subsets Flags to select which subset(s) of data items should be imported
+ *
+ * @returns ThingSet status code
+ */
+int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint16_t auth_flags,
+                  uint16_t subsets);
 
 /**
  * Get data object by ID.

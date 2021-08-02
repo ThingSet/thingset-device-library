@@ -327,15 +327,21 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
     }
 }
 
-int ts_bin_sub(struct ts_context *ts, uint8_t *cbor_data, size_t len, uint16_t auth_flags,
+int ts_bin_sub(struct ts_context *ts, uint8_t *buf, size_t len, uint16_t auth_flags,
                uint16_t subsets)
 {
+    return ts_bin_import(ts, buf + 1, len - 1, auth_flags, subsets);
+}
+
+int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint16_t auth_flags,
+                  uint16_t subsets)
+{
     uint8_t resp_tmp[1] = {};   // only one character as response expected
-    ts->req = cbor_data;
+    ts->req = data;
     ts->req_len = len;
     ts->resp = resp_tmp;
     ts->resp_size = sizeof(resp_tmp);
-    ts_bin_patch(ts, NULL, 1, auth_flags, subsets);
+    ts_bin_patch(ts, NULL, 0, auth_flags, subsets);
     return ts->resp[0];
 }
 

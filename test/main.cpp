@@ -114,7 +114,7 @@ void tests_binary_mode()
     RUN_TEST(test_bin_statement_group);
     RUN_TEST(test_bin_pub_deprecated);
     RUN_TEST(test_bin_pub_can);
-    RUN_TEST(test_bin_sub);
+    RUN_TEST(test_bin_sub_deprecated);
 
     // general tests
     RUN_TEST(test_bin_num_elem);
@@ -125,8 +125,9 @@ void tests_binary_mode()
     RUN_TEST(test_bin_deserialize_bytes);
     RUN_TEST(test_bin_patch_fetch_bytes);
 
-    // data export
+    // data export/import
     RUN_TEST(test_bin_export);
+    RUN_TEST(test_bin_import);
 
     UNITY_END();
 }

@@ -89,7 +89,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_statement_group, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_pub_can, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_sub, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_sub_deprecated, setup, teardown),
         /* Bin mode: general tests */
         ztest_unit_test_setup_teardown(test_bin_num_elem, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_serialize_long_string, setup, teardown),
@@ -97,8 +97,9 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_serialize_bytes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_deserialize_bytes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_fetch_bytes, setup, teardown),
-        /* Bin mode: exporting of data */
-        ztest_unit_test_setup_teardown(test_bin_export, setup, teardown)
+        /* Bin mode: exporting/importing of data */
+        ztest_unit_test_setup_teardown(test_bin_export, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_import, setup, teardown)
     );
 
     ztest_run_test_suite(thingset_tests);

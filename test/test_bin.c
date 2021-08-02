@@ -296,7 +296,7 @@ void test_bin_pub_can(void)
     TEST_ASSERT_EQUAL(-1, can_data_len);
 }
 
-void test_bin_sub(void)
+void test_bin_sub_deprecated(void)
 {
     const char req_hex[] =
         "1F A2 "     // map with 2 elements
@@ -305,6 +305,19 @@ void test_bin_sub(void)
     int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
 
     int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
+
+    TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
+}
+
+void test_bin_import(void)
+{
+    const char req_hex[] =
+        "A2 "     // map with 2 elements
+        "18 31 FA 41 61 99 9a "     // float 14.10
+        "18 32 FA 40 a4 28 f6 ";    // float 5.13
+    int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
+
+    int ret = ts_bin_import(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
 
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }

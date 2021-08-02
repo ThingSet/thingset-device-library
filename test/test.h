@@ -174,7 +174,7 @@ void test_bin_statement_subset(void);
 void test_bin_statement_group(void);
 void test_bin_pub_deprecated(void);
 void test_bin_pub_can(void);
-void test_bin_sub(void);
+void test_bin_sub_deprecated(void);
 void test_bin_exec(void);
 void test_bin_num_elem(void);
 void test_bin_serialize_long_string(void);
@@ -182,6 +182,7 @@ void test_bin_serialize_bytes(void);
 void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
 void test_bin_export(void);
+void test_bin_import(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
