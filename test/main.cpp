@@ -110,7 +110,9 @@ void tests_binary_mode()
     RUN_TEST(test_bin_exec);
 
     // pub/sub messages
-    RUN_TEST(test_bin_pub);
+    RUN_TEST(test_bin_statement_subset);
+    RUN_TEST(test_bin_statement_group);
+    RUN_TEST(test_bin_pub_deprecated);
     RUN_TEST(test_bin_pub_can);
     RUN_TEST(test_bin_sub);
 

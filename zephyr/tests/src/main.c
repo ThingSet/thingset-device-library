@@ -85,7 +85,9 @@ void test_main(void)
         /* Bin mode: POST request */
         ztest_unit_test_setup_teardown(test_bin_exec, setup, teardown),
         /* Bin mode: pub/sub messages */
-        ztest_unit_test_setup_teardown(test_bin_pub, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_statement_subset, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_statement_group, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_pub_can, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_sub, setup, teardown),
         /* Bin mode: general tests */

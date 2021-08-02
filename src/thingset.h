@@ -596,7 +596,49 @@ int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
-int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset);
+int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
+    __attribute__((deprecated));
+
+/**
+ * Generate statement message in CBOR format based on pointer to group or subset.
+ *
+ * This is the fastest method to generate a statement as it does not require to search through the
+ * entire date nodes array.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param object Group or subset object specifying the items to be published
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_bin_statement(struct ts_context *ts, uint8_t *buf, size_t buf_size,
+                     struct ts_data_object *object);
+
+/**
+ * Generate statement message in CBOR format based on path.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param path Path to group or subset object specifying the items to be published
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_bin_statement_by_path(struct ts_context *ts, uint8_t *buf, size_t buf_size,
+                             const char *path);
+
+/**
+ * Generate statement message in CBOR format based on data object ID.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param path ID of group or subset object specifying the items to be published
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_bin_statement_by_id(struct ts_context *ts, uint8_t *buf, size_t buf_size, ts_object_id_t id);
 
 /**
  * Encode a publication message in CAN message format for supplied data object.
@@ -745,6 +787,21 @@ public:
     inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)
     {
         return ts_bin_pub(&ts, buf, size, subset);
+    };
+
+    inline int bin_statement(uint8_t *buf, size_t size, ThingSetDataObject *object)
+    {
+        return ts_bin_statement(&ts, buf, size, object);
+    };
+
+    inline int bin_statement(uint8_t *buf, size_t size, const char *path)
+    {
+        return ts_bin_statement_by_path(&ts, buf, size, path);
+    };
+
+    inline int bin_statement(uint8_t *buf, size_t size, ThingSetObjId id)
+    {
+        return ts_bin_statement_by_id(&ts, buf, size, id);
     };
 
     inline int bin_pub_can(int &start_pos, uint16_t subset, uint8_t can_dev_id, uint32_t &msg_id,

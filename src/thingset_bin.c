@@ -461,6 +461,87 @@ int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object, unsi
     return ts_bin_response(ts, TS_STATUS_VALID);
 }
 
+int ts_bin_statement(struct ts_context *ts, uint8_t *buf, size_t buf_size,
+                     struct ts_data_object *object)
+{
+    buf[0] = TS_PUBMSG;
+    int len = 1;
+
+    if (!object || object->parent != 0) {
+        // currently only supporting top level objects
+        return 0;
+    }
+
+    // serialize endpoint
+    len += cbor_serialize_uint(&buf[len], object->id, buf_size - len);
+
+    if (object->type == TS_T_SUBSET) {
+        uint16_t subsets = object->detail;
+
+        // find out number of elements to be serialized
+        int num_ids = 0;
+        for (unsigned int i = 0; i < ts->num_objects; i++) {
+            if (ts->data_objects[i].subsets & subsets) {
+                num_ids++;
+            }
+        }
+
+        len += cbor_serialize_array(&buf[len], num_ids, buf_size - len);
+
+        for (unsigned int i = 0; i < ts->num_objects; i++) {
+            if (ts->data_objects[i].subsets & subsets) {
+                size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
+                    &ts->data_objects[i]);
+                if (num_bytes == 0) {
+                    return 0;
+                }
+                else {
+                    len += num_bytes;
+                }
+            }
+        }
+    }
+    else if (object->type == TS_T_GROUP) {
+        // find out number of elements to be serialized
+        int num_ids = 0;
+        for (unsigned int i = 0; i < ts->num_objects; i++) {
+            if (ts->data_objects[i].parent == object->id) {
+                num_ids++;
+            }
+        }
+
+        len += cbor_serialize_array(&buf[len], num_ids, buf_size - len);
+
+        for (unsigned int i = 0; i < ts->num_objects; i++) {
+            if (ts->data_objects[i].parent == object->id) {
+                size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
+                    &ts->data_objects[i]);
+                if (num_bytes == 0) {
+                    return 0;
+                }
+                else {
+                    len += num_bytes;
+                }
+            }
+        }
+    }
+    else {
+        return 0;
+    }
+
+    return len;
+}
+
+int ts_bin_statement_by_path(struct ts_context *ts, uint8_t *buf, size_t buf_size, const char *path)
+{
+    return ts_bin_statement(ts, buf, buf_size, ts_get_object_by_path(ts, path, strlen(path)));
+}
+
+int ts_bin_statement_by_id(struct ts_context *ts, uint8_t *buf, size_t buf_size, ts_object_id_t id)
+{
+    return ts_bin_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id));
+}
+
 int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
 {
     buf[0] = TS_PUBMSG;
@@ -479,7 +560,8 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subset) {
             len += cbor_serialize_uint(&buf[len], ts->data_objects[i].id, buf_size - len);
-            size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len, &ts->data_objects[i]);
+            size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
+                &ts->data_objects[i]);
             if (num_bytes == 0) {
                 return 0;
             }
