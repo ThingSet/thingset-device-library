@@ -427,3 +427,17 @@ void test_bin_patch_fetch_bytes(void)
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req_get, sizeof(req_get), resp_get_expected, sizeof(resp_get_expected));
 }
+
+void test_bin_export(void)
+{
+    const char resp_expected[] =
+        "A4 "                       // map with 4 elements
+        "18 1A 1A 00 BC 61 4E "     // int 12345678
+        "18 71 FA 41 61 99 9a "     // float 14.10
+        "18 72 FA 40 a4 28 f6 "     // float 5.13
+        "18 73 16 ";                // int 22
+
+    int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+}

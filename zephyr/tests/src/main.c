@@ -96,7 +96,9 @@ void test_main(void)
         /* Bin mode: binary (bytes) data type */
         ztest_unit_test_setup_teardown(test_bin_serialize_bytes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_deserialize_bytes, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_patch_fetch_bytes, setup, teardown)
+        ztest_unit_test_setup_teardown(test_bin_patch_fetch_bytes, setup, teardown),
+        /* Bin mode: exporting of data */
+        ztest_unit_test_setup_teardown(test_bin_export, setup, teardown)
     );
 
     ztest_run_test_suite(thingset_tests);

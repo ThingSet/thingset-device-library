@@ -125,6 +125,9 @@ void tests_binary_mode()
     RUN_TEST(test_bin_deserialize_bytes);
     RUN_TEST(test_bin_patch_fetch_bytes);
 
+    // data export
+    RUN_TEST(test_bin_export);
+
     UNITY_END();
 }
 

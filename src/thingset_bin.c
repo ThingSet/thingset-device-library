@@ -542,23 +542,20 @@ int ts_bin_statement_by_id(struct ts_context *ts, uint8_t *buf, size_t buf_size,
     return ts_bin_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id));
 }
 
-int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
+int ts_bin_export(struct ts_context *ts, uint8_t *buf, size_t buf_size, uint16_t subsets)
 {
-    buf[0] = TS_PUBMSG;
-    int len = 1;
-
-    // find out number of elements to be published
+    // find out number of elements to be serialized
     int num_ids = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].subsets & subset) {
+        if (ts->data_objects[i].subsets & subsets) {
             num_ids++;
         }
     }
 
-    len += cbor_serialize_map(&buf[len], num_ids, buf_size - len);
+    int len = cbor_serialize_map(buf, num_ids, buf_size);
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].subsets & subset) {
+        if (ts->data_objects[i].subsets & subsets) {
             len += cbor_serialize_uint(&buf[len], ts->data_objects[i].id, buf_size - len);
             size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
                 &ts->data_objects[i]);
@@ -570,7 +567,17 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
             }
         }
     }
+
     return len;
+}
+
+int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
+{
+    buf[0] = TS_PUBMSG;
+
+    int ret = ts_bin_export(ts, &buf[1], buf_size - 1, subset);
+
+    return (ret > 0) ? 1 + ret : 0;
 }
 
 int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8_t can_dev_id,

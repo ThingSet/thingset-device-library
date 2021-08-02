@@ -181,6 +181,7 @@ void test_bin_serialize_long_string(void);
 void test_bin_serialize_bytes(void);
 void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
+void test_bin_export(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

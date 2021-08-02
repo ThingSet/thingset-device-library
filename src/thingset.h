@@ -600,6 +600,21 @@ int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint1
     __attribute__((deprecated));
 
 /**
+ * Retrieve data in CBOR format for given subset(s).
+ *
+ * This function does not return a complete ThingSet message, but only the payload data as an
+ * ID/value map. It can be used e.g. to store data in the EEPROM or other non-volatile memory.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the data should be stored
+ * @param buf_size Size of the buffer, i.e. maximum allowed length of the data
+ * @param subsets Flags to select which subset(s) of data items should be exported
+ *
+ * @returns Actual length of the data written to the buffer or 0 in case of error
+ */
+int ts_bin_export(struct ts_context *ts, uint8_t *buf, size_t buf_size, uint16_t subsets);
+
+/**
  * Generate statement message in CBOR format based on pointer to group or subset.
  *
  * This is the fastest method to generate a statement as it does not require to search through the
