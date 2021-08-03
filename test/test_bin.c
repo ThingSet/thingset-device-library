@@ -6,33 +6,24 @@
 
 #include "test.h"
 
-void test_bin_get_output_ids(void)
+void test_bin_get_meas_ids_values(void)
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xF7 };
+    const uint8_t req[] = { TS_GET, ID_MEAS };
     const char resp_hex[] =
-        "85 83 "     // successful response: array with 3 elements
+        "85 A3 "     // successful response: map with 3 elements
         "18 71 "
+        "FA 41 61 99 9A "        // 14.1
         "18 72 "
-        "18 73 ";
+        "FA 40 A4 28 F6 "        // 5.13
+        "18 73 "
+        "16";
 
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_get_output_names(void)
+void test_bin_get_meas_names_values()
 {
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0x80 };
-    const char resp_hex[] =
-        "85 83 "     // successful response: array with 3 elements
-        "65 42 61 74 5F 56 "
-        "65 42 61 74 5F 41 "
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
-
-    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
-}
-
-void test_bin_get_output_names_values(void)
-{
-    const uint8_t req[] = { TS_GET, 0x18, ID_OUTPUT, 0xA0 };
+    const uint8_t req[] = { TS_GET, 0x64, 0x6D, 0x65, 0x61, 0x73 };
     const char resp_hex[] =
         "85 A3 "     // successful response: map with 3 elements
         "65 42 61 74 5F 56 "
@@ -45,10 +36,44 @@ void test_bin_get_output_names_values(void)
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
 
-void test_bin_patch_multiple_nodes(void)
+void test_bin_get_single_value()
+{
+    const uint8_t req[] = { TS_GET, 0x18, 0x71 };
+    const char resp_hex[] = "85 FA 41 61 99 9A "; // 14.1
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
+void test_bin_fetch_meas_ids(void)
+{
+    const uint8_t req[] = { TS_FETCH, ID_MEAS, 0xF7 };
+    const char resp_hex[] =
+        "85 83 "     // successful response: array with 3 elements
+        "18 71 "
+        "18 72 "
+        "18 73 ";
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
+void test_bin_fetch_meas_names(void)
+{
+    const uint8_t req[] = { TS_FETCH,
+        0x64, 0x6D, 0x65, 0x61, 0x73,   // "meas"
+        0xF7 };                         // CBOR undefined
+    const char resp_hex[] =
+        "85 83 "     // successful response: array with 3 elements
+        "65 42 61 74 5F 56 "
+        "65 42 61 74 5F 41 "
+        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
+
+    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
+}
+
+void test_bin_patch_multiple_objects(void)
 {
     const char req_hex[] =
-        "07 18 30 "
+        "07 06 "
         #if TS_64BIT_TYPES_SUPPORT
         "A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
@@ -68,12 +93,12 @@ void test_bin_patch_multiple_nodes(void)
     TEST_ASSERT_BIN_REQ_HEX(req_hex, resp_hex);
 }
 
-void test_bin_fetch_multiple_nodes(void)
+void test_bin_fetch_multiple_objects(void)
 {
     f32 = 7.89;
 
     char req_hex[] =
-        "05 18 30 "
+        "05 06 "
         #if TS_64BIT_TYPES_SUPPORT
         "89 "      // read array with 9 elements
         "19 60 01 "
@@ -188,7 +213,46 @@ void test_bin_patch_rounded_float(void)
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
 }
 
-void test_bin_pub(void)
+void test_bin_statement_subset(void)
+{
+    const char resp_expected[] =
+        "1F "
+        "0A "                   // ID of "report"
+        "84 "                   // array with 4 elements
+        "1A 00 BC 61 4E "       // int 12345678
+        "FA 41 61 99 9a "       // float 14.10
+        "FA 40 a4 28 f6 "       // float 5.13
+        "16 ";                  // int 22
+
+    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "report");
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+
+    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_REPORT);
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+}
+
+void test_bin_statement_group(void)
+{
+    const char resp_expected[] =
+        "1F "
+        "01 "                                       // ID of "info"
+        "83 "                                       // array with 3 elements
+        "6B 4C 69 62 72 65 20 53 6F 6C 61 72 "      // "Libre Solar"
+        "1A 00 BC 61 4E "                           // int 12345678
+        "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
+
+    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+
+    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_INFO);
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+}
+
+void test_bin_pub_deprecated(void)
 {
     const char resp_expected[] =
         "1F A4 "     // map with 4 elements
@@ -197,7 +261,7 @@ void test_bin_pub(void)
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
 
-    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), PUB_SER);
+    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }
@@ -212,43 +276,56 @@ void test_bin_pub_can(void)
     const uint8_t Bat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
 
     // first call (should return Bat_V)
-    int can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    int can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
     uint16_t can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    uint32_t can_pubsub = TS_CAN_PUBSUB(msg_id);
+    uint32_t can_subsets = TS_CAN_PUBSUB(msg_id);
     uint32_t can_prio = msg_id & TS_CAN_PRIO_MASK;
     TEST_ASSERT_EQUAL_UINT16(0x71, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_pubsub);
+    TEST_ASSERT(can_subsets);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_V_hex[0], &can_data[0], sizeof(Bat_V_hex));
 
     // second call (should return Bat_A)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
     can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    can_pubsub = TS_CAN_PUBSUB(msg_id);
+    can_subsets = TS_CAN_PUBSUB(msg_id);
     can_prio = msg_id & TS_CAN_PRIO_MASK;
     TEST_ASSERT_EQUAL_UINT16(0x72, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_pubsub);
+    TEST_ASSERT(can_subsets);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_A_hex[0], &can_data[0], sizeof(Bat_A_hex));
 
-    // third call (should not find further nodes)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, PUB_CAN, 123, &msg_id, &can_data[0]);
+    // third call (should not find further objects)
+    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_EQUAL(-1, can_data_len);
 }
 
-void test_bin_sub(void)
+void test_bin_sub_deprecated(void)
 {
     const char req_hex[] =
-        "1F A2 "     // map with 4 elements
+        "1F A2 "     // map with 2 elements
         "18 31 FA 41 61 99 9a "     // float 14.10
         "18 32 FA 40 a4 28 f6 ";    // float 5.13
     int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
 
-    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, PUB_SER);
+    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
+
+    TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
+}
+
+void test_bin_import(void)
+{
+    const char req_hex[] =
+        "A2 "     // map with 2 elements
+        "18 31 FA 41 61 99 9a "     // float 14.10
+        "18 32 FA 40 a4 28 f6 ";    // float 5.13
+    int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
+
+    int ret = ts_bin_import(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
 
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }
@@ -259,7 +336,7 @@ void test_bin_exec(void)
 
     const uint8_t req[] = {
         TS_POST,
-        0x19, 0x50, 0x01,       // node ID as endpoint
+        0x19, 0x50, 0x01,       // object ID as endpoint
         0x80                    // empty array (no parameters)
     };
     const uint8_t resp_expected[] = {
@@ -370,4 +447,18 @@ void test_bin_patch_fetch_bytes(void)
     };
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req_get, sizeof(req_get), resp_get_expected, sizeof(resp_get_expected));
+}
+
+void test_bin_export(void)
+{
+    const char resp_expected[] =
+        "A4 "                       // map with 4 elements
+        "18 1A 1A 00 BC 61 4E "     // int 12345678
+        "18 71 FA 41 61 99 9a "     // float 14.10
+        "18 72 FA 40 a4 28 f6 "     // float 5.13
+        "18 73 16 ";                // int 22
+
+    int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }

@@ -20,7 +20,7 @@
 #include "../test/test_data.c"
 
 
-ThingSet thing(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+ThingSet thing(data_objects, sizeof(data_objects)/sizeof(ThingSetDataObject));
 
 //
 // Setup functions used in test data included.
@@ -64,11 +64,11 @@ void pub_thread()
     char pub_msg[1000];
 
     while (1) {
-        if (pub_serial_enable) {
-            thing.txt_pub(pub_msg, sizeof(pub_msg), PUB_SER);
+        if (pub_report_enable) {
+            thing.txt_statement(pub_msg, sizeof(pub_msg), "report");
             printf("%s\r\n", pub_msg);
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(pub_serial_interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(pub_report_interval));
     }
 }
 
@@ -76,11 +76,11 @@ int main()
 {
     uint8_t resp_buf[1000];
 
-    printf("\n----------------- Data node tree ---------------------\n");
+    printf("\n----------------- Data object tree ---------------------\n\n");
 
     thing.dump_json();
 
-    printf("\n----------------- ThingSet shell ---------------------\n");
+    printf("\n----------------- ThingSet shell ---------------------\n\n");
 
     linenoiseHistoryLoad(".thingset-shell-history.txt"); /* Load the history at startup */
 

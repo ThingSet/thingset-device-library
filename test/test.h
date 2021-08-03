@@ -20,25 +20,25 @@ extern "C" {
  * Implemented in test_data.c
  */
 
-/* Categories / first layer node IDs */
+/* Categories / first layer object IDs */
 #define ID_ROOT     0x00
-#define ID_INFO     0x18        // read-only device information (e.g. manufacturer, device ID)
-#define ID_CONF     0x30        // configurable settings
-#define ID_INPUT    0x60        // input data (e.g. set-points)
-#define ID_OUTPUT   0x70        // output data (e.g. measurement values)
-#define ID_REC      0xA0        // recorded data (history-dependent)
-#define ID_CAL      0xD0        // calibration
-#define ID_EXEC     0xE0        // function call
-#define ID_PUB      0xF0        // publication setup
-#define ID_SUB      0xF1        // subscription setup
-#define ID_LOG      0x100       // access log data
+#define ID_INFO     0x01        // read-only device information (e.g. manufacturer, device ID)
+#define ID_MEAS     0x02        // output data (e.g. measurement values)
+#define ID_STATE    0x03        // recorded data (history-dependent)
+#define ID_REC      0x04        // recorded data (history-dependent)
+#define ID_INPUT    0x05        // input data (e.g. set-points)
+#define ID_CONF     0x06        // configurable settings
+#define ID_CAL      0x07        // calibration
+#define ID_REPORT   0x0A        // reports
+#define ID_DFU      0x0D        // device firmware upgrade
+#define ID_RPC      0x0E        // remote procedure calls
+#define ID_PUB      0x0F        // publication setup
 
-#define PUB_SER     (1U << 0)   // UART serial
-#define PUB_CAN     (1U << 1)   // CAN bus
-#define PUB_NVM     (1U << 2)   // data that should be stored in EEPROM
+#define SUBSET_REPORT  (1U << 0)   // report subset of data items for publication
+#define SUBSET_CAN     (1U << 1)   // data nodes used for CAN bus publication messages
 
 extern char manufacturer[];
-extern bool pub_serial_enable;
+extern bool pub_report_enable;
 extern uint16_t pub_serial_interval;
 extern bool pub_can_enable;
 extern uint16_t pub_can_interval;
@@ -53,8 +53,8 @@ extern float B[100];
 extern struct ts_array_info float32_array;
 extern uint8_t bytes[300];
 extern struct ts_bytes_buffer bytes_buf;
-extern struct ts_data_node data_nodes[];
-extern size_t data_nodes_size;
+extern struct ts_data_object data_objects[];
+extern size_t data_objects_size;
 
 /*
  * Context used for testing
@@ -127,11 +127,13 @@ void test_assert(void);
 void test_txt_patch_bin_fetch(void);
 void test_bin_patch_txt_fetch(void);
 void test_ts_init(void);
-void test_txt_get_output_names();
-void test_txt_get_output_names_values();
-void test_txt_fetch_array();
-void test_txt_fetch_rounded();
-void test_txt_fetch_nan();
+
+void test_txt_get_meas_names(void);
+void test_txt_get_meas_names_values(void);
+void test_txt_get_single_value(void);
+void test_txt_fetch_array(void);
+void test_txt_fetch_rounded(void);
+void test_txt_fetch_nan(void);
 void test_txt_fetch_inf(void);
 void test_txt_fetch_int32_array(void);
 void test_txt_fetch_float_array(void);
@@ -139,13 +141,15 @@ void test_txt_patch_wrong_data_structure(void);
 void test_txt_patch_array(void);
 void test_txt_patch_readonly(void);
 void test_txt_patch_wrong_path(void);
-void test_txt_patch_unknown_node(void);
+void test_txt_patch_unknown_object(void);
 void test_txt_conf_callback(void);
 void test_txt_exec(void);
-void test_txt_pub_msg(void);
+void test_txt_statement_subset(void);
+void test_txt_statement_group(void);
+void test_txt_pub_deprecated(void);
 void test_txt_pub_list_channels(void);
 void test_txt_pub_enable(void);
-void test_txt_pub_delete_append_node(void);
+void test_txt_pub_delete_append_object(void);
 void test_txt_auth_user(void);
 void test_txt_auth_root(void);
 void test_txt_auth_long_password(void);
@@ -153,24 +157,32 @@ void test_txt_auth_failure(void);
 void test_txt_auth_reset(void);
 void test_txt_wrong_command(void);
 void test_txt_get_endpoint(void);
-void test_bin_get_output_ids(void);
-void test_bin_get_output_names(void);
-void test_bin_get_output_names_values(void);
-void test_bin_patch_multiple_nodes(void);
-void test_bin_fetch_multiple_nodes(void);
+void test_txt_export(void);
+
+void test_bin_get_meas_ids_values(void);
+void test_bin_get_meas_names_values(void);
+void test_bin_get_single_value(void);
+void test_bin_patch_multiple_objects(void);
+void test_bin_fetch_meas_ids(void);
+void test_bin_fetch_meas_names(void);
+void test_bin_fetch_multiple_objects(void);
 void test_bin_patch_float_array(void);
 void test_bin_fetch_float_array(void);
 void test_bin_patch_rounded_float(void);
 void test_bin_fetch_rounded_float(void);
-void test_bin_pub(void);
+void test_bin_statement_subset(void);
+void test_bin_statement_group(void);
+void test_bin_pub_deprecated(void);
 void test_bin_pub_can(void);
-void test_bin_sub(void);
+void test_bin_sub_deprecated(void);
 void test_bin_exec(void);
 void test_bin_num_elem(void);
 void test_bin_serialize_long_string(void);
 void test_bin_serialize_bytes(void);
 void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
+void test_bin_export(void);
+void test_bin_import(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -178,7 +190,7 @@ void test_bin_patch_fetch_bytes(void);
 /*
  * Implemented in test_shim.cpp
  */
-void test_shim_get_node(void);
+void test_shim_get_object(void);
 
 #endif
 

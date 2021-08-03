@@ -8,14 +8,19 @@
 
 #include "test.h"
 
-void test_txt_get_output_names()
+void test_txt_get_meas_names()
 {
-    TEST_ASSERT_TXT_REQ("?output/", ":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?meas/", ":85 Content. [\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
 
-void test_txt_get_output_names_values()
+void test_txt_get_meas_names_values()
 {
-    TEST_ASSERT_TXT_REQ("?output", ":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_REQ("?meas", ":85 Content. {\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}
+
+void test_txt_get_single_value()
+{
+    TEST_ASSERT_TXT_REQ("?meas/Bat_V", ":85 Content. 14.10");
 }
 
 void test_txt_fetch_array()
@@ -86,7 +91,7 @@ void test_txt_patch_wrong_path(void)
     TEST_ASSERT_TXT_REQ("=info {\"i32\" : 52}", ":A4 Not Found.");
 }
 
-void test_txt_patch_unknown_node(void)
+void test_txt_patch_unknown_object(void)
 {
     TEST_ASSERT_TXT_REQ("=conf {\"i3\" : 52}", ":A4 Not Found.");
 }
@@ -104,50 +109,72 @@ void test_txt_exec(void)
 {
     dummy_called_flag = 0;
 
-    TEST_ASSERT_TXT_REQ("!exec/dummy", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-dummy", ":83 Valid.");
 
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
-void test_txt_pub_msg(void)
+void test_txt_statement_subset(void)
 {
-    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, PUB_SER);
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}
+
+void test_txt_statement_group(void)
+{
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+}
+
+void test_txt_pub_deprecated(void)
+{
+    int resp_len = ts_txt_pub(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
 
     TEST_ASSERT_TXT_RESP(resp_len, "# {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
 void test_txt_pub_list_channels(void)
 {
-    TEST_ASSERT_TXT_REQ("?pub/", ":85 Content. [\"serial\",\"can\"]");
+    TEST_ASSERT_TXT_REQ("?.pub/", ":85 Content. [\"report\",\"info\"]");
 }
 
 void test_txt_pub_enable(void)
 {
-    pub_serial_enable = false;
+    pub_report_enable = false;
 
-    TEST_ASSERT_TXT_REQ("=pub/serial {\"Enable\":true}", ":84 Changed.");
+    TEST_ASSERT_TXT_REQ("=.pub/report {\"Enable\":true}", ":84 Changed.");
 
-    TEST_ASSERT_TRUE(pub_serial_enable);
+    TEST_ASSERT_TRUE(pub_report_enable);
 }
 
-void test_txt_pub_delete_append_node(void)
+void test_txt_pub_delete_append_object(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
     /* delete "Ambient_degC" */
-    TEST_ASSERT_TXT_REQ("-pub/serial/IDs \"Ambient_degC\"", ":82 Deleted.");
+    TEST_ASSERT_TXT_REQ("-report \"Ambient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
     /* append "Ambient_degC" again */
-    TEST_ASSERT_TXT_REQ("+pub/serial/IDs \"Ambient_degC\"", ":81 Created.");
+    TEST_ASSERT_TXT_REQ("+report \"Ambient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?pub/serial/IDs", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
 
 void test_txt_auth_user(void)
 {
     /* authorize as expert user */
-    TEST_ASSERT_TXT_REQ("!auth \"expert123\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"expert123\"", ":83 Valid.");
     /* write expert user data */
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":84 Changed.");
     /* attempt to write maker data */
@@ -157,7 +184,7 @@ void test_txt_auth_user(void)
 void test_txt_auth_root(void)
 {
     /* authorize as maker */
-    TEST_ASSERT_TXT_REQ("!auth \"maker456\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"maker456\"", ":83 Valid.");
     /* write expert user data */
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":84 Changed.");
     /* write maker data */
@@ -166,19 +193,19 @@ void test_txt_auth_root(void)
 
 void test_txt_auth_long_password(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
 }
 
 void test_txt_auth_failure(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"abc\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"abc\"", ":83 Valid.");
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":A1 Unauthorized.");
 }
 
 void test_txt_auth_reset(void)
 {
-    TEST_ASSERT_TXT_REQ("!auth \"expert123\"", ":83 Valid.");
-    TEST_ASSERT_TXT_REQ("!auth \"wrong\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"expert123\"", ":83 Valid.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"wrong\"", ":83 Valid.");
     TEST_ASSERT_TXT_REQ("=conf {\"secret_expert\" : 10}", ":A1 Unauthorized.");
 }
 
@@ -189,26 +216,33 @@ void test_txt_wrong_command(void)
 
 void test_txt_get_endpoint(void)
 {
-    const struct ts_data_node *node;
+    const struct ts_data_object *object;
 
-    node = ts_get_node_by_path(&ts, "conf", strlen("conf"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "conf", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    node = ts_get_node_by_path(&ts, "conf/", strlen("conf/"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "conf/", strlen("conf/"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    node = ts_get_node_by_path(&ts, "/", strlen("/"));
-    TEST_ASSERT_NULL(node);
-
-    /* special case where the data contains forward slashes */
-    node = ts_get_node_by_path(&ts, "conf \"this/is/a/path\"", strlen("conf"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(ID_CONF, node->id);
+    object = ts_get_object_by_path(&ts, "/", strlen("/"));
+    TEST_ASSERT_NULL(object);
 
     /* special case where the data contains forward slashes */
-    node = ts_get_node_by_path(&ts, "exec/reset \"this/is/a/path\"", strlen("exec/reset"));
-    TEST_ASSERT_NOT_NULL(node);
-    TEST_ASSERT_EQUAL_UINT16(0xE1, node->id);
+    object = ts_get_object_by_path(&ts, "conf \"this/is/a/path\"", strlen("conf"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
+
+    /* special case where the data contains forward slashes */
+    object = ts_get_object_by_path(&ts, "rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
+    TEST_ASSERT_NOT_NULL(object);
+    TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
+}
+
+void test_txt_export(void)
+{
+    int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }

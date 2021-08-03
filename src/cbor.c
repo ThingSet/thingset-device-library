@@ -452,39 +452,42 @@ int cbor_deserialize_bool(const uint8_t *data, bool *value)
 
 int cbor_deserialize_string(const uint8_t *data, char *str, uint16_t buf_size)
 {
+    char *str_start;
+    uint16_t str_len;
+
+    int ret = cbor_deserialize_string_zero_copy(data, &str_start, &str_len);
+
+    if (ret > 0 && str_len < buf_size) {
+        strncpy(str, str_start, str_len);
+        str[str_len] = '\0';
+        return ret;
+    }
+    return 0;
+}
+
+int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uint16_t *str_len)
+{
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
-    uint16_t len;
 
-    //printf("deserialize string: \"%s\", len = %d, max_len = %d\n", (char*)&data[1], len, buf_size);
-
-    if (!str || type != CBOR_TEXT)
+    if (!data || !str_start || !str_len || type != CBOR_TEXT) {
         return 0;
+    }
 
     if (info <= CBOR_NUM_MAX) {
-        len = info;
-        if (len < buf_size) {
-            strncpy(str, (const char*)&data[1], len);
-            str[len] = '\0';
-            //printf("deserialize string: \"%s\", len = %d, max_len = %d\n", (char*)&data[1], len, buf_size);
-            return len + 1;
-        }
+        *str_len = info;
+        *str_start = (char *)&data[1];
+        return *str_len + 1;
     }
     else if (info == CBOR_UINT8_FOLLOWS) {
-        len = data[1];
-        if (len < buf_size) {
-            strncpy(str, (const char*)&data[2], len);
-            str[len] = '\0';
-            return len + 2;
-        }
+        *str_len = data[1];
+        *str_start = (char *)&data[2];
+        return *str_len + 2;
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
-        len = data[1] << 8 | data[2];
-        if (len < buf_size) {
-            strncpy(str, (const char*)&data[3], len);
-            str[len] = '\0';
-            return len + 3;
-        }
+        *str_len = data[1] << 8 | data[2];
+        *str_start = (char*)&data[3];
+        return *str_len + 3;
     }
     return 0;   // longer string not supported
 }

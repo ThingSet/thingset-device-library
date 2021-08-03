@@ -5,10 +5,10 @@
 
 #include "test.h"
 
-void test_shim_get_node(void)
+void test_shim_get_object(void)
 {
-    ThingSet ts(&data_nodes[0], data_nodes_size);
+    ThingSet ts(&data_objects[0], data_objects_size);
 
-    ThingSetDataNode *node = ts.get_node(ID_INFO);
-    TEST_ASSERT_EQUAL_PTR(&data_nodes[0], node);
+    ThingSetDataObject *object = ts.get_object(ID_INFO);
+    TEST_ASSERT_EQUAL_PTR(&data_objects[0], object);
 }

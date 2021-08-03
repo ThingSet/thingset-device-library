@@ -283,6 +283,17 @@ int cbor_deserialize_bool(const uint8_t *data, bool *value);
 int cbor_deserialize_string(const uint8_t *data, char *str, uint16_t buf_size);
 
 /**
+ * Deserialize string with zero-copy
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param str_start Pointer to store start of string
+ * @param str_len Pointer to store length of string in the buffer EXCLUDING null-termination
+ *
+ * @returns Number of bytes read from data buffer or 0 in case of error
+ */
+int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uint16_t *str_len);
+
+/**
  * Deserialize bytes
  *
  * @param data Buffer containing CBOR data with matching type
