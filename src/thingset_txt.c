@@ -129,6 +129,10 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
             pos = snprintf(&buf[pos], size - pos, "%.*f,", object->detail, value);
         }
         break;
+    case TS_T_DECFRAC:
+        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 "e%" PRIi16 ",",
+            *((uint32_t *)object->data), object->detail);
+        break;
     case TS_T_BOOL:
         pos = snprintf(&buf[pos], size - pos, "%s,",
                 (*((bool *)object->data) == true ? "true" : "false"));
@@ -413,6 +417,8 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
 
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type, const struct ts_data_object *object)
 {
+    float tmp;
+
     if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
     }
@@ -421,6 +427,18 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
     switch (object->type) {
         case TS_T_FLOAT32:
             *((float*)object->data) = strtod(buf, NULL);
+            break;
+        case TS_T_DECFRAC:
+            tmp = strtod(buf, NULL);
+            // positive exponent
+            for (int16_t i = 0; i < object->detail; i++) {
+                tmp /= 10.0F;
+            }
+            // negative exponent
+            for (int16_t i = 0; i > object->detail; i--) {
+                tmp *= 10.0F;
+            }
+            *((int32_t*)object->data) = (int32_t)tmp;
             break;
         case TS_T_UINT64:
             *((uint64_t*)object->data) = strtoull(buf, NULL, 0);

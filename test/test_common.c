@@ -132,6 +132,9 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("f32", "-12.340", 0x6007, "fa c1 45 70 a4");
     TEST_ASSERT_JSON2CBOR("f32", "12.345",  0x6007, "fa 41 45 85 1f");
 
+    // decimal fraction
+    TEST_ASSERT_JSON2CBOR("DecFrac_degC", "273.15", 0x600B, "c4 82 21 19 6a b3");
+
     // bool
     TEST_ASSERT_JSON2CBOR("bool", "true",  0x6008, "f5");
     TEST_ASSERT_JSON2CBOR("bool", "false",  0x6008, "f4");
@@ -226,6 +229,13 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("f32", "-12.34", 0x6007, "fa c1 45 70 a4");
     TEST_ASSERT_CBOR2JSON("f32", "12.34",  0x6007, "fa 41 45 81 06");      // 12.344
     TEST_ASSERT_CBOR2JSON("f32", "12.35",  0x6007, "fa 41 45 85 1f");      // 12.345 (should be rounded to 12.35)
+
+    // decimal fraction
+    TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B, "c4 82 21 19 6a b3"); // decfrac 27315e-2
+    TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B, "c4 82 22 1a 00 04 2A FE"); // decfrac 273150e-3
+    TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27310e-2", 0x600B, "c4 82 20 19 0a ab"); // decfrac 2731e-1
+    TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B, "fa 43 88 93 33");    // float 273.15
+    TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27300e-2", 0x600B, "19 01 11");          // decimal 273
 
     // bool
     TEST_ASSERT_CBOR2JSON("bool", "true",  0x6008, "f5");

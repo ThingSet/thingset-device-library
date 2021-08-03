@@ -239,6 +239,9 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define TS_ITEM_FLOAT(id, name, float_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_float_to_void(float_ptr), TS_T_FLOAT32, digits, access, subsets}
 
+#define TS_ITEM_DECFRAC(id, name, mantissa_ptr, exponent, parent_id, access, subsets) \
+    {id, parent_id, name, ts_int32_to_void(mantissa_ptr), TS_T_DECFRAC, exponent, access, subsets}
+
 #define TS_ITEM_STRING(id, name, char_ptr, buf_size, parent_id, access, subsets) \
     {id, parent_id, name, ts_string_to_void(char_ptr), TS_T_STRING, buf_size, access, subsets}
 

@@ -85,6 +85,22 @@ int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len)
     }
 }
 
+int cbor_serialize_decfrac(uint8_t *data, int32_t mantissa, int16_t exponent, size_t max_len)
+{
+    if (max_len < (2 + 3 + 5)) {
+        return 0;
+    }
+
+    data[0] = (CBOR_TAG | CBOR_DECFRAC_ARRAY_FOLLOWS);
+    data[1] = 0x82;
+
+    int len = 2;
+    len += cbor_serialize_int(&data[len], exponent, max_len - len);
+    len += cbor_serialize_int(&data[len], mantissa, max_len - len);
+
+    return len;
+}
+
 int cbor_serialize_float(uint8_t *data, float value, size_t max_len)
 {
     if (max_len < 5)
@@ -386,10 +402,54 @@ int cbor_deserialize_int16(const uint8_t *data, int16_t *value)
     return 0;
 }
 
-int cbor_deserialize_decimal_fraction(const uint8_t *data, int32_t *mantissa, int32_t exponent)
+int cbor_deserialize_decfrac(const uint8_t *data, int32_t *mantissa, const int16_t exponent)
 {
-    // ToDo: implementation
-    return 0;
+    int pos = 0;
+    uint8_t type = data[0] & CBOR_TYPE_MASK;
+
+    if (data[0] == (CBOR_TAG | CBOR_DECFRAC_ARRAY_FOLLOWS) &&
+        data[1] == (CBOR_ARRAY | 2U))
+    {
+        int32_t mantissa_tmp;
+        int16_t exponent_received;
+        pos = 2;
+        pos += cbor_deserialize_int16(&data[pos], &exponent_received);
+        pos += cbor_deserialize_int32(&data[pos], &mantissa_tmp);
+
+        for (int i = exponent_received; i < exponent; i++) {
+            mantissa_tmp /= 10;
+        }
+        for (int i = exponent_received; i > exponent; i--) {
+            mantissa_tmp *= 10;
+        }
+        *mantissa = mantissa_tmp;
+    }
+    else if (data[0] == CBOR_FLOAT32) {
+        float value;
+        pos = cbor_deserialize_float(&data[pos], &value);
+
+        for (int i = 0; i < exponent; i++) {
+            value /= 10.0F;
+        }
+        for (int i = 0; i > exponent; i--) {
+            value *= 10.0F;
+        }
+        *mantissa = (int32_t)value;
+    }
+    else if (type == CBOR_UINT || type == CBOR_NEGINT) {
+        int32_t value;
+        pos = cbor_deserialize_int32(&data[pos], &value);
+
+        for (int i = 0; i < exponent; i++) {
+            value /= 10;
+        }
+        for (int i = 0; i > exponent; i--) {
+            value *= 10;
+        }
+        *mantissa = value;
+    }
+
+    return pos;
 }
 
 int cbor_deserialize_float(const uint8_t *data, float *value)
@@ -593,6 +653,12 @@ int cbor_size(const uint8_t *data)
             else
                 return 0;   // longer string / byte array not supported
         }
+    }
+    else if (type == CBOR_TAG && info == CBOR_DECFRAC_ARRAY_FOLLOWS) {
+        int pos = 2;
+        pos += cbor_size(&data[pos]);     // exponent
+        pos += cbor_size(&data[pos]);     // mantissa
+        return pos;
     }
     else if (type == CBOR_7) {
         switch (data[0]) {

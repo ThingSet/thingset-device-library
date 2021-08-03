@@ -36,6 +36,8 @@ static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_ob
         return cbor_deserialize_int16(buf, (int16_t *)data_obj->data);
     case TS_T_FLOAT32:
         return cbor_deserialize_float(buf, (float *)data_obj->data);
+    case TS_T_DECFRAC:
+        return cbor_deserialize_decfrac(buf, (int32_t *)data_obj->data, data_obj->detail);
     case TS_T_BOOL:
         return cbor_deserialize_bool(buf, (bool *)data_obj->data);
     case TS_T_STRING:
@@ -128,6 +130,8 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
         else {
             return cbor_serialize_float(buf, *((float *)data_obj->data), size);
         }
+    case TS_T_DECFRAC:
+        return cbor_serialize_decfrac(buf, *((int32_t *)data_obj->data), data_obj->detail, size);
     case TS_T_BOOL:
         return cbor_serialize_bool(buf, *((bool *)data_obj->data), size);
     case TS_T_STRING:
