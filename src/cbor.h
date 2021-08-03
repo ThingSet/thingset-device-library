@@ -45,6 +45,7 @@ extern "C" {
 /* Major type 6: Semantic tagging */
 #define CBOR_DATETIME_STRING_FOLLOWS        0
 #define CBOR_DATETIME_EPOCH_FOLLOWS         1
+#define CBOR_DECFRAC_ARRAY_FOLLOWS          4
 
 /* Major type 7: Float and other types */
 #define CBOR_FALSE      (CBOR_7 | 20)
@@ -97,8 +98,7 @@ int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);
  *
  * @returns Number of bytes added to buffer or 0 in case of error
  */
-int cbor_serialize_decimal_fraction(uint8_t *data, int32_t mantissa, int32_t exponent,
-                                                                                size_t max_len);
+int cbor_serialize_decfrac(uint8_t *data, int32_t mantissa, int16_t exponent, size_t max_len);
 
 /**
  * Serialize 32-bit float
@@ -110,7 +110,6 @@ int cbor_serialize_decimal_fraction(uint8_t *data, int32_t mantissa, int32_t exp
  * @returns Number of bytes added to buffer or 0 in case of error
  */
 int cbor_serialize_float(uint8_t *data, float value, size_t max_len);
-
 
 /**
  * Serialize boolean
@@ -249,7 +248,7 @@ int cbor_deserialize_int16(const uint8_t *data, int16_t *value);
  *
  * @returns Number of bytes read from buffer or 0 in case of error
  */
-int cbor_deserialize_decimal_fraction(const uint8_t *data, int32_t *mantissa, int32_t exponent);
+int cbor_deserialize_decfrac(const uint8_t *data, int32_t *mantissa, const int16_t exponent);
 
 /**
  * Deserialize 32-bit float

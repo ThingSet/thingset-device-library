@@ -46,6 +46,7 @@ char auth_password[11];
 char strbuf[300];
 
 float f32;
+int32_t decfrac;
 
 static uint64_t ui64;
 static int64_t i64;
@@ -184,6 +185,7 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf), ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_FLOAT(0x600A, "f32_rounded", &f32, 0, ID_CONF, TS_ANY_RW, 0),
+    TS_ITEM_DECFRAC(0x600B, "DecFrac_degC", &decfrac, -2, ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_UINT32(0x7001, "secret_expert", &ui32, ID_CONF, TS_ANY_R | TS_EXP_W | TS_MKR_W, 0),
     TS_ITEM_UINT32(0x7002, "secret_maker", &ui32, ID_CONF, TS_ANY_R | TS_MKR_W, 0),
