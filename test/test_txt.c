@@ -119,11 +119,19 @@ void test_txt_statement_subset(void)
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
 
     TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
 void test_txt_statement_group(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
 
     TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
 }

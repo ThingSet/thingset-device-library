@@ -217,7 +217,7 @@ void test_bin_statement_subset(void)
 {
     const char resp_expected[] =
         "1F "
-        "18 F4 "                // ID of "report"
+        "0A "                   // ID of "report"
         "84 "                   // array with 4 elements
         "1A 00 BC 61 4E "       // int 12345678
         "FA 41 61 99 9a "       // float 14.10
@@ -225,6 +225,10 @@ void test_bin_statement_subset(void)
         "16 ";                  // int 22
 
     int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "report");
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+
+    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }
@@ -240,6 +244,10 @@ void test_bin_statement_group(void)
         "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
 
     int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
+
+    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+
+    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_INFO);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }

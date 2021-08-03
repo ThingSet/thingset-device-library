@@ -144,7 +144,7 @@ struct ts_data_object data_objects[] = {
 
     // REPORTS ////////////////////////////////////////////////////////////////
 
-    TS_SUBSET(0xF4, "report", SUBSET_REPORT, ID_ROOT, TS_ANY_RW),
+    TS_SUBSET(ID_REPORT, "report", SUBSET_REPORT, ID_ROOT, TS_ANY_RW),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
 
