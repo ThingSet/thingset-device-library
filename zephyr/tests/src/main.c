@@ -93,10 +93,12 @@ void test_main(void)
         /* Bin mode: general tests */
         ztest_unit_test_setup_teardown(test_bin_num_elem, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_serialize_long_string, setup, teardown),
+#ifdef CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
         /* Bin mode: binary (bytes) data type */
         ztest_unit_test_setup_teardown(test_bin_serialize_bytes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_deserialize_bytes, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_fetch_bytes, setup, teardown),
+#endif
         /* Bin mode: exporting/importing of data */
         ztest_unit_test_setup_teardown(test_bin_export, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_import, setup, teardown)

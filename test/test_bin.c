@@ -378,6 +378,7 @@ void test_bin_serialize_long_string(void)
     TEST_ASSERT_EQUAL_UINT(0x00, buf[2]);           // null-termination is not stored
 }
 
+#if TS_BYTE_STRING_TYPE_SUPPORT
 void test_bin_serialize_bytes(void)
 {
     /* use public buffers for testing - assure sufficient size */
@@ -422,6 +423,7 @@ void test_bin_deserialize_bytes(void)
     TEST_ASSERT_EQUAL_UINT(300, num_bytes);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&bytes[0], &cbor[3], 300);
 }
+#endif /* TS_BYTE_STRING_TYPE_SUPPORT */
 
 void test_bin_patch_fetch_bytes(void)
 {

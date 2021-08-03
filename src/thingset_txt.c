@@ -20,7 +20,7 @@ int ts_txt_response(struct ts_context *ts, int code)
 {
     size_t pos = 0;
 
-#ifdef TS_VERBOSE_STATUS_MESSAGES
+#if TS_VERBOSE_STATUS_MESSAGES
     const char *msg;
     switch (code) {
         // success
@@ -99,7 +99,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
     float value;
 
     switch (object->type) {
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
         pos = snprintf(&buf[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)object->data));
         break;
@@ -129,10 +129,12 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const
             pos = snprintf(&buf[pos], size - pos, "%.*f,", object->detail, value);
         }
         break;
+#if TS_DECFRAC_TYPE_SUPPORT
     case TS_T_DECFRAC:
         pos = snprintf(&buf[pos], size - pos, "%" PRIi32 "e%" PRIi16 ",",
             *((uint32_t *)object->data), object->detail);
         break;
+#endif
     case TS_T_BOOL:
         pos = snprintf(&buf[pos], size - pos, "%s,",
                 (*((bool *)object->data) == true ? "true" : "false"));
@@ -417,7 +419,9 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
 
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type, const struct ts_data_object *object)
 {
+#if TS_DECFRAC_TYPE_SUPPORT
     float tmp;
+#endif
 
     if (type != JSMN_PRIMITIVE && type != JSMN_STRING) {
         return 0;
@@ -428,6 +432,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
         case TS_T_FLOAT32:
             *((float*)object->data) = strtod(buf, NULL);
             break;
+#if TS_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
             tmp = strtod(buf, NULL);
             // positive exponent
@@ -440,6 +445,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             }
             *((int32_t*)object->data) = (int32_t)tmp;
             break;
+#endif
         case TS_T_UINT64:
             *((uint64_t*)object->data) = strtoull(buf, NULL, 0);
             break;
