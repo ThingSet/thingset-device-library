@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __TS_CONFIG_H_
-#define __TS_CONFIG_H_
+#ifndef TS_CONFIG_H_
+#define TS_CONFIG_H_
 
 /*
  * Enable legacy C++ interface.
@@ -45,7 +45,7 @@
 /*
  * Switch on support for 64 bit variable types (uint64_t, int64_t, double)
  *
- * This should be disbaled for most 8-bit microcontrollers to increase
+ * This should be disabled for most 8-bit microcontrollers to increase
  * performance
  */
 #if !defined(TS_64BIT_TYPES_SUPPORT) && !defined(CONFIG_THINGSET_64BIT_TYPES_SUPPORT)
@@ -54,4 +54,25 @@
 #define TS_64BIT_TYPES_SUPPORT CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 #endif
 
-#endif /* __TS_CONFIG_H_ */
+/*
+ * Switch on support for CBOR decimal fraction data type which stores a decimal mantissa
+ * and a constant decimal exponent. This allows to use e.g. millivolts internally instead
+ * of floating point numbers, while still communicating the SI base unit (volts).
+ */
+#if !defined(TS_DECFRAC_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT)
+#define TS_DECFRAC_TYPE_SUPPORT 0        // default: no support
+#elif !defined(TS_DECFRAC_TYPE_SUPPORT)
+#define TS_DECFRAC_TYPE_SUPPORT CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
+#endif
+
+/*
+ * Switch on support for CBOR byte strings, which can store any sort of binary data and
+ * can be used e.g. for firmware upgrades. Byte strings are not supported by JSON.
+ */
+#if !defined(TS_BYTE_STRING_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT)
+#define TS_BYTE_STRING_TYPE_SUPPORT 0        // default: no support
+#elif !defined(TS_BYTE_STRING_TYPE_SUPPORT)
+#define TS_BYTE_STRING_TYPE_SUPPORT CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
+#endif
+
+#endif /* TS_CONFIG_H_ */

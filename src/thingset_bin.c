@@ -20,7 +20,7 @@ static int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_
 static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_object *data_obj)
 {
     switch (data_obj->type) {
-#if (TS_64BIT_TYPES_SUPPORT == 1)
+#if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
         return cbor_deserialize_uint64(buf, (uint64_t *)data_obj->data);
     case TS_T_INT64:
@@ -36,15 +36,19 @@ static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_ob
         return cbor_deserialize_int16(buf, (int16_t *)data_obj->data);
     case TS_T_FLOAT32:
         return cbor_deserialize_float(buf, (float *)data_obj->data);
+#if TS_DECFRAC_TYPE_SUPPORT
     case TS_T_DECFRAC:
         return cbor_deserialize_decfrac(buf, (int32_t *)data_obj->data, data_obj->detail);
+#endif
     case TS_T_BOOL:
         return cbor_deserialize_bool(buf, (bool *)data_obj->data);
     case TS_T_STRING:
         return cbor_deserialize_string(buf, (char *)data_obj->data, data_obj->detail);
+#if TS_BYTE_STRING_TYPE_SUPPORT
     case TS_T_BYTES:
         return cbor_deserialize_bytes(buf, ((struct ts_bytes_buffer *)data_obj->data)->bytes,
             data_obj->detail, &(((struct ts_bytes_buffer *)data_obj->data)->num_bytes));
+#endif
     case TS_T_ARRAY:
         return cbor_deserialize_array_type(buf, data_obj);
     default:
@@ -72,7 +76,7 @@ static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_
 
     for (int i = 0; i < num_elements; i++) {
         switch (array_info->type) {
-#if (TS_64BIT_TYPES_SUPPORT == 1)
+#if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             pos += cbor_deserialize_uint64(&(buf[pos]), &(((uint64_t *)array_info->ptr)[i]));
             break;
@@ -105,7 +109,7 @@ static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_
 static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_data_object *data_obj)
 {
     switch (data_obj->type) {
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
         return cbor_serialize_uint(buf, *((uint64_t *)data_obj->data), size);
     case TS_T_INT64:
@@ -121,7 +125,7 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
         return cbor_serialize_int(buf, *((int16_t *)data_obj->data), size);
     case TS_T_FLOAT32:
         if (data_obj->detail == 0) { // round to 0 digits: use int
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
             return cbor_serialize_int(buf, llroundf(*((float *)data_obj->data)), size);
 #else
             return cbor_serialize_int(buf, lroundf(*((float *)data_obj->data)), size);
@@ -130,15 +134,19 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
         else {
             return cbor_serialize_float(buf, *((float *)data_obj->data), size);
         }
+#if TS_DECFRAC_TYPE_SUPPORT
     case TS_T_DECFRAC:
         return cbor_serialize_decfrac(buf, *((int32_t *)data_obj->data), data_obj->detail, size);
+#endif
     case TS_T_BOOL:
         return cbor_serialize_bool(buf, *((bool *)data_obj->data), size);
     case TS_T_STRING:
         return cbor_serialize_string(buf, (char *)data_obj->data, size);
+#if TS_BYTE_STRING_TYPE_SUPPORT
     case TS_T_BYTES:
         return cbor_serialize_bytes(buf, ((struct ts_bytes_buffer *)data_obj->data)->bytes,
             ((struct ts_bytes_buffer *)data_obj->data)->num_bytes, size);
+#endif
     case TS_T_ARRAY:
         return cbor_serialize_array_type(buf, size, data_obj);
     default:
@@ -161,7 +169,7 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_ob
 
     for (int i = 0; i < array_info->num_elements; i++) {
         switch (array_info->type) {
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             pos += cbor_serialize_uint(&(buf[pos]), ((uint64_t *)array_info->ptr)[i], size);
             break;
@@ -183,7 +191,7 @@ int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_ob
             break;
         case TS_T_FLOAT32:
             if (data_obj->detail == 0) { // round to 0 digits: use int
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
                 pos += cbor_serialize_int(&(buf[pos]),
                     llroundf(((float *)array_info->ptr)[i]), size);
 #else

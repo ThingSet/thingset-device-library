@@ -25,4 +25,4 @@ jobs:
         git diff --check `git rev-list HEAD | tail -n 1`..
     - name: Run PlatformIO build tests
       run: |
-        platformio test -e native-std
+        platformio test -e native-std -e native-all

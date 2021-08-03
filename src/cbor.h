@@ -67,7 +67,7 @@ extern "C" {
  *
  * @returns Number of bytes added to buffer or 0 in case of error
  */
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len);
 #else
 int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
@@ -82,7 +82,7 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
  *
  * @returns Number of bytes added to buffer or 0 in case of error
  */
-#ifdef TS_64BIT_TYPES_SUPPORT
+#if TS_64BIT_TYPES_SUPPORT
 int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
 #else
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);
@@ -175,7 +175,6 @@ int cbor_serialize_map(uint8_t *data, size_t num_elements, size_t max_len);
  * Deserialization (CBOR data to C values)
  */
 
-#ifdef TS_64BIT_TYPES_SUPPORT
 /**
  * Deserialize 64-bit unsigned integer
  *
@@ -195,7 +194,6 @@ int cbor_deserialize_uint64(const uint8_t *data, uint64_t *value);
  * @returns Number of bytes read from buffer or 0 in case of error
  */
 int cbor_deserialize_int64(const uint8_t *data, int64_t *value);
-#endif
 
 /**
  * Deserialize 32-bit unsigned integer
