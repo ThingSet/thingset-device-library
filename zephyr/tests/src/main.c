@@ -53,7 +53,6 @@ void test_main(void)
         /* Text mode: statements (pub/sub messages) */
         ztest_unit_test_setup_teardown(test_txt_statement_subset, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_statement_group, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_list_channels, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_enable, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_delete_append_object, setup, teardown),
@@ -87,9 +86,7 @@ void test_main(void)
         /* Bin mode: pub/sub messages */
         ztest_unit_test_setup_teardown(test_bin_statement_subset, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_statement_group, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_pub_deprecated, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_pub_can, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_sub_deprecated, setup, teardown),
         /* Bin mode: general tests */
         ztest_unit_test_setup_teardown(test_bin_num_elem, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_serialize_long_string, setup, teardown),

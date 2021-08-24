@@ -252,20 +252,6 @@ void test_bin_statement_group(void)
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 }
 
-void test_bin_pub_deprecated(void)
-{
-    const char resp_expected[] =
-        "1F A4 "     // map with 4 elements
-        "18 1A 1A 00 BC 61 4E "     // int 12345678
-        "18 71 FA 41 61 99 9a "     // float 14.10
-        "18 72 FA 40 a4 28 f6 "     // float 5.13
-        "18 73 16 ";                // int 22
-
-    int resp_len = ts_bin_pub(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
-
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
-}
-
 void test_bin_pub_can(void)
 {
     int start_pos = 0;
@@ -302,19 +288,6 @@ void test_bin_pub_can(void)
     // third call (should not find further objects)
     can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_EQUAL(-1, can_data_len);
-}
-
-void test_bin_sub_deprecated(void)
-{
-    const char req_hex[] =
-        "1F A2 "     // map with 2 elements
-        "18 31 FA 41 61 99 9a "     // float 14.10
-        "18 32 FA 40 a4 28 f6 ";    // float 5.13
-    int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
-
-    int ret = ts_bin_sub(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
-
-    TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }
 
 void test_bin_import(void)

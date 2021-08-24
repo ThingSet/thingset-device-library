@@ -820,13 +820,3 @@ int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts
 {
     return ts_txt_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id));
 }
-
-int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)
-{
-    buf[0] = '#';
-    buf[1] = ' ';
-
-    int ret = ts_txt_export(ts, &buf[2], buf_size - 2, subset);
-
-    return (ret > 0) ? 2 + ret : 0;
-}

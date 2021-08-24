@@ -63,7 +63,6 @@ void tests_text_mode()
     // statements (pub/sub messages)
     RUN_TEST(test_txt_statement_subset);
     RUN_TEST(test_txt_statement_group);
-    RUN_TEST(test_txt_pub_deprecated);
     RUN_TEST(test_txt_pub_list_channels);
     RUN_TEST(test_txt_pub_enable);
     RUN_TEST(test_txt_pub_delete_append_object);
@@ -112,9 +111,7 @@ void tests_binary_mode()
     // pub/sub messages
     RUN_TEST(test_bin_statement_subset);
     RUN_TEST(test_bin_statement_group);
-    RUN_TEST(test_bin_pub_deprecated);
     RUN_TEST(test_bin_pub_can);
-    RUN_TEST(test_bin_sub_deprecated);
 
     // general tests
     RUN_TEST(test_bin_num_elem);
