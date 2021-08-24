@@ -493,7 +493,8 @@ int ts_init(struct ts_context *ts, struct ts_data_object *data, size_t num);
  * @param response Pointer to the buffer where the ThingSet response should be stored
  * @param response_size Size of the response buffer, i.e. maximum allowed length of the response
  *
- * @returns Actual length of the response written to the buffer or 0 in case of error
+ * @returns Actual length of the response written to the buffer or 0 in case of error or if no
+ *          response message has been generated (e.g. because a statement was processed)
  */
 int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len,
                uint8_t *response, size_t response_size);
@@ -520,19 +521,6 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level);
  * @param flags Flags to define authentication level (1 = access allowed)
  */
 void ts_set_authentication(struct ts_context *ts, uint16_t flags);
-
-/**
- * Generate statement (previously known as publication message) in JSON format.
- *
- * @param ts Pointer to ThingSet context.
- * @param buf Pointer to the buffer where the publication message should be stored
- * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param subset Flag to select which subset of data items should be published
- *
- * @returns Actual length of the message written to the buffer or 0 in case of error
- */
-int ts_txt_pub(struct ts_context *ts, char *buf, size_t buf_size, const uint16_t subset)
-    __attribute__((deprecated));
 
 /**
  * Retrieve data in JSON format for given subset(s).
@@ -588,19 +576,6 @@ int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, 
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
 int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts_object_id_t id);
-
-/**
- * Generate statement (previously known as publication message) in CBOR format.
- *
- * @param ts Pointer to ThingSet context.
- * @param buf Pointer to the buffer where the publication message should be stored
- * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param subset Flag to select which subset of data items should be published
- *
- * @returns Actual length of the message written to the buffer or 0 in case of error
- */
-int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
-    __attribute__((deprecated));
 
 /**
  * Retrieve data in CBOR format for given subset(s).
@@ -677,20 +652,6 @@ int ts_bin_statement_by_id(struct ts_context *ts, uint8_t *buf, size_t buf_size,
  */
 int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8_t can_dev_id,
                    uint32_t *msg_id, uint8_t *msg_data);
-
-/**
- * Update data objects based on values provided by from other pub msg.
- *
- * @param ts Pointer to ThingSet context.
- * @param buf Buffer containing pub message and data that should be written to the data objects
- * @param len Length of the data in the buffer
- * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
- * @param subset Subscribe channel (as bitfield)
- *
- * @returns ThingSet status code
- */
-int ts_bin_sub(struct ts_context *ts, uint8_t *buf, size_t len, uint16_t auth_flags,
-               uint16_t subset) __attribute__((deprecated));
 
 /**
  * Import data in CBOR format into data objects.
@@ -794,11 +755,6 @@ public:
         ts_set_authentication(&ts, flags);
     };
 
-    inline int txt_pub(char *buf, size_t size, const uint16_t subset)
-    {
-        return ts_txt_pub(&ts, buf, size, subset);
-    };
-
     inline int txt_export(char *buf, size_t size, const uint16_t subsets)
     {
         return ts_txt_export(&ts, buf, size, subsets);
@@ -819,9 +775,14 @@ public:
         return ts_txt_statement_by_id(&ts, buf, size, id);
     };
 
-    inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)
+    inline int bin_export(uint8_t *buf, size_t size, const uint16_t subsets)
     {
-        return ts_bin_pub(&ts, buf, size, subset);
+        return ts_bin_export(&ts, buf, size, subsets);
+    };
+
+    inline int bin_import(uint8_t *buf, size_t size, uint16_t auth_flags, const uint16_t subsets)
+    {
+        return ts_bin_import(&ts, buf, size, auth_flags, subsets);
     };
 
     inline int bin_statement(uint8_t *buf, size_t size, ThingSetDataObject *object)
@@ -845,11 +806,6 @@ public:
         return ts_bin_pub_can(&ts, &start_pos, subset, can_dev_id, &msg_id, &msg_data[0]);
     };
 
-    inline int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t subsets)
-    {
-        return ts_bin_sub(&ts, cbor_data, len, auth_flags, subsets);
-    };
-
     inline ThingSetDataObject *get_object(ThingSetObjId id)
     {
         return ts_get_object_by_id(&ts, id);
@@ -863,6 +819,61 @@ public:
     inline ThingSetDataObject *get_endpoint(const char *path, size_t len)
     {
         return ts_get_object_by_path(&ts, path, len);
+    };
+
+    /*
+     * Deprecated functions from ThingSet v0.3 interface
+     */
+
+    /**
+     * Generate statement (previously known as publication message) in JSON format.
+     *
+     * @param buf Pointer to the buffer where the publication message should be stored
+     * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param subset Flag to select which subset of data items should be published
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    inline int txt_pub(char *buf, size_t size, const uint16_t subset)
+        __attribute__((deprecated))
+    {
+        buf[0] = '#';
+        buf[1] = ' ';
+        int ret = ts_txt_export(&ts, &buf[2], size - 2, subset);
+        return (ret > 0) ? 2 + ret : 0;
+    };
+
+    /**
+     * Generate statement (previously known as publication message) in CBOR format.
+     *
+     * @param buf Pointer to the buffer where the publication message should be stored
+     * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param subset Flag to select which subset of data items should be published
+     *
+     * @returns Actual length of the message written to the buffer or 0 in case of error
+     */
+    inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)
+        __attribute__((deprecated))
+    {
+        buf[0] = TS_PUBMSG;
+        int ret = ts_bin_export(&ts, &buf[1], size - 1, subset);
+        return (ret > 0) ? 1 + ret : 0;
+    };
+
+    /**
+     * Update data objects based on values provided by from other pub msg.
+     *
+     * @param buf Buffer containing pub message and data that should be written to the data objects
+     * @param len Length of the data in the buffer
+     * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+     * @param subset Subscribe channel (as bitfield)
+     *
+     * @returns ThingSet status code
+     */
+    inline int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t subsets)
+        __attribute__((deprecated))
+    {
+        return ts_bin_import(&ts, cbor_data + 1, len - 1, auth_flags, subsets);
     };
 
 private:

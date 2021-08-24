@@ -339,12 +339,6 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
     }
 }
 
-int ts_bin_sub(struct ts_context *ts, uint8_t *buf, size_t len, uint16_t auth_flags,
-               uint16_t subsets)
-{
-    return ts_bin_import(ts, buf + 1, len - 1, auth_flags, subsets);
-}
-
 int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint16_t auth_flags,
                   uint16_t subsets)
 {
@@ -587,15 +581,6 @@ int ts_bin_export(struct ts_context *ts, uint8_t *buf, size_t buf_size, uint16_t
     }
 
     return len;
-}
-
-int ts_bin_pub(struct ts_context *ts, uint8_t *buf, size_t buf_size, const uint16_t subset)
-{
-    buf[0] = TS_PUBMSG;
-
-    int ret = ts_bin_export(ts, &buf[1], buf_size - 1, subset);
-
-    return (ret > 0) ? 1 + ret : 0;
 }
 
 int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8_t can_dev_id,
