@@ -70,6 +70,15 @@ extern "C" {
 #define TS_STATUS_RESPONSE_TOO_LARGE    0xE1
 
 /*
+ * Reserved data object IDs
+ */
+#define TS_ID_ROOT              0x00
+#define TS_ID_TIME              0x10
+#define TS_ID_NAME              0x17
+#define TS_ID_METADATAURL       0x18
+#define TS_ID_DEVICEID          0x1D
+
+/*
  * ThingSet addressing in 29-bit CAN ID similar to SAE J1939
  *
  * In order to avoid collisions with SAE J1939 and NMEA 2000, bit 25 (EDP) is always set to 1 and
