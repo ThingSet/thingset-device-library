@@ -300,7 +300,8 @@ int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uin
  *
  * @returns Number of bytes read from data buffer or 0 in case of error
  */
-int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes);
+int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size,
+                           uint16_t *num_bytes);
 
 /**
  * Determine the number of elements in a map or an array

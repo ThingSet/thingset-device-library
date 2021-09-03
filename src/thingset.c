@@ -35,11 +35,13 @@ int ts_init(struct ts_context *ts, struct ts_data_object *data, size_t num)
     return 0;
 }
 
-int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len, uint8_t *response, size_t response_size)
+int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len,
+               uint8_t *response, size_t response_size)
 {
     // check if proper request was set before asking for a response
-    if (request == NULL || request_len < 1)
+    if (request == NULL || request_len < 1) {
         return 0;
+    }
 
     // assign private variables
     ts->req = request;
@@ -50,13 +52,15 @@ int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len
     if (ts->req[0] < 0x20) {
         // binary mode request
         return ts_bin_process(ts);
-    } else if (ts->req[0] == '?' || ts->req[0] == '=' || ts->req[0] == '+'
+    }
+    else if (ts->req[0] == '?' || ts->req[0] == '=' || ts->req[0] == '+'
                || ts->req[0] == '-' || ts->req[0] == '!') {
         // text mode request
         return ts_txt_process(ts);
-    } else {
+    }
+    else {
         // not a thingset command --> ignore and set response to empty string
-        response[0] = 0;
+        response[0] = '\0';
         return 0;
     }
 }
@@ -66,14 +70,16 @@ void ts_set_authentication(struct ts_context *ts, uint16_t flags)
     ts->_auth_flags = flags;
 }
 
-struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name, size_t len, int32_t parent)
+struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name,
+                                             size_t len, int32_t parent)
 {
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (parent != -1 && ts->data_objects[i].parent != parent) {
             continue;
         }
         else if (strncmp(ts->data_objects[i].name, name, len) == 0
-            && strlen(ts->data_objects[i].name) == len)  // otherwise e.g. foo and fooBar would be recognized as equal
+            // without length check foo and fooBar would be recognized as equal
+            && strlen(ts->data_objects[i].name) == len)
         {
             return &(ts->data_objects[i]);
         }

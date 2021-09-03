@@ -558,7 +558,8 @@ int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uin
 }
 
 #if TS_BYTE_STRING_TYPE_SUPPORT
-int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size, uint16_t *num_bytes)
+int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size,
+                           uint16_t *num_bytes)
 {
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
