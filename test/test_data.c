@@ -48,8 +48,10 @@ char strbuf[300];
 float f32;
 int32_t decfrac;
 
+#if TS_64BIT_TYPES_SUPPORT
 static uint64_t ui64;
 static int64_t i64;
+#endif
 
 static uint32_t ui32;
 int32_t i32;
@@ -173,8 +175,10 @@ struct ts_data_object data_objects[] = {
 
     TS_FUNCTION(0x5001, "x-dummy", &dummy, ID_RPC, TS_ANY_RW),
 
+#if TS_64BIT_TYPES_SUPPORT
     TS_ITEM_UINT64(0x6001, "ui64", &ui64, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_INT64(0x6002, "i64", &i64, ID_CONF, TS_ANY_RW, 0),
+#endif
     TS_ITEM_UINT32(0x6003, "ui32", &ui32, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_INT32(0x6004, "i32", &i32, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_UINT16(0x6005, "ui16", &ui16, ID_CONF, TS_ANY_RW, 0),
@@ -185,7 +189,9 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf), ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_FLOAT(0x600A, "f32_rounded", &f32, 0, ID_CONF, TS_ANY_RW, 0),
+#if TS_DECFRAC_TYPE_SUPPORT
     TS_ITEM_DECFRAC(0x600B, "DecFrac_degC", &decfrac, -2, ID_CONF, TS_ANY_RW, 0),
+#endif
 
     TS_ITEM_UINT32(0x7001, "secret_expert", &ui32, ID_CONF, TS_ANY_R | TS_EXP_W | TS_MKR_W, 0),
     TS_ITEM_UINT32(0x7002, "secret_maker", &ui32, ID_CONF, TS_ANY_R | TS_MKR_W, 0),
