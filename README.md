@@ -14,14 +14,16 @@ The implementation is tested vs. newlib-nano and the default newlib provided by 
 
 ## Usage of the library
 
-An interactive sample program can be found in the [examples/interactive](./examples/interactive) directory.
+Example programs can be found in the [examples](./examples) directory.
+
+The basic example shows a very simple setup to get started with ThingSet.
 
 It provides a shell to access the data from `test/test_data.c` via ThingSet protocol.
 
-Build instructions for the example (requires CMake and a GCC):
+Build instructions for the examples (requires CMake and a GCC):
 
 ```shell
-cd examples/interactive       # or examples/interactive
+cd examples/basic       # or examples/interactive
 mkdir build
 cd build
 cmake ..
