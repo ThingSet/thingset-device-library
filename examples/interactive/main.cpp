@@ -5,8 +5,6 @@
  * Copyright (c) 2021 Bobby Noelte.
  */
 
-#if defined(NATIVE_BUILD) && !defined(UNIT_TEST)
-
 #include <thingset.h>
 
 #include <stdio.h>
@@ -108,5 +106,3 @@ void dummy()
 {
     // do nothing, only used in unit-tests
 }
-
-#endif

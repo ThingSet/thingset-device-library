@@ -19,14 +19,10 @@ zephyr_library_named("ts")
 
 zephyr_include_directories(${THINGSET_BASE}/src)
 
-target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset.c)
-target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset_bin.c)
-target_sources(ts PRIVATE ${THINGSET_BASE}/src/thingset_txt.c)
-target_sources(ts PRIVATE ${THINGSET_BASE}/src/cbor.c)
-target_sources(ts PRIVATE ${THINGSET_BASE}/src/jsmn.c)
+add_subdirectory(${THINGSET_BASE}/src)
 
 if(DEFINED CONFIG_MINIMAL_LIBC)
-target_sources(ts PRIVATE ${THINGSET_BASE}/zephyr/libc/minimal/extensions.c)
+    target_sources(ts PRIVATE ${THINGSET_BASE}/zephyr/libc/minimal/extensions.c)
 endif()
 
 endif()

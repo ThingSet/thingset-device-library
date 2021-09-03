@@ -1,10 +1,10 @@
-# C++ library for the ThingSet Protocol
+# C/C++ library for the ThingSet Protocol
 
-![build badge](https://github.com/LibreSolar/thingset-device-library/actions/workflows/platformio.yml/badge.svg)
+![build badge](https://github.com/ThingSet/thingset-device-library/actions/workflows/platformio.yml/badge.svg)
 
 The ThingSet protocol provides a consistent, standardized way to configure, monitor and control ressource-constrained devices via different communication interfaces.
 
-Protocol specification: [libre.solar/thingset](https://libre.solar/thingset/)
+Protocol specification: [thingset.io](https://thingset.io)
 
 The specification is developed in an open source way and still in progress. You can contribute ideas for improvement.
 
@@ -14,17 +14,22 @@ The implementation is tested vs. newlib-nano and the default newlib provided by 
 
 ## Usage of the library
 
-An example program is implemented in `src/main.cpp`, which provides a shell to access the data via ThingSet protocol if run on a computer.
+An interactive sample program can be found in the [examples/interactive](./examples/interactive) directory.
 
-The sample can be compiled via PlatformIO:
+It provides a shell to access the data from `test/test_data.c` via ThingSet protocol.
 
-    pio run -e native-std
+Build instructions for the example (requires CMake and a GCC):
 
-Afterwards, run the binary with:
+```shell
+cd examples/interactive       # or examples/interactive
+mkdir build
+cd build
+cmake ..
+cmake --build .
+./sample
+```
 
-    .pio/build/native-std/program
-
-Most important is the setup of the data object tree in `test/test_data.c`.
+### Basic C++ code snippet
 
 Assuming the data is stored in a static array `data_objects` as in the example, a ThingSet object is created by:
 
@@ -50,7 +55,7 @@ int req_len = strlen((char *)req_buf);  // only works for text mode
 ts.process(req_buf, req_len, resp_buf, sizeof(resp_buf));
 
 /*
- * The response including the requested data is now in the response_buffer
+ * The response including the requested data is now in the response buffer
  * and can be sent back to the communication interface.
  */
 ```
