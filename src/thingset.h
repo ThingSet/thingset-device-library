@@ -701,7 +701,8 @@ struct ts_data_object *ts_get_object_by_id(struct ts_context *ts, ts_object_id_t
  *
  * @returns Pointer to data object or NULL if object is not found
  */
-struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name, size_t len, int32_t parent);
+struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name, size_t len,
+                                             int32_t parent);
 
 /**
  * Get data object by path.

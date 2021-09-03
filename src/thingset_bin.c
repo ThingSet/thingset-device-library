@@ -15,7 +15,10 @@
 #include <math.h>       // for rounding of floats
 
 static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_object *data_obj);
-static int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_object *data_obj);
+
+static int cbor_serialize_array_type(uint8_t *buf, size_t size,
+                                     const struct ts_data_object *data_obj);
+
 
 static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_object *data_obj)
 {
@@ -279,7 +282,8 @@ int ts_bin_process(struct ts_context *ts)
 /*
 * @warning The parent object is currently still ignored. Any found data object is fetched.
 */
-int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type, unsigned int pos_payload)
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type,
+                 unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
     unsigned int pos_resp = 0;
@@ -301,7 +305,8 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
     //    ts->req[pos_req+4], ts->req[pos_req+5], ts->req[pos_req+6], ts->req[pos_req+7]);
 
     if (num_elements > 1) {
-        pos_resp += cbor_serialize_array(&ts->resp[pos_resp], num_elements, ts->resp_size - pos_resp);
+        pos_resp += cbor_serialize_array(&ts->resp[pos_resp], num_elements,
+            ts->resp_size - pos_resp);
     }
 
     while (pos_req + 1 < ts->req_len && element < num_elements) {
@@ -323,7 +328,8 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
             return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
 
-        num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp, data_obj);
+        num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
+            data_obj);
         if (num_bytes == 0) {
             return ts_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
         }
@@ -425,7 +431,8 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
     }
 }
 
-int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object, unsigned int pos_payload)
+int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
+                unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
@@ -678,12 +685,14 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
         {
             int num_bytes = 0;
             if (ret_type & TS_RET_IDS) {
-                num_bytes = cbor_serialize_uint(&ts->resp[len], ts->data_objects[i].id, ts->resp_size - len);
+                num_bytes = cbor_serialize_uint(&ts->resp[len], ts->data_objects[i].id,
+                    ts->resp_size - len);
             }
             else if (ret_type & TS_RET_NAMES) {
                 num_bytes = cbor_serialize_string(&ts->resp[len], ts->data_objects[i].name,
                     ts->resp_size - len);
             }
+
             if (ret_type & TS_RET_VALUES) {
                 num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
                     ts->resp_size - len - num_bytes, &ts->data_objects[i]);

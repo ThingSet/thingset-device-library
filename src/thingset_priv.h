@@ -146,7 +146,8 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object);
  * @param parent Pointer to executable object
  * @param pos_payload Position of payload in req buffer
  */
-int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object, unsigned int pos_payload);
+int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
+                unsigned int pos_payload);
 
 /**
  * Fill the resp buffer with a JSON response status message.
@@ -176,14 +177,16 @@ int ts_bin_response(struct ts_context *ts, uint8_t code);
  *
  * @returns Length of data written to buffer or 0 in case of error
  */
-int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *object);
+int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
+                            const struct ts_data_object *object);
 
 /**
  * Serialize object name and value as JSON object.
  *
  * same as ts_priv_json_serialize_value, just that the object name is also serialized
  */
-int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *object);
+int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
+                                 const struct ts_data_object *object);
 
 /**
  * Deserialize a object value from a JSON string.
@@ -196,7 +199,8 @@ int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size, 
  *
  * @returns Number of tokens processed (always 1) or 0 in case of error
  */
-int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type, const struct ts_data_object *object);
+int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
+                              const struct ts_data_object *object);
 
 #ifdef __cplusplus
 } /* extern "C" */
