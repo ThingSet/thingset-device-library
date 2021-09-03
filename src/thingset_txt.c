@@ -292,7 +292,7 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
             return ts_txt_get(ts, NULL, TS_RET_NAMES);
         }
-        else {
+        else if (path_len > 0) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
@@ -315,7 +315,7 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
-                if (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC) {
+                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC)) {
                     return ts_txt_get(ts, endpoint, TS_RET_NAMES);
                 }
                 else {
@@ -339,14 +339,14 @@ int ts_txt_process(struct ts_context *ts)
             int len = ts_txt_patch(ts, endpoint);
 
             // check if endpoint has a callback assigned
-            if (endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
+            if (endpoint && endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
                 // create function pointer and call function
                 void (*fun)(void) = (void(*)(void))endpoint->data;
                 fun();
             }
             return len;
         }
-        else if (ts->req[0] == '!' && endpoint->type == TS_T_EXEC) {
+        else if (ts->req[0] == '!' && endpoint && endpoint->type == TS_T_EXEC) {
             return ts_txt_exec(ts, endpoint);
         }
         else if (ts->req[0] == '+') {
