@@ -19,7 +19,7 @@ zephyr_library_named("ts")
 
 zephyr_include_directories(${THINGSET_BASE}/src)
 
-add_subdirectory(${THINGSET_BASE}/src)
+add_subdirectory(${THINGSET_BASE}/src build/thingset)
 
 if(DEFINED CONFIG_MINIMAL_LIBC)
     target_sources(ts PRIVATE ${THINGSET_BASE}/zephyr/libc/minimal/extensions.c)
