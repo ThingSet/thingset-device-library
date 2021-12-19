@@ -8,11 +8,8 @@
 
 #include <thingset.h>
 
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
-#endif
-
 /* variables to be exposed via ThingSet */
+thingset_uid_t uid = 0x1111111111111111ULL;
 char device_id[] = "ABCD1234";
 bool enable_switch = false;
 float ambient_temp = 22.3;
@@ -23,8 +20,8 @@ void reset(void)
     printf("Reset function called!\n");
 }
 
-/* the ThingSet object definitions */
-static struct ts_data_object data_objects[] = {
+/* The ThingSet data objects database */
+THINGSET_CORE_DATABASE_DEFINE(uid,
 
     TS_ITEM_STRING(0x1D, "DeviceID", device_id, sizeof(device_id),
         TS_ID_ROOT, TS_ANY_R, 0),
@@ -37,15 +34,21 @@ static struct ts_data_object data_objects[] = {
 
     TS_FUNCTION(0xE1, "x-reset", &reset,
         TS_ID_ROOT, TS_ANY_RW),
-};
 
+);
+
+THINGSET_CORE_DEFINE();
+
+#if CONFIG_THINGSET_ZEPHYR
+void main(void)
+#else
 int main(void)
+#endif
 {
     uint8_t response[100];
-    struct ts_context ts;
 
-    /* initialize ThingSet context and assign data objects */
-    ts_init(&ts, data_objects, ARRAY_SIZE(data_objects));
+    /* Initialize core variant ThingSet context and assign data objects */
+    thingset_core_init();
 
     /*
      * Below requests are for demonstration of the ThingSet process function only. They would
@@ -54,18 +57,20 @@ int main(void)
 
     const char request1[] = "= {\"HeaterEnable\":true}";
     printf("Request:   %s\n", request1);
-    ts_process(&ts, (uint8_t *)request1, strlen(request1), response, sizeof(response));
+    thingset_core_process((uint8_t *)request1, strlen(request1), response, sizeof(response));
     printf("Response:  %s\n\n", (char *)response);
 
     const char request2[] = "!x-reset";
     printf("Request:   %s\n", request2);
-    ts_process(&ts, (uint8_t *)request2, strlen(request2), response, sizeof(response));
+    thingset_core_process((uint8_t *)request2, strlen(request2), response, sizeof(response));
     printf("Response:  %s\n\n", (char *)response);
 
     const char request3[] = "?";
     printf("Request:   %s\n", request3);
-    ts_process(&ts, (uint8_t *)request3, strlen(request3), response, sizeof(response));
+    thingset_core_process((uint8_t *)request3, strlen(request3), response, sizeof(response));
     printf("Response:  %s\n\n", (char *)response);
 
+#if !CONFIG_THINGSET_ZEPHYR
     return 0;
+#endif
 }
