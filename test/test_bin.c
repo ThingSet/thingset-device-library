@@ -74,13 +74,13 @@ void test_bin_patch_multiple_objects(void)
 {
     const char req_hex[] =
         "07 06 "
-        #if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
         "A9 "      // write map with 9 elements
         "19 60 01 01 "                  // value 1
         "19 60 02 02 "
-        #else
+#else
         "A7 "      // write map with 7 elements
-        #endif
+#endif
         "19 60 03 03 "
         "19 60 04 04 "
         "19 60 05 05 "
@@ -99,13 +99,13 @@ void test_bin_fetch_multiple_objects(void)
 
     char req_hex[] =
         "05 06 "
-        #if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
         "89 "      // read array with 9 elements
         "19 60 01 "
         "19 60 02 "
-        #else
+#else
         "87 "      // read array with 7 elements
-        #endif
+#endif
         "19 60 03 "
         "19 60 04 "
         "19 60 05 "
@@ -114,13 +114,13 @@ void test_bin_fetch_multiple_objects(void)
         "19 60 08 "
         "19 60 09 ";
     const char resp_hex[] =
-        #if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
         "85 89 "     // successful response: array with 9 elements
-        "01 "                  // value 1
+        "01 "        // value 1
         "02 "
-        #else
+#else
         "85 87 "     // successful response: array with 7 elements
-        #endif
+#endif
         "03 "
         "04 "
         "05 "
@@ -224,88 +224,51 @@ void test_bin_statement_subset(void)
         "FA 40 a4 28 f6 "       // float 5.13
         "16 ";                  // int 22
 
-    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "report");
+    int resp_len = thingset_bin_statement_by_path(test_resp_buf, sizeof(test_resp_buf), "report");
 
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+    TEST_ASSERT_BIN_RESP(test_resp_buf, resp_len, resp_expected);
 
-    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_REPORT);
+    resp_len = thingset_bin_statement_by_id(test_resp_buf, sizeof(test_resp_buf), ID_REPORT);
 
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+    TEST_ASSERT_BIN_RESP(test_resp_buf, resp_len, resp_expected);
 }
 
 void test_bin_statement_group(void)
 {
     const char resp_expected[] =
-        "1F "
+        "1F "                                       // TS_MSG_CODE_STATEMENT
         "01 "                                       // ID of "info"
         "83 "                                       // array with 3 elements
         "6B 4C 69 62 72 65 20 53 6F 6C 61 72 "      // "Libre Solar"
         "1A 00 BC 61 4E "                           // int 12345678
         "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
 
-    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
+    int resp_len = thingset_bin_statement_by_path(test_resp_buf, sizeof(test_resp_buf), "info");
 
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+    TEST_ASSERT_BIN_RESP(test_resp_buf, resp_len, resp_expected);
 
-    resp_len = ts_bin_statement_by_id(&ts, resp_buf, sizeof(resp_buf), ID_INFO);
+    resp_len = thingset_bin_statement_by_id(test_resp_buf, sizeof(test_resp_buf), ID_INFO);
 
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
-}
-
-void test_bin_pub_can(void)
-{
-    int start_pos = 0;
-    uint32_t msg_id;
-    uint8_t can_data[8];
-
-    const uint8_t Bat_V_hex[] = { 0xFA, 0x41, 0x61, 0x99, 0x9a };
-    const uint8_t Bat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
-
-    // first call (should return Bat_V)
-    int can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
-    TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
-
-    uint16_t can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    uint32_t can_subsets = TS_CAN_PUBSUB(msg_id);
-    uint32_t can_prio = msg_id & TS_CAN_PRIO_MASK;
-    TEST_ASSERT_EQUAL_UINT16(0x71, can_dev_id);
-    TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_subsets);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_V_hex[0], &can_data[0], sizeof(Bat_V_hex));
-
-    // second call (should return Bat_A)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
-    TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
-
-    can_dev_id = (msg_id & 0x00FFFF00) >> 8;
-    can_subsets = TS_CAN_PUBSUB(msg_id);
-    can_prio = msg_id & TS_CAN_PRIO_MASK;
-    TEST_ASSERT_EQUAL_UINT16(0x72, can_dev_id);
-    TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
-    TEST_ASSERT(can_subsets);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_A_hex[0], &can_data[0], sizeof(Bat_A_hex));
-
-    // third call (should not find further objects)
-    can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
-    TEST_ASSERT_EQUAL(-1, can_data_len);
+    TEST_ASSERT_BIN_RESP(test_resp_buf, resp_len, resp_expected);
 }
 
 void test_bin_import(void)
 {
     const char req_hex[] =
-        "A2 "     // map with 2 elements
+        "86 "                       // TS_MSG_CODE_EXPORT
+        "A2 "                       // map with 2 elements
         "18 31 FA 41 61 99 9a "     // float 14.10
         "18 32 FA 40 a4 28 f6 ";    // float 5.13
-    int req_buf_len = _hex2bin(req_buf, sizeof(req_buf), req_hex);
+    int req_buf_len = _hex2bin(test_req_buf, sizeof(test_req_buf), req_hex);
 
-    int ret = ts_bin_import(&ts, req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
+    int ret = thingset_bin_import(test_req_buf, req_buf_len, TS_WRITE_MASK, SUBSET_REPORT);
 
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }
 
 void test_bin_exec(void)
 {
-    dummy_called_flag = 0;
+    test_core_dummy_called = 0;
 
     const uint8_t req[] = {
         TS_POST,
@@ -317,86 +280,8 @@ void test_bin_exec(void)
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 
-    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+    TEST_ASSERT_EQUAL(1, test_core_dummy_called);
 }
-
-void test_bin_num_elem(void)
-{
-    const uint8_t req[] = { 0xB9, 0xF0, 0x00 };
-    uint16_t num_elements;
-
-    cbor_num_elements(&req[0], &num_elements);
-
-    TEST_ASSERT_EQUAL_UINT16(0xF000, num_elements);
-}
-
-void test_bin_serialize_long_string(void)
-{
-    /* use public buffers for testing - assure sufficient size */
-    char *str = (char *)&req_buf[0];
-    uint8_t *buf = &resp_buf[0];
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(301, sizeof(req_buf));
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(302, sizeof(resp_buf));
-
-    for (unsigned int i = 0; i < 301; i++) {
-        str[i] = 'T';
-    }
-    str[256] = '\0';    // terminate string after 256 bytes
-
-    int len_total = cbor_serialize_string(buf, str, 302);
-
-    TEST_ASSERT_EQUAL_UINT(256 + 3, len_total);     // strlen + below 3 bytes
-    TEST_ASSERT_EQUAL_UINT(0x79, buf[0]);
-    TEST_ASSERT_EQUAL_UINT(0x01, buf[1]);
-    TEST_ASSERT_EQUAL_UINT(0x00, buf[2]);           // null-termination is not stored
-}
-
-#if TS_BYTE_STRING_TYPE_SUPPORT
-void test_bin_serialize_bytes(void)
-{
-    /* use public buffers for testing - assure sufficient size */
-    uint8_t *bytes = &req_buf[0];
-    uint8_t *cbor = &resp_buf[0];
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(300, sizeof(req_buf));
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(400, sizeof(resp_buf));
-
-    for (unsigned int i = 0; i < 300; i++) {
-        bytes[i] = i % 256;
-    }
-
-    // this should consider 0 as normal bytes and not terminate there
-    int len_total = cbor_serialize_bytes(cbor, bytes, 300, 400);
-
-    TEST_ASSERT_EQUAL_UINT(303, len_total);
-    TEST_ASSERT_EQUAL_UINT(0x59, cbor[0]);
-    TEST_ASSERT_EQUAL_UINT(0x01, cbor[1]);   // 0x01 << 8 + 0x2C = 300
-    TEST_ASSERT_EQUAL_UINT(0x2C, cbor[2]);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(bytes, &cbor[3], 300);
-}
-
-void test_bin_deserialize_bytes(void)
-{
-    /* use public buffers for testing - assure sufficient size */
-    uint8_t *bytes = &req_buf[0];
-    uint8_t *cbor = &resp_buf[0];
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(300, sizeof(req_buf));
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(400, sizeof(resp_buf));
-
-    cbor[0] = 0x59;
-    cbor[1] = 0x01;
-    cbor[2] = 0x2C;
-    for (unsigned int i = 0; i < 300; i++) {
-        cbor[i + 3] = i % 256;
-    }
-
-    uint16_t num_bytes;
-    int len_total = cbor_deserialize_bytes(cbor, bytes, 300, &num_bytes);
-
-    TEST_ASSERT_EQUAL_UINT(303, len_total);
-    TEST_ASSERT_EQUAL_UINT(300, num_bytes);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(&bytes[0], &cbor[3], 300);
-}
-#endif /* TS_BYTE_STRING_TYPE_SUPPORT */
 
 void test_bin_patch_fetch_bytes(void)
 {
@@ -427,13 +312,61 @@ void test_bin_patch_fetch_bytes(void)
 void test_bin_export(void)
 {
     const char resp_expected[] =
+        "86 "                       // TS_MSG_CODE_EXPORT
         "A4 "                       // map with 4 elements
         "18 1A 1A 00 BC 61 4E "     // int 12345678
         "18 71 FA 41 61 99 9a "     // float 14.10
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
 
-    int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
+    int resp_len = thingset_bin_export(test_req_buf, sizeof(test_req_buf), SUBSET_REPORT);
 
-    TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+    TEST_ASSERT_BIN_RESP(test_req_buf, resp_len, resp_expected);
+}
+
+void tests_bin(void)
+{
+    UNITY_BEGIN();
+
+    // GET request
+    RUN_TEST(test_bin_get_meas_ids_values);
+    RUN_TEST(test_bin_get_meas_names_values);
+    RUN_TEST(test_bin_get_single_value);
+
+    // PATCH request
+    RUN_TEST(test_bin_patch_multiple_objects);
+    RUN_TEST(test_bin_patch_float_array);
+    RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
+
+    // FETCH request
+    RUN_TEST(test_bin_fetch_meas_ids);
+    RUN_TEST(test_bin_fetch_meas_names);
+    RUN_TEST(test_bin_fetch_multiple_objects);
+    RUN_TEST(test_bin_fetch_float_array);
+    RUN_TEST(test_bin_fetch_rounded_float);
+
+    // POST request
+    RUN_TEST(test_bin_exec);
+
+    // pub/sub messages
+    RUN_TEST(test_bin_statement_subset);
+    RUN_TEST(test_bin_statement_group);
+    //RUN_TEST(test_bin_pub_can);
+
+    // general tests
+    //RUN_TEST(test_bin_num_elem);
+    //RUN_TEST(test_bin_serialize_long_string);
+
+    // binary (bytes) data type
+#if TS_BYTE_STRING_TYPE_SUPPORT
+    RUN_TEST(test_bin_serialize_bytes);
+    RUN_TEST(test_bin_deserialize_bytes);
+    RUN_TEST(test_bin_patch_fetch_bytes);
+#endif
+
+    // data export/import
+    RUN_TEST(test_bin_export);
+    RUN_TEST(test_bin_import);
+
+    UNITY_END();
 }

@@ -69,8 +69,8 @@ void test_txt_fetch_float_array(void)
 
 void test_txt_patch_wrong_data_structure(void)
 {
-    TEST_ASSERT_TXT_REQ("!conf [\"f32\":54.3", ":A0 Bad Request.");
-    TEST_ASSERT_TXT_REQ("!conf{\"f32\":54.3}", ":A4 Not Found.");
+    TEST_ASSERT_TXT_REQ("=conf [\"f32\":54.3", ":A0 Bad Request.");
+    TEST_ASSERT_TXT_REQ("=conf{\"wrong\":54.3}", ":A4 Not Found.");
 }
 
 void test_txt_patch_array(void)
@@ -98,40 +98,40 @@ void test_txt_patch_unknown_object(void)
 
 void test_txt_conf_callback(void)
 {
-    conf_callback_called = 0;
+    test_core_conf_callback_called = 0;
 
     TEST_ASSERT_TXT_REQ("=conf {\"i32\":52}", ":84 Changed.");
 
-    TEST_ASSERT_EQUAL(1, conf_callback_called);
+    TEST_ASSERT_EQUAL(1, test_core_conf_callback_called);
 }
 
 void test_txt_exec(void)
 {
-    dummy_called_flag = 0;
+    test_core_dummy_called = 0;
 
     TEST_ASSERT_TXT_REQ("!rpc/x-dummy", ":83 Valid.");
 
-    TEST_ASSERT_EQUAL(1, dummy_called_flag);
+    TEST_ASSERT_EQUAL(1, test_core_dummy_called);
 }
 
 void test_txt_statement_subset(void)
 {
-    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+    int resp_len = thingset_txt_statement_by_path((char *)test_resp_buf, TEST_RESP_BUFFER_LEN, "report");
 
     TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 
-    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
+    resp_len = thingset_txt_statement_by_id((char *)test_resp_buf, TEST_RESP_BUFFER_LEN, ID_REPORT);
 
     TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
 
 void test_txt_statement_group(void)
 {
-    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
+    int resp_len = thingset_txt_statement_by_path((char *)test_resp_buf, TEST_RESP_BUFFER_LEN, "info");
 
     TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
 
-    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
+    resp_len = thingset_txt_statement_by_id((char *)test_resp_buf, TEST_RESP_BUFFER_LEN, ID_INFO);
 
     TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
 }
@@ -186,7 +186,7 @@ void test_txt_auth_root(void)
 
 void test_txt_auth_long_password(void)
 {
-    TEST_ASSERT_TXT_REQ("!rpc/x-auth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
+    TEST_ASSERT_TXT_REQ("!rpc/x-auth 012345678901234567890123456789", ":AF Unsupported Content-Format.");
 }
 
 void test_txt_auth_failure(void)
@@ -209,33 +209,86 @@ void test_txt_wrong_command(void)
 
 void test_txt_get_endpoint(void)
 {
-    const struct ts_data_object *object;
+    const struct ts_obj *object;
 
-    object = ts_get_object_by_path(&ts, "conf", strlen("conf"));
+    object = thingset_object_by_path("conf", strlen("conf"));
     TEST_ASSERT_NOT_NULL(object);
     TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    object = ts_get_object_by_path(&ts, "conf/", strlen("conf/"));
+    object = thingset_object_by_path("conf/", strlen("conf/"));
     TEST_ASSERT_NOT_NULL(object);
     TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
-    object = ts_get_object_by_path(&ts, "/", strlen("/"));
+    object = thingset_object_by_path("/", strlen("/"));
     TEST_ASSERT_NULL(object);
 
     /* special case where the data contains forward slashes */
-    object = ts_get_object_by_path(&ts, "conf \"this/is/a/path\"", strlen("conf"));
+    object = thingset_object_by_path("conf \"this/is/a/path\"", strlen("conf"));
     TEST_ASSERT_NOT_NULL(object);
     TEST_ASSERT_EQUAL_UINT16(ID_CONF, object->id);
 
     /* special case where the data contains forward slashes */
-    object = ts_get_object_by_path(&ts, "rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
+    object = thingset_object_by_path("rpc/x-reset \"this/is/a/path\"", strlen("rpc/x-reset"));
     TEST_ASSERT_NOT_NULL(object);
     TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
 
 void test_txt_export(void)
 {
-    int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+    int resp_len = thingset_txt_export((char *)test_resp_buf, TEST_RESP_BUFFER_LEN, SUBSET_REPORT);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(resp_len, ":86 Export. "
+                "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}
+
+void tests_txt(void)
+{
+    UNITY_BEGIN();
+
+    // GET request
+    RUN_TEST(test_txt_get_meas_names);
+    RUN_TEST(test_txt_get_meas_names_values);
+    RUN_TEST(test_txt_get_single_value);
+
+    // FETCH request
+    RUN_TEST(test_txt_fetch_array);
+    RUN_TEST(test_txt_fetch_rounded);
+    RUN_TEST(test_txt_fetch_nan);
+    RUN_TEST(test_txt_fetch_inf);
+    RUN_TEST(test_txt_fetch_int32_array);
+    RUN_TEST(test_txt_fetch_float_array);
+
+    // PATCH request
+    RUN_TEST(test_txt_patch_wrong_data_structure);
+    RUN_TEST(test_txt_patch_array);
+    RUN_TEST(test_txt_patch_readonly);
+    RUN_TEST(test_txt_patch_wrong_path);
+    RUN_TEST(test_txt_patch_unknown_object);
+    RUN_TEST(test_txt_conf_callback);
+
+    // POST request
+    RUN_TEST(test_txt_exec);
+
+    // statements (pub/sub messages)
+    RUN_TEST(test_txt_statement_subset);
+    RUN_TEST(test_txt_statement_group);
+    RUN_TEST(test_txt_pub_list_channels);
+    RUN_TEST(test_txt_pub_enable);
+    RUN_TEST(test_txt_pub_delete_append_object);
+
+    // authorisation
+    RUN_TEST(test_txt_auth_user);
+    RUN_TEST(test_txt_auth_root);
+    RUN_TEST(test_txt_auth_long_password);
+    RUN_TEST(test_txt_auth_failure);
+    RUN_TEST(test_txt_auth_reset);
+
+    // general tests
+    RUN_TEST(test_txt_wrong_command);
+    RUN_TEST(test_txt_get_endpoint);
+
+    // data export
+    RUN_TEST(test_txt_export);
+
+    UNITY_END();
 }

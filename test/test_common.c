@@ -7,51 +7,15 @@
 #include "test.h"
 
 /**
- * @brief Test Asserts
- *
- * This test verifies various assert macros used in the unit tests.
- *
- */
-void test_assert(void)
-{
-    TEST_ASSERT(1);
-    TEST_ASSERT_TRUE(1);
-    TEST_ASSERT_TRUE_MESSAGE(1, "test_assert");
-    TEST_ASSERT_FALSE(0);
-    TEST_ASSERT_NULL(NULL);
-    TEST_ASSERT_NOT_NULL("foo");
-    TEST_ASSERT_EQUAL(1, 1);
-    TEST_ASSERT_EQUAL_MESSAGE(1, 1, "test_assert");
-    TEST_ASSERT_EQUAL_FLOAT(123.4567890123456789, 123.4567890123456789);
-    TEST_ASSERT_EQUAL_HEX(0x1234, 0x1234);
-    TEST_ASSERT_EQUAL_HEX8(0x34, 0x34);
-    TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x34, 0x34, "test_assert");
-    TEST_ASSERT_EQUAL_HEX8_ARRAY("1234", "1234", 4);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE("1234", "1234", 4, "test_assert");
-    TEST_ASSERT_EQUAL_INT(2, 2);
-    TEST_ASSERT_EQUAL_INT32(-32, -32);
-    TEST_ASSERT_EQUAL_UINT(3U, 3U);
-    TEST_ASSERT_EQUAL_UINT8(0x103U, 0x203U);
-    TEST_ASSERT_EQUAL_UINT16(0x303U, 0x303U);
-    TEST_ASSERT_EQUAL_UINT32(0x12345678U, 0x12345678U);
-    TEST_ASSERT_EQUAL_PTR(NULL, NULL);
-    TEST_ASSERT_EQUAL_STRING("ttt", "ttt");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("ttt", "ttt", "test_assert");
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(100, 100);
-    TEST_ASSERT_GREATER_OR_EQUAL_size_t(100, 101);
-    TEST_ASSERT_LESS_THAN_size_t(100, 99);
-    TEST_ASSERT_LESS_THAN_size_t_MESSAGE(100, 99, "test_assert");
-    TEST_ASSERT_LESS_OR_EQUAL_size_t(100, 100);
-    TEST_ASSERT_LESS_OR_EQUAL_size_t(100, 99);
-    TEST_ASSERT_LESS_OR_EQUAL_size_t_MESSAGE(100, 99, "test_assert");
-    TEST_ASSERT_NOT_EQUAL(1, 2);
-}
-
-/**
  * @brief Test conversion json to cbor.
  */
 void test_txt_patch_bin_fetch(void)
 {
+    /* Assure core context correctly initialized for testing */
+    TEST_ASSERT_EQUAL_UINT8(0, TS_CONFIG_CORE_LOCID);
+    TEST_ASSERT_EQUAL_UINT8(0, TEST_CORE_LOCID);
+    TEST_ASSERT_EQUAL_UINT16(TS_ANY_RW, thingset_authorisation(TEST_CORE_LOCID));
+
     // uint16
     TEST_ASSERT_JSON2CBOR("ui16", "0", 0x6005, "00");
     TEST_ASSERT_JSON2CBOR("ui16", "23", 0x6005, "17");
@@ -70,7 +34,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("ui32", "65536", 0x6003, "1A 00 01 00 00");
     TEST_ASSERT_JSON2CBOR("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // uint64
     TEST_ASSERT_JSON2CBOR("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("ui64", "4294967296", 0x6001, "1B 00 00 00 01 00 00 00 00");
@@ -95,7 +59,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("i32", "65536", 0x6004, "1A 00 01 00 00");
     TEST_ASSERT_JSON2CBOR("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // int64 (positive values)
     TEST_ASSERT_JSON2CBOR("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
@@ -120,7 +84,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("i32", "-65537", 0x6004, "3A 00 01 00 00");
     TEST_ASSERT_JSON2CBOR("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // int64 (negative values)
     TEST_ASSERT_JSON2CBOR("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
@@ -132,8 +96,9 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("f32", "-12.340", 0x6007, "fa c1 45 70 a4");
     TEST_ASSERT_JSON2CBOR("f32", "12.345",  0x6007, "fa 41 45 85 1f");
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if TS_CONFIG_DECFRAC_TYPE_SUPPORT
     // decimal fraction
+    TEST_ASSERT_JSON2CBOR("DecFrac_degC", "27315e-2", 0x600B, "c4 82 21 19 6a b3");
     TEST_ASSERT_JSON2CBOR("DecFrac_degC", "273.15", 0x600B, "c4 82 21 19 6a b3");
 #endif
 
@@ -151,6 +116,9 @@ void test_txt_patch_bin_fetch(void)
  */
 void test_bin_patch_txt_fetch(void)
 {
+    /* Assure core context correctly initialized for testing */
+    TEST_ASSERT_EQUAL_UINT16(TS_ANY_RW, thingset_authorisation(TEST_CORE_LOCID));
+
     // uint16
     TEST_ASSERT_CBOR2JSON("ui16", "0", 0x6005, "00");
     TEST_ASSERT_CBOR2JSON("ui16", "23", 0x6005, "17");
@@ -174,7 +142,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("ui32", "65536", 0x6003, "1A 00 01 00 00");
     TEST_ASSERT_CBOR2JSON("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // uint64
     TEST_ASSERT_CBOR2JSON("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("ui64", "4294967295", 0x6001, "1B 00 00 00 00 FF FF FF FF"); // less compact format
@@ -194,7 +162,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("i32", "65536", 0x6004, "1A 00 01 00 00");
     TEST_ASSERT_CBOR2JSON("i32", "2147483647", 0x6004, "1A 7F FF FF FF");      // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // int64 (positive values)
     TEST_ASSERT_CBOR2JSON("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
@@ -219,7 +187,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("i32", "-65537", 0x6004, "3A 00 01 00 00");
     TEST_ASSERT_CBOR2JSON("i32", "-2147483648", 0x6004, "3A 7F FF FF FF");      // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if TS_CONFIG_64BIT_TYPES_SUPPORT
     // int64 (negative values)
     TEST_ASSERT_CBOR2JSON("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
@@ -232,7 +200,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("f32", "12.34",  0x6007, "fa 41 45 81 06");      // 12.344
     TEST_ASSERT_CBOR2JSON("f32", "12.35",  0x6007, "fa 41 45 85 1f");      // 12.345 (should be rounded to 12.35)
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if TS_CONFIG_DECFRAC_TYPE_SUPPORT
     // decimal fraction
     TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B, "c4 82 21 19 6a b3"); // decfrac 27315e-2
     TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B, "c4 82 22 1a 00 04 2A FE"); // decfrac 273150e-3
@@ -250,12 +218,13 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("strbuf", "\"Hello World!\"",  0x6009, "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
 }
 
-/**
- * @brief Test ts_init
- */
-void test_ts_init(void)
+void tests_common(void)
 {
-    int ret = ts_init(&ts, &data_objects[0], data_objects_size);
+    UNITY_BEGIN();
 
-    TEST_ASSERT_EQUAL(0, ret);
+    // data conversion tests
+    RUN_TEST(test_txt_patch_bin_fetch);
+    RUN_TEST(test_bin_patch_txt_fetch);
+
+    UNITY_END();
 }

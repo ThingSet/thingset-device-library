@@ -17,6 +17,7 @@ foreach(module ${modules})
     set(full_path ${module}/Kconfig.zephyr)
     if(EXISTS ${full_path})
         set(zephyr_base "${module}")
+        set(ENV{ZEPHYR_BASE} "${zephyr_base}")
         break()
     endif()
 endforeach()
@@ -29,11 +30,25 @@ set(ZEPHYR_TOOLCHAIN_VARIANT "host")
 set(ZEPHYR_MODULES ${THINGSET_BASE})
 
 find_package(Zephyr REQUIRED HINTS ${zephyr_base})
-project(thingset_tests)
+#include(${zephyr_base}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+project(thingset_zephyr_tests)
 
-target_sources(app PRIVATE src/main.c
-                           ${THINGSET_BASE}/test/test_common.c
-                           ${THINGSET_BASE}/test/test_txt.c
-                           ${THINGSET_BASE}/test/test_bin.c
-                           ${THINGSET_BASE}/test/test_context.c
-                           ${THINGSET_BASE}/test/test_data.c)
+target_sources(app PRIVATE
+    ${THINGSET_BASE}/test/main.cpp
+    ${THINGSET_BASE}/test/test_assert.c
+    ${THINGSET_BASE}/test/test_bin.c
+    ${THINGSET_BASE}/test/test_buf.c
+    ${THINGSET_BASE}/test/test_common.c
+    ${THINGSET_BASE}/test/test_ctx.c
+    ${THINGSET_BASE}/test/test_data.c
+    ${THINGSET_BASE}/test/test_jsmn.c
+    ${THINGSET_BASE}/test/test_msg.c
+    ${THINGSET_BASE}/test/test_obj.c
+    ${THINGSET_BASE}/test/test_shell.c
+    ${THINGSET_BASE}/test/test_shim.cpp
+    ${THINGSET_BASE}/test/test_support.c
+    ${THINGSET_BASE}/test/test_time.c
+    ${THINGSET_BASE}/test/test_txt.c
+    # Zephyr implementation test suite
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_impl.c
+)
