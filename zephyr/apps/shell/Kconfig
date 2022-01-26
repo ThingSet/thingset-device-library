@@ -1,0 +1,34 @@
+# Copyright (c) 2022 Bobby Noelte
+# SPDX-License-Identifier: Apache-2.0
+
+config THINGSET_SHELL
+        bool "ThingSet Shell Application"
+        depends on SHELL
+        depends on THINGSET_COM
+        help
+          This option enables the ThingSet shell application for Zephyr.
+
+if THINGSET_SHELL
+
+config THINGSET_SHELL_NAME
+        string "Shell Application name"
+        help
+          The name the shell application shall use at the local context.
+
+config THINGSET_SHELL_LOCID
+        int "Shell Application local context ID"
+        help
+          The local context the shell applicationm shall be attached to.
+
+config THINGSET_SHELL_PORTID
+        int "Shell Application port ID"
+        help
+          The ID of the port the shell shall communicate to the local context.
+
+config THINGSET_SHELL_MEM_SIZE
+        int "Dynamic memory the ThingSet shell may use"
+        default 32
+        help
+          The total size of memory the ThingSet shell may allocate. Used e.g for argument array.
+
+endif # THINGSET_SHELL_ZEPHYR
