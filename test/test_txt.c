@@ -114,6 +114,24 @@ void test_txt_exec(void)
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
+#if TS_NESTED_JSON
+
+void test_txt_statement_subset(void)
+{
+    const char expected[] = "#report {\"info\":{\"Timestamp_s\":12345678},"
+        "\"meas\":{\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}}";
+
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+}
+
+#else
+
 void test_txt_statement_subset(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
@@ -124,6 +142,8 @@ void test_txt_statement_subset(void)
 
     TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
+
+#endif /* TS_NESTED_JSON */
 
 void test_txt_statement_group(void)
 {
@@ -233,9 +253,26 @@ void test_txt_get_endpoint(void)
     TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
 
+#if TS_NESTED_JSON
+
+void test_txt_export(void)
+{
+    const char expected[] = "{\"info\":{\"Timestamp_s\":12345678},"
+        "\"meas\":{\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}}";
+
+    int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+    resp_buf[resp_len] = '\0';
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+}
+
+#else
+
 void test_txt_export(void)
 {
     int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
 
     TEST_ASSERT_TXT_RESP(resp_len, "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
+
+#endif /* TS_NESTED_JSON */
