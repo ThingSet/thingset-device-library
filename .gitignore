@@ -37,3 +37,10 @@
 html
 
 .thingset-shell-history.txt
+
+# Kdevelop
+.kdev4
+*.kdev4
+
+# Zephyr west/ CMake build directory
+build
