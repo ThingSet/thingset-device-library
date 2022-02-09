@@ -76,15 +76,15 @@ void conf_callback(void);
 
 struct ts_data_object data_objects[] = {
 
+    TS_ITEM_UINT32(0x10, "t_s", &timestamp,
+        ID_ROOT, TS_ANY_RW, SUBSET_REPORT),
+
     // DEVICE INFORMATION /////////////////////////////////////////////////////
 
     TS_GROUP(ID_INFO, "info", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_STRING(0x19, "Manufacturer", manufacturer, 0,
         ID_INFO, TS_ANY_R, 0),
-
-    TS_ITEM_UINT32(0x1A, "Timestamp_s", &timestamp,
-        ID_INFO, TS_ANY_RW, SUBSET_REPORT),
 
     TS_ITEM_STRING(0x1B, "DeviceID", device_id, sizeof(device_id),
         ID_INFO, TS_ANY_R | TS_MKR_W, 0),

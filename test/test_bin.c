@@ -238,9 +238,8 @@ void test_bin_statement_group(void)
     const char resp_expected[] =
         "1F "
         "01 "                                       // ID of "info"
-        "83 "                                       // array with 3 elements
+        "82 "                                       // array with 2 elements
         "6B 4C 69 62 72 65 20 53 6F 6C 61 72 "      // "Libre Solar"
-        "1A 00 BC 61 4E "                           // int 12345678
         "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
 
     int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
@@ -428,7 +427,7 @@ void test_bin_export(void)
 {
     const char resp_expected[] =
         "A4 "                       // map with 4 elements
-        "18 1A 1A 00 BC 61 4E "     // int 12345678
+        "10 1A 00 BC 61 4E "        // int 12345678
         "18 71 FA 41 61 99 9a "     // float 14.10
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
