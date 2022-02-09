@@ -341,15 +341,15 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define TS_ROLE_EXP     (1U << 1)       // expert user
 #define TS_ROLE_MKR     (1U << 2)       // maker
 
-#define TS_READ_MASK    0x00FF          // read flags stored in 4 least-significant bits
-#define TS_WRITE_MASK   0xFF00          // write flags stored in 4 most-significant bits
+#define TS_READ_MASK    0x0F          // read flags stored in 4 least-significant bits
+#define TS_WRITE_MASK   0xF0          // write flags stored in 4 most-significant bits
 
-#define TS_USR_MASK     (TS_ROLE_USR << 8 | TS_ROLE_USR)
-#define TS_EXP_MASK     (TS_ROLE_EXP << 8 | TS_ROLE_EXP)
-#define TS_MKR_MASK     (TS_ROLE_MKR << 8 | TS_ROLE_MKR)
+#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR)
+#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP)
+#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR)
 
 #define TS_READ(roles)          ((roles) & TS_READ_MASK)
-#define TS_WRITE(roles)         (((roles) << 8) & TS_WRITE_MASK)
+#define TS_WRITE(roles)         (((roles) << 4) & TS_WRITE_MASK)
 #define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
 
 #define TS_USR_R        TS_READ(TS_ROLE_USR)
@@ -401,24 +401,24 @@ struct ts_data_object {
     /**
      * One of TS_TYPE_INT32, _FLOAT, ...
      */
-    const uint8_t type;
+    const uint32_t type : 4;
 
     /**
      * Exponent (10^exponent = factor to convert to SI unit) for decimal fraction type,
      * decimal digits to use for printing of floats in JSON strings or
      * length of string buffer for string type
      */
-    const int16_t detail;
+    const int32_t detail : 12;
 
     /**
      * Flags to define read/write access
      */
-    const uint16_t access;
+    const uint32_t access : 8;
 
     /**
      * Flags to assign data item to different data item subsets (e.g. for publication messages)
      */
-    uint16_t subsets;
+    uint32_t subsets : 8;
 
 };
 
@@ -479,7 +479,7 @@ struct ts_context {
     /**
      * Stores current authentication status (authentication as "normal" user as default)
      */
-    uint16_t _auth_flags;
+    uint8_t _auth_flags;
 };
 
 /**
@@ -529,7 +529,7 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level);
  * @param ts Pointer to ThingSet context.
  * @param flags Flags to define authentication level (1 = access allowed)
  */
-void ts_set_authentication(struct ts_context *ts, uint16_t flags);
+void ts_set_authentication(struct ts_context *ts, uint8_t flags);
 
 /**
  * Retrieve data in JSON format for given subset(s).
@@ -676,7 +676,7 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
  *
  * @returns ThingSet status code
  */
-int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint16_t auth_flags,
+int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint8_t auth_flags,
                   uint16_t subsets);
 
 /**
@@ -760,7 +760,7 @@ public:
         ts_dump_json(&ts, obj_id, level);
     };
 
-    inline void set_authentication(uint16_t flags)
+    inline void set_authentication(uint8_t flags)
     {
         ts_set_authentication(&ts, flags);
     };
@@ -790,7 +790,7 @@ public:
         return ts_bin_export(&ts, buf, size, subsets);
     };
 
-    inline int bin_import(uint8_t *buf, size_t size, uint16_t auth_flags, const uint16_t subsets)
+    inline int bin_import(uint8_t *buf, size_t size, uint8_t auth_flags, const uint16_t subsets)
     {
         return ts_bin_import(&ts, buf, size, auth_flags, subsets);
     };
@@ -880,7 +880,7 @@ public:
      *
      * @returns ThingSet status code
      */
-    inline int bin_sub(uint8_t *cbor_data, size_t len, uint16_t auth_flags, uint16_t subsets)
+    inline int bin_sub(uint8_t *cbor_data, size_t len, uint8_t auth_flags, uint16_t subsets)
         __attribute__((deprecated))
     {
         return ts_bin_import(&ts, cbor_data + 1, len - 1, auth_flags, subsets);

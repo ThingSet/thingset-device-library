@@ -65,7 +65,7 @@ int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len
     }
 }
 
-void ts_set_authentication(struct ts_context *ts, uint16_t flags)
+void ts_set_authentication(struct ts_context *ts, uint8_t flags)
 {
     ts->_auth_flags = flags;
 }
