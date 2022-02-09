@@ -20,8 +20,10 @@ static int cbor_serialize_array_type(uint8_t *buf, size_t size,
                                      const struct ts_data_object *data_obj);
 
 
-static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_object *data_obj)
+static int cbor_deserialize_data_obj(const uint8_t *buf, struct ts_data_object *data_obj)
 {
+    data_obj->updated = 1;
+
     switch (data_obj->type) {
 #if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
@@ -383,7 +385,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
         }
         pos_req += num_bytes;
 
-        const struct ts_data_object* object = ts_get_object_by_id(ts, id);
+        struct ts_data_object* object = ts_get_object_by_id(ts, id);
         if (object) {
             if ((object->access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (object->access & TS_WRITE_MASK) {

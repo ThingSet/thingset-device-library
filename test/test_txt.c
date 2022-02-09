@@ -276,3 +276,28 @@ void test_txt_export(void)
 }
 
 #endif /* TS_NESTED_JSON */
+
+void test_txt_check_updated(void)
+{
+    bool updated;
+
+    ts_check_updated(&ts, SUBSET_NVM, true);        // clear potential previous flags
+
+    TEST_ASSERT_TXT_REQ("=conf {\"BatCharging_V\":52}", ":84 Changed.");
+
+    /* check for update, but keep the flag */
+    updated = ts_check_updated(&ts, SUBSET_NVM, false);
+    TEST_ASSERT_EQUAL(updated, true);
+
+    /* check other subset to make sure it doesn't trigger */
+    updated = ts_check_updated(&ts, SUBSET_REPORT, false);
+    TEST_ASSERT_EQUAL(updated, false);
+
+    /* now clear the flags during check */
+    updated = ts_check_updated(&ts, SUBSET_NVM, true);
+    TEST_ASSERT_EQUAL(updated, true);
+
+    /* finally no updated values should be reported anymore */
+    updated = ts_check_updated(&ts, SUBSET_NVM, true);
+    TEST_ASSERT_EQUAL(updated, false);
+}

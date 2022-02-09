@@ -66,6 +66,8 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_get_endpoint, setup, teardown),
         /* Text mode: exporting of data */
         ztest_unit_test_setup_teardown(test_txt_export, setup, teardown),
+        /* Text mode: storing updates of data */
+        ztest_unit_test_setup_teardown(test_txt_check_updated, setup, teardown),
 
         /* Bin mode: GET request */
         ztest_unit_test_setup_teardown(test_bin_get_meas_ids_values, setup, teardown),
@@ -98,7 +100,9 @@ void test_main(void)
 #endif
         /* Bin mode: exporting/importing of data */
         ztest_unit_test_setup_teardown(test_bin_export, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_import, setup, teardown)
+        ztest_unit_test_setup_teardown(test_bin_import, setup, teardown),
+        /* Bin mode: storing updates of data */
+        ztest_unit_test_setup_teardown(test_bin_check_updated, setup, teardown)
     );
 
     ztest_run_test_suite(thingset_tests);

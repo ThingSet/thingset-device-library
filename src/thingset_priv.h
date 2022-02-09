@@ -200,7 +200,7 @@ int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
  * @returns Number of tokens processed (always 1) or 0 in case of error
  */
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
-                              const struct ts_data_object *object);
+                              struct ts_data_object *object);
 
 #ifdef __cplusplus
 } /* extern "C" */

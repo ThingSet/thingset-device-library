@@ -423,7 +423,7 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
 }
 
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
-                              const struct ts_data_object *object)
+                              struct ts_data_object *object)
 {
 #if TS_DECFRAC_TYPE_SUPPORT
     float tmp;
@@ -496,6 +496,8 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
         return 0;
     }
 
+    object->updated = 1;
+
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
@@ -529,7 +531,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
             return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const struct ts_data_object* object = ts_get_object_by_name(ts,
+        struct ts_data_object* object = ts_get_object_by_name(ts,
             ts->json_str + ts->tokens[tok].start,
             ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
@@ -583,7 +585,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
     // actually write data
     while (tok + 1 < ts->tok_count) {
 
-        const struct ts_data_object *object =
+        struct ts_data_object *object =
             ts_get_object_by_name(ts, ts->json_str + ts->tokens[tok].start,
                 ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
 
