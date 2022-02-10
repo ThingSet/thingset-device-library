@@ -2,17 +2,39 @@
 # SPDX-License-Identifier: Apache-2.0
 
 config THINGSET
-        bool "ThingSet Protocol Library"
+        bool "ThingSet Device Library"
         help
-          This option enables the ThingSet Protocol Library (TS).
+          This option enables the ThingSet Device Library (TS).
 
 if THINGSET
 
 config THINGSET_ZEPHYR
         bool
         default y
+        select NET_BUF
         help
           ThingSet on Zephyr.
+
+config THINGSET_LOG
+        bool
+        depends on LOG
+        default y
+        help
+          ThingSet logging support - by default follows Zephyr LOG configuration.
+
+config THINGSET_UNIT_TEST
+        bool "Enable unit testing support"
+        select ZTEST
+        default n
+        help
+          ThingSet unit test support.
+
+config THINGSET_ASSERT
+        bool "Enable assertions"
+        depends on ASSERT
+        default y
+        help
+          ThingSet assertions - by default follows Zephyr ASSERT configuration.
 
 config THINGSET_NUM_JSON_TOKENS
         int "Maximum number of expected JSON tokens."
@@ -50,6 +72,25 @@ config THINGSET_BYTE_STRING_TYPE_SUPPORT
           Switch on support for CBOR byte strings, which can store any sort of binary data and
           can be used e.g. for firmware upgrades. Byte strings are not supported by JSON.
 
+config THINGSET_LOCAL_COUNT
+        int "Number of local context objects databases."
+        default 1
+        help
+          Configure the total number of local contexts' object databases that a device has.
+
+config THINGSET_COM_BUF_COUNT
+        int "Number of communication buffers in the ThingSet buffer pool."
+        default 16
+        help
+          Number of communication buffers in ThingSet device's buffer pool.
+
+config THINGSET_COM_BUF_DATA_SIZE
+        int "Data block size for ThingSet communication buffers."
+        default 1024
+        help
+          Data block size for all ThingSet communication buffers. Buffers are allocated from this
+          block.
+
 config THINGSET_CPP_LEGACY
         bool "Enable legacy C++ interface."
         default y
@@ -61,6 +102,10 @@ config THINGSET_CPP_LEGACY
 module = THINGSET
 module-str = thingset
 source "subsys/logging/Kconfig.template.log_config"
+
+rsource "Kconfig.thingset_core"
+rsource "Kconfig.thingset_com"
+rsource "Kconfig.thingset_apps"
 
 endif
 

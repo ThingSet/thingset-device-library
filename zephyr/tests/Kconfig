@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-mainmenu "ThingSet - Zepyhr Tests Configuration"
+mainmenu "ThingSet for Zepyhr - tests configuration"
 
 source "Kconfig.zephyr"

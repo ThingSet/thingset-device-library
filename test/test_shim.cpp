@@ -7,8 +7,19 @@
 
 void test_shim_get_object(void)
 {
-    ThingSet ts(&data_objects[0], data_objects_size);
+    ThingSet ts;
 
-    ThingSetDataObject *object = ts.get_object(ID_INFO);
-    TEST_ASSERT_EQUAL_PTR(&data_objects[0], object);
+    ThingSetObject *object = ts.get_object(ID_INFO);
+    thingset_oref_t oref = ts_obj_db_oref_by_object(object);
+    TEST_ASSERT_EQUAL_UINT16(ID_INFO, ts_obj_id(oref));
+}
+
+void tests_shim(void)
+{
+    UNITY_BEGIN();
+
+    // data conversion tests
+    RUN_TEST(test_shim_get_object);
+
+    UNITY_END();
 }

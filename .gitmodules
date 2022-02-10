@@ -1,0 +1,6 @@
+[submodule "native/tinycbor"]
+	path = native/tinycbor
+	url = https://github.com/intel/tinycbor
+[submodule "native/unity"]
+	path = native/unity
+	url = https://github.com/ThrowTheSwitch/Unity

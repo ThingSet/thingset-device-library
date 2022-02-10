@@ -1,0 +1,37 @@
+# Copyright (c) 2021 Bobby Noelte
+# SPDX-License-Identifier: Apache-2.0
+
+config THINGSET_COM
+        bool "ThingSet Communication Support"
+        select POSIX_API if !ARCH_POSIX
+        help
+          This option enables the ThingSet communication support.
+
+if THINGSET_COM
+
+config THINGSET_REMOTE_COUNT
+        int "Number of remote context objects databases."
+        default 4
+        help
+          Configure the total number of remote contexts' object databases that a device has.
+
+config THINGSET_REMOTE_OBJECT_COUNT
+        int "Number of remote objects that a device may handle."
+        default 16
+        help
+          Configure the total number of remote objects that a device may handle.
+
+config THINGSET_PORT_COUNT
+        int "Number of ThingSet ports of a device"
+        default 1
+        help
+          Configure the number of ThingSet ports of a device.
+
+config THINGSET_PORT_LOOPBACK_SIMPLE
+        bool "Enable simmple loopback ThingSet communication port"
+        default n
+        depends on THINGSET_PORT_COUNT > 0
+        help
+          This option enables the simmple loopback ThingSet communication port.
+
+endif # THINGSET_COM

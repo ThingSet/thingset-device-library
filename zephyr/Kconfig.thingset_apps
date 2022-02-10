@@ -1,0 +1,13 @@
+# Copyright (c) 2021 Bobby Noelte
+# SPDX-License-Identifier: Apache-2.0
+
+config THINGSET_APPS
+        bool "ThingSet Applications"
+        help
+          This option enables the ThingSet applications.
+
+if THINGSET_APPS
+
+rsource "apps/shell/Kconfig"
+
+endif # THINGSET_APPS
