@@ -170,6 +170,24 @@ void test_txt_pub_enable(void)
     TEST_ASSERT_TRUE(pub_report_enable);
 }
 
+#if TS_NESTED_JSON
+
+void test_txt_pub_delete_append_object(void)
+{
+    /* before change */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\",\"meas/Ambient_degC\"]");
+    /* delete "Ambient_degC" */
+    TEST_ASSERT_TXT_REQ("-report \"meas/Ambient_degC\"", ":82 Deleted.");
+    /* check if it was deleted */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\"]");
+    /* append "Ambient_degC" again */
+    TEST_ASSERT_TXT_REQ("+report \"meas/Ambient_degC\"", ":81 Created.");
+    /* check if it was appended */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\",\"meas/Ambient_degC\"]");
+}
+
+#else
+
 void test_txt_pub_delete_append_object(void)
 {
     /* before change */
@@ -183,6 +201,8 @@ void test_txt_pub_delete_append_object(void)
     /* check if it was appended */
     TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
+
+#endif /* TS_NESTED_JSON */
 
 void test_txt_auth_user(void)
 {

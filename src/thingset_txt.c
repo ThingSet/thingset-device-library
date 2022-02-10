@@ -163,7 +163,21 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
         pos = snprintf(&buf[pos], size - pos, "[");
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
+#if TS_NESTED_JSON
+                if (ts->data_objects[i].parent == 0) {
+                    pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
+                }
+                else {
+                    struct ts_data_object *parent_obj =
+                        ts_get_object_by_id(ts, ts->data_objects[i].parent);
+                    if (parent_obj != NULL) {
+                        pos += snprintf(&buf[pos], size - pos, "\"%s/%s\",",
+                                        parent_obj->name, ts->data_objects[i].name);
+                    }
+                }
+#else
                 pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
+#endif
             }
         }
         if (pos > 1) {
@@ -685,10 +699,15 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
     }
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
-            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
+#if TS_NESTED_JSON
+            struct ts_data_object *add_object = ts_get_object_by_path(ts, ts->json_str +
+                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
+#else
+            struct ts_data_object *add_object = ts_get_object_by_name(ts, ts->json_str +
                 ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
-            if (del_object != NULL) {
-                del_object->subsets |= (uint16_t)object->detail;
+#endif
+            if (add_object != NULL) {
+                add_object->subsets |= (uint16_t)object->detail;
                 return ts_txt_response(ts, TS_STATUS_CREATED);
             }
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -710,8 +729,13 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
     }
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
+#if TS_NESTED_JSON
+            struct ts_data_object *del_object = ts_get_object_by_path(ts, ts->json_str +
+                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
+#else
             struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
                 ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
+#endif
             if (del_object != NULL) {
                 del_object->subsets &= ~((uint16_t)object->detail);
                 return ts_txt_response(ts, TS_STATUS_DELETED);
