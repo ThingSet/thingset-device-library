@@ -550,9 +550,17 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
 
         // extract the value and check buffer lengths
         value_len = ts->tokens[tok].end - ts->tokens[tok].start;
-        if ((object->type != TS_T_STRING && value_len >= sizeof(value_buf)) ||
-            (object->type == TS_T_STRING && value_len >= (size_t)object->detail))
-        {
+        if (object->type == TS_T_STRING) {
+            if (value_len < (size_t)object->detail) {
+                // provided string fits into data object buffer
+                tok += 1;
+                continue;
+            }
+            else {
+                return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
+            }
+        }
+        else if (value_len >= sizeof(value_buf)) {
             return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
         else {
