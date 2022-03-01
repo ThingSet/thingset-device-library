@@ -70,22 +70,6 @@ void ts_set_authentication(struct ts_context *ts, uint8_t flags)
     ts->_auth_flags = flags;
 }
 
-bool ts_check_updated(struct ts_context *ts, const uint16_t subsets, bool clear)
-{
-    bool updated = false;
-
-    for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].updated == 1U && (ts->data_objects[i].subsets & subsets)) {
-            updated = true;
-            if (clear) {
-                ts->data_objects[i].updated = 0U;
-            }
-        }
-    }
-
-    return updated;
-}
-
 struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name,
                                              size_t len, int32_t parent)
 {

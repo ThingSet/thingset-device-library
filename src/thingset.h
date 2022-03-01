@@ -418,12 +418,8 @@ struct ts_data_object {
     /**
      * Flags to assign data item to different data item subsets (e.g. for publication messages)
      */
-    uint32_t subsets : 7;
+    uint32_t subsets : 8;
 
-    /**
-     * Bit to store if value has been updated via ThingSet (e.g. for NVM stoarage)
-     */
-    uint32_t updated : 1;
 };
 
 /* support for legacy code with old nomenclature */
@@ -534,15 +530,6 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level);
  * @param flags Flags to define authentication level (1 = access allowed)
  */
 void ts_set_authentication(struct ts_context *ts, uint8_t flags);
-
-/**
- * Checks if any of the data objects belonging to the subsets was updated.
- *
- * @param ts Pointer to ThingSet context.
- * @param subsets Flags to select which subset(s) of data items should be considered
- * @param clear If set to true, the updated status is cleared after checking.
- */
-bool ts_check_updated(struct ts_context *ts, const uint16_t subsets, bool clear);
 
 /**
  * Retrieve data in JSON format for given subset(s).
@@ -776,11 +763,6 @@ public:
     inline void set_authentication(uint8_t flags)
     {
         ts_set_authentication(&ts, flags);
-    };
-
-    inline bool check_updated(const uint16_t subsets, bool clear)
-    {
-        return ts_check_updated(&ts, subsets, clear);
     };
 
     inline int txt_export(char *buf, size_t size, const uint16_t subsets)

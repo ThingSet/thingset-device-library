@@ -36,7 +36,6 @@ extern "C" {
 
 #define SUBSET_REPORT  (1U << 0)   // report subset of data items for publication
 #define SUBSET_CAN     (1U << 1)   // data nodes used for CAN bus publication messages
-#define SUBSET_NVM     (1U << 2)   // data that should be stored in EEPROM
 
 extern char manufacturer[];
 extern bool pub_report_enable;
@@ -158,7 +157,6 @@ void test_txt_auth_reset(void);
 void test_txt_wrong_command(void);
 void test_txt_get_endpoint(void);
 void test_txt_export(void);
-void test_txt_check_updated(void);
 
 void test_bin_get_meas_ids_values(void);
 void test_bin_get_meas_names_values(void);
@@ -182,7 +180,6 @@ void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
 void test_bin_export(void);
 void test_bin_import(void);
-void test_bin_check_updated(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

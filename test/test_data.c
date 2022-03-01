@@ -87,17 +87,17 @@ struct ts_data_object data_objects[] = {
         ID_INFO, TS_ANY_R, 0),
 
     TS_ITEM_STRING(0x1B, "DeviceID", device_id, sizeof(device_id),
-        ID_INFO, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
+        ID_INFO, TS_ANY_R | TS_MKR_W, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
 
     TS_GROUP(ID_CONF, "conf", &conf_callback, ID_ROOT),
 
     TS_ITEM_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2,
-        ID_CONF, TS_ANY_RW, SUBSET_NVM),
+        ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2,
-        ID_CONF, TS_ANY_RW, SUBSET_NVM),
+        ID_CONF, TS_ANY_RW, 0),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
 

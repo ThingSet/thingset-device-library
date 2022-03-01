@@ -206,8 +206,7 @@ void test_bin_patch_rounded_float(void)
             0x05
     };
     const uint8_t resp_expected[] = {
-        TS_STATUS_CHANGED
-    };
+        TS_STATUS_CHANGED };
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 
@@ -436,40 +435,4 @@ void test_bin_export(void)
     int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
-}
-
-void test_bin_check_updated(void)
-{
-    bool updated;
-
-    ts_check_updated(&ts, SUBSET_NVM, true);        // clear potential previous flags
-
-    const uint8_t req[] = {
-        TS_PATCH,
-        0x18, ID_CONF,
-        0xA1,
-            0x18, 0x31,
-            0x05
-    };
-    const uint8_t resp_expected[] = {
-        TS_STATUS_CHANGED
-    };
-
-    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
-
-    /* check for update, but keep the flag */
-    updated = ts_check_updated(&ts, SUBSET_NVM, false);
-    TEST_ASSERT_EQUAL(updated, true);
-
-    /* check other subset to make sure it doesn't trigger */
-    updated = ts_check_updated(&ts, SUBSET_REPORT, false);
-    TEST_ASSERT_EQUAL(updated, false);
-
-    /* now clear the flags during check */
-    updated = ts_check_updated(&ts, SUBSET_NVM, true);
-    TEST_ASSERT_EQUAL(updated, true);
-
-    /* finally no updated values should be reported anymore */
-    updated = ts_check_updated(&ts, SUBSET_NVM, true);
-    TEST_ASSERT_EQUAL(updated, false);
 }
