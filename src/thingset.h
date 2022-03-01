@@ -404,9 +404,15 @@ struct ts_data_object {
     const uint32_t type : 4;
 
     /**
-     * Exponent (10^exponent = factor to convert to SI unit) for decimal fraction type,
-     * decimal digits to use for printing of floats in JSON strings or
-     * length of string buffer for string type
+     * Variable storing different detail information depending on th data type
+     *
+     * - FLOAT32: Decimal digits (precision) to use for printing in JSON strings.
+     *
+     * - DECFRAC: Exponent (10^exponent = factor to convert to internal unit). Example: If
+     *   a voltage measurement is internally stored as an integer in mV, use exponent -3 to
+     *   convert to the SI base unit V as exposed via ThingSet.
+     *
+     * - STRING or BYTES: Size of the internal buffer in bytes.
      */
     const int32_t detail : 12;
 
