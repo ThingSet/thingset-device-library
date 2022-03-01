@@ -480,6 +480,17 @@ struct ts_context {
      * Stores current authentication status (authentication as "normal" user as default)
      */
     uint8_t _auth_flags;
+
+    /**
+     * Stores current authentication status (authentication as "normal" user as default)
+     */
+    uint8_t _update_subsets;
+
+    /**
+     * Callback to be called from patch function if a value belonging to _update_subsets
+     * was changed
+     */
+    void (*update_cb)(void);
 };
 
 /**
@@ -530,6 +541,15 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level);
  * @param flags Flags to define authentication level (1 = access allowed)
  */
 void ts_set_authentication(struct ts_context *ts, uint8_t flags);
+
+/**
+ * Configures a callback for notification if data belonging to specified subset(s) was updated.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param subsets Flags to select which subset(s) of data items should be considered
+ * @param update_cb Callback to be called after an update.
+ */
+void ts_set_update_callback(struct ts_context *ts, const uint16_t subsets, void (*update_cb)(void));
 
 /**
  * Retrieve data in JSON format for given subset(s).
@@ -763,6 +783,11 @@ public:
     inline void set_authentication(uint8_t flags)
     {
         ts_set_authentication(&ts, flags);
+    };
+
+    inline void set_update_callback(const uint16_t subsets, void (*update_cb)(void))
+    {
+        ts_set_update_callback(&ts, subsets, update_cb);
     };
 
     inline int txt_export(char *buf, size_t size, const uint16_t subsets)

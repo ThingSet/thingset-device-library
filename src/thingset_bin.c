@@ -362,6 +362,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
+    bool updated = false;
 
     if ((ts->req[pos_req] & CBOR_TYPE_MASK) != CBOR_MAP) {
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
@@ -403,6 +404,9 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
             else {
                 // actually deserialize the data and update object
                 num_bytes = cbor_deserialize_data_obj(&ts->req[pos_req], object);
+                if (ts->_update_subsets & object->subsets) {
+                    updated = true;
+                }
             }
         }
         else {
@@ -425,6 +429,9 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
     }
 
     if (element == num_elements) {
+        if (updated && ts->update_cb != NULL) {
+            ts->update_cb();
+        }
         return ts_bin_response(ts, TS_STATUS_CHANGED);
     } else {
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);

@@ -206,7 +206,8 @@ void test_bin_patch_rounded_float(void)
             0x05
     };
     const uint8_t resp_expected[] = {
-        TS_STATUS_CHANGED };
+        TS_STATUS_CHANGED
+    };
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 
@@ -435,4 +436,30 @@ void test_bin_export(void)
     int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+}
+
+void test_bin_update_callback(void)
+{
+    const uint8_t req[] = {
+        TS_PATCH,
+        0x18, ID_CONF,
+        0xA1,
+            0x18, 0x31,
+            0x05
+    };
+    const uint8_t resp_expected[] = {
+        TS_STATUS_CHANGED
+    };
+
+    update_callback_called = false;
+
+    // without callback
+    ts_set_update_callback(&ts, SUBSET_NVM, NULL);
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+    TEST_ASSERT_EQUAL(false, update_callback_called);
+
+    // with configured callback
+    ts_set_update_callback(&ts, SUBSET_NVM, update_callback);
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+    TEST_ASSERT_EQUAL(true, update_callback_called);
 }

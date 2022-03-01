@@ -96,13 +96,13 @@ void test_txt_patch_unknown_object(void)
     TEST_ASSERT_TXT_REQ("=conf {\"i3\" : 52}", ":A4 Not Found.");
 }
 
-void test_txt_conf_callback(void)
+void test_txt_group_callback(void)
 {
-    conf_callback_called = 0;
+    group_callback_called = false;
 
     TEST_ASSERT_TXT_REQ("=conf {\"i32\":52}", ":84 Changed.");
 
-    TEST_ASSERT_EQUAL(1, conf_callback_called);
+    TEST_ASSERT_EQUAL(true, group_callback_called);
 }
 
 void test_txt_exec(void)
@@ -296,3 +296,18 @@ void test_txt_export(void)
 }
 
 #endif /* TS_NESTED_JSON */
+
+void test_txt_update_callback(void)
+{
+    update_callback_called = false;
+
+    // without callback
+    ts_set_update_callback(&ts, SUBSET_NVM, NULL);
+    TEST_ASSERT_TXT_REQ("=conf {\"BatCharging_V\":52}", ":84 Changed.");
+    TEST_ASSERT_EQUAL(false, update_callback_called);
+
+    // with configured callback
+    ts_set_update_callback(&ts, SUBSET_NVM, update_callback);
+    TEST_ASSERT_TXT_REQ("=conf {\"BatCharging_V\":52}", ":84 Changed.");
+    TEST_ASSERT_EQUAL(true, update_callback_called);
+}

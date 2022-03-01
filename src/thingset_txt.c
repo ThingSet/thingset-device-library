@@ -516,6 +516,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
 int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
 {
     int tok = 0;       // current token
+    bool updated = false;
 
     // buffer for data object value (largest negative 64bit integer has 20 digits)
     char value_buf[21];
@@ -612,6 +613,14 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
 
         tok += ts_json_deserialize_value(ts, &ts->json_str[ts->tokens[tok].start], value_len,
             ts->tokens[tok].type, object);
+
+        if (ts->_update_subsets & object->subsets) {
+            updated = true;
+        }
+    }
+
+    if (updated && ts->update_cb != NULL) {
+        ts->update_cb();
     }
 
     return ts_txt_response(ts, TS_STATUS_CHANGED);

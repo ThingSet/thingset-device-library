@@ -70,10 +70,6 @@ struct ts_array_info float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT3
 uint8_t bytes[300] = {};
 struct ts_bytes_buffer bytes_buf = { bytes, 0 };
 
-void dummy(void);
-void conf_callback(void);
-
-
 struct ts_data_object data_objects[] = {
 
     TS_ITEM_UINT32(0x10, "t_s", &timestamp,
@@ -87,17 +83,17 @@ struct ts_data_object data_objects[] = {
         ID_INFO, TS_ANY_R, 0),
 
     TS_ITEM_STRING(0x1B, "DeviceID", device_id, sizeof(device_id),
-        ID_INFO, TS_ANY_R | TS_MKR_W, 0),
+        ID_INFO, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
 
-    TS_GROUP(ID_CONF, "conf", &conf_callback, ID_ROOT),
+    TS_GROUP(ID_CONF, "conf", &group_callback, ID_ROOT),
 
     TS_ITEM_FLOAT(0x31, "BatCharging_V", &bat_charging_voltage, 2,
-        ID_CONF, TS_ANY_RW, 0),
+        ID_CONF, TS_ANY_RW, SUBSET_NVM),
 
     TS_ITEM_FLOAT(0x32, "LoadDisconnect_V", &load_disconnect_voltage, 2,
-        ID_CONF, TS_ANY_RW, 0),
+        ID_CONF, TS_ANY_RW, SUBSET_NVM),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
 
