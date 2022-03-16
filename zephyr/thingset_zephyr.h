@@ -41,10 +41,9 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 #define isnan(value) __builtin_isnan(value)
 #define isinf(value) __builtin_isinf(value)
 
-inline long long int llroundf(float x)
-{
-    return __builtin_llroundf(x);
-};
+long int lroundf(float x);
+
+long long int llroundf(float x);
 
 double ts_strtod(const char * string, char **endPtr);
 inline double strtod(const char * string, char **endPtr)
