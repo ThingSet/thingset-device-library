@@ -6,6 +6,20 @@
 
 #include "../../thingset_zephyr.h"
 
+#if CONFIG_MINIMAL_LIBC
+
+long int lroundf(float x)
+{
+    return __builtin_lroundf(x);
+};
+
+long long int llroundf(float x)
+{
+    return __builtin_llroundf(x);
+};
+
+#endif /* CONFIG_MINIMAL_LIBC */
+
 /*
  * strtod.c --
  *
