@@ -11,20 +11,12 @@
 #include "ts_config.h"
 
 #ifdef __cplusplus
-/* C++ library setup */
 extern "C" {
+#endif
 
-#include <cstddef>
-#include <cstdint>
-#include <cstdbool>
-
-#else
-/* C library setup */
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-#endif
 
 #include "jsmn.h"
 #include "cbor.h"
