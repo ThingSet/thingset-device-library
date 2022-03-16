@@ -55,7 +55,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_patch_readonly);
     RUN_TEST(test_txt_patch_wrong_path);
     RUN_TEST(test_txt_patch_unknown_object);
-    RUN_TEST(test_txt_conf_callback);
+    RUN_TEST(test_txt_group_callback);
 
     // POST request
     RUN_TEST(test_txt_exec);
@@ -80,6 +80,9 @@ void tests_text_mode()
 
     // data export
     RUN_TEST(test_txt_export);
+
+    // update notification
+    RUN_TEST(test_txt_update_callback),
 
     UNITY_END();
 }
@@ -127,6 +130,9 @@ void tests_binary_mode()
     // data export/import
     RUN_TEST(test_bin_export);
     RUN_TEST(test_bin_import);
+
+    // update notification
+    RUN_TEST(test_bin_update_callback),
 
     UNITY_END();
 }

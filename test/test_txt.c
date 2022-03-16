@@ -96,13 +96,13 @@ void test_txt_patch_unknown_object(void)
     TEST_ASSERT_TXT_REQ("=conf {\"i3\" : 52}", ":A4 Not Found.");
 }
 
-void test_txt_conf_callback(void)
+void test_txt_group_callback(void)
 {
-    conf_callback_called = 0;
+    group_callback_called = false;
 
     TEST_ASSERT_TXT_REQ("=conf {\"i32\":52}", ":84 Changed.");
 
-    TEST_ASSERT_EQUAL(1, conf_callback_called);
+    TEST_ASSERT_EQUAL(true, group_callback_called);
 }
 
 void test_txt_exec(void)
@@ -114,26 +114,46 @@ void test_txt_exec(void)
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
 }
 
+#if TS_NESTED_JSON
+
+void test_txt_statement_subset(void)
+{
+    const char expected[] = "#report {\"t_s\":12345678,"
+        "\"meas\":{\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}}";
+
+    int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+
+    resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+}
+
+#else
+
 void test_txt_statement_subset(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "report");
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"t_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 
     resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(resp_len, "#report {\"t_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
 }
+
+#endif /* TS_NESTED_JSON */
 
 void test_txt_statement_group(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "info");
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"DeviceID\":\"ABCD1234\"}");
 
     resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"Timestamp_s\":12345678,\"DeviceID\":\"ABCD1234\"}");
+    TEST_ASSERT_TXT_RESP(resp_len, "#info {\"Manufacturer\":\"Libre Solar\",\"DeviceID\":\"ABCD1234\"}");
 }
 
 void test_txt_pub_list_channels(void)
@@ -150,19 +170,39 @@ void test_txt_pub_enable(void)
     TEST_ASSERT_TRUE(pub_report_enable);
 }
 
+#if TS_NESTED_JSON
+
 void test_txt_pub_delete_append_object(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\",\"meas/Ambient_degC\"]");
+    /* delete "Ambient_degC" */
+    TEST_ASSERT_TXT_REQ("-report \"meas/Ambient_degC\"", ":82 Deleted.");
+    /* check if it was deleted */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\"]");
+    /* append "Ambient_degC" again */
+    TEST_ASSERT_TXT_REQ("+report \"meas/Ambient_degC\"", ":81 Created.");
+    /* check if it was appended */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"meas/Bat_V\",\"meas/Bat_A\",\"meas/Ambient_degC\"]");
+}
+
+#else
+
+void test_txt_pub_delete_append_object(void)
+{
+    /* before change */
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
     /* delete "Ambient_degC" */
     TEST_ASSERT_TXT_REQ("-report \"Ambient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
-    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"Bat_V\",\"Bat_A\"]");
     /* append "Ambient_degC" again */
     TEST_ASSERT_TXT_REQ("+report \"Ambient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"Timestamp_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?report", ":85 Content. [\"t_s\",\"Bat_V\",\"Bat_A\",\"Ambient_degC\"]");
 }
+
+#endif /* TS_NESTED_JSON */
 
 void test_txt_auth_user(void)
 {
@@ -233,9 +273,41 @@ void test_txt_get_endpoint(void)
     TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
 
+#if TS_NESTED_JSON
+
+void test_txt_export(void)
+{
+    const char expected[] =
+        "{\"t_s\":12345678,\"meas\":{\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}}";
+
+    int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+    resp_buf[resp_len] = '\0';
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+}
+
+#else
+
 void test_txt_export(void)
 {
     int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "{\"Timestamp_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(resp_len, "{\"t_s\":12345678,\"Bat_V\":14.10,\"Bat_A\":5.13,\"Ambient_degC\":22}");
+}
+
+#endif /* TS_NESTED_JSON */
+
+void test_txt_update_callback(void)
+{
+    update_callback_called = false;
+
+    // without callback
+    ts_set_update_callback(&ts, SUBSET_NVM, NULL);
+    TEST_ASSERT_TXT_REQ("=conf {\"BatCharging_V\":52}", ":84 Changed.");
+    TEST_ASSERT_EQUAL(false, update_callback_called);
+
+    // with configured callback
+    ts_set_update_callback(&ts, SUBSET_NVM, update_callback);
+    TEST_ASSERT_TXT_REQ("=conf {\"BatCharging_V\":52}", ":84 Changed.");
+    TEST_ASSERT_EQUAL(true, update_callback_called);
 }

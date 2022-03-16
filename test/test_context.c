@@ -12,19 +12,25 @@ struct ts_context ts;
 uint8_t req_buf[TS_REQ_BUFFER_LEN];
 uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 
-bool conf_callback_called;
+bool group_callback_called;
+bool update_callback_called;
 bool dummy_called_flag;
 struct ts_array_info pub_serial_array;
 
 
 void dummy(void)
 {
-    dummy_called_flag = 1;
+    dummy_called_flag = true;
 }
 
-void conf_callback(void)
+void group_callback(void)
 {
-    conf_callback_called = 1;
+    group_callback_called = true;
+}
+
+void update_callback(void)
+{
+    update_callback_called = true;
 }
 
 void reset_function()

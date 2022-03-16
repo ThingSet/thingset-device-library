@@ -114,7 +114,7 @@ int ts_txt_patch(struct ts_context *ts,  const struct ts_data_object *parent);
  * @param subsets Bitset to specifiy data item subsets to be considered, 0 to ignore
  */
 int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
-                 unsigned int pos_payload, uint16_t auth_flags, uint16_t subsets);
+                 unsigned int pos_payload, uint8_t auth_flags, uint16_t subsets);
 
 /**
  * POST request to append data.

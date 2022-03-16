@@ -36,6 +36,7 @@ extern "C" {
 
 #define SUBSET_REPORT  (1U << 0)   // report subset of data items for publication
 #define SUBSET_CAN     (1U << 1)   // data nodes used for CAN bus publication messages
+#define SUBSET_NVM     (1U << 2)   // data that should be stored in EEPROM
 
 extern char manufacturer[];
 extern bool pub_report_enable;
@@ -69,13 +70,15 @@ extern struct ts_context ts;
 extern uint8_t req_buf[TS_REQ_BUFFER_LEN];
 extern uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 
-extern bool conf_callback_called;
+extern bool group_callback_called;
+extern bool update_callback_called;
 extern bool dummy_called_flag;
 extern struct ts_array_info pub_serial_array;
 
 /* Helper functions (see test_context.c) */
 void dummy(void);
-void conf_callback(void);
+void group_callback(void);
+void update_callback(void);
 void reset_function(void);
 void auth_function(void);
 int _hex2bin(uint8_t *bin, size_t bin_size, const char *hex);
@@ -142,7 +145,7 @@ void test_txt_patch_array(void);
 void test_txt_patch_readonly(void);
 void test_txt_patch_wrong_path(void);
 void test_txt_patch_unknown_object(void);
-void test_txt_conf_callback(void);
+void test_txt_group_callback(void);
 void test_txt_exec(void);
 void test_txt_statement_subset(void);
 void test_txt_statement_group(void);
@@ -157,6 +160,7 @@ void test_txt_auth_reset(void);
 void test_txt_wrong_command(void);
 void test_txt_get_endpoint(void);
 void test_txt_export(void);
+void test_txt_update_callback(void);
 
 void test_bin_get_meas_ids_values(void);
 void test_bin_get_meas_names_values(void);
@@ -180,6 +184,7 @@ void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
 void test_bin_export(void);
 void test_bin_import(void);
+void test_bin_update_callback(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

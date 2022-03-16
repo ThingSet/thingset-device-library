@@ -47,7 +47,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_patch_readonly, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_path, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_unknown_object, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_conf_callback, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_group_callback, setup, teardown),
         /* Text mode: POST request */
         ztest_unit_test_setup_teardown(test_txt_exec, setup, teardown),
         /* Text mode: statements (pub/sub messages) */
@@ -66,6 +66,8 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_get_endpoint, setup, teardown),
         /* Text mode: exporting of data */
         ztest_unit_test_setup_teardown(test_txt_export, setup, teardown),
+        /* Text mode: update notification */
+        ztest_unit_test_setup_teardown(test_txt_update_callback, setup, teardown),
 
         /* Bin mode: GET request */
         ztest_unit_test_setup_teardown(test_bin_get_meas_ids_values, setup, teardown),
@@ -98,7 +100,9 @@ void test_main(void)
 #endif
         /* Bin mode: exporting/importing of data */
         ztest_unit_test_setup_teardown(test_bin_export, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_import, setup, teardown)
+        ztest_unit_test_setup_teardown(test_bin_import, setup, teardown),
+        /* Bin mode: update notification */
+        ztest_unit_test_setup_teardown(test_bin_update_callback, setup, teardown)
     );
 
     ztest_run_test_suite(thingset_tests);

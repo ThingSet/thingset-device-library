@@ -206,7 +206,8 @@ void test_bin_patch_rounded_float(void)
             0x05
     };
     const uint8_t resp_expected[] = {
-        TS_STATUS_CHANGED };
+        TS_STATUS_CHANGED
+    };
 
     TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 
@@ -238,9 +239,8 @@ void test_bin_statement_group(void)
     const char resp_expected[] =
         "1F "
         "01 "                                       // ID of "info"
-        "83 "                                       // array with 3 elements
+        "82 "                                       // array with 2 elements
         "6B 4C 69 62 72 65 20 53 6F 6C 61 72 "      // "Libre Solar"
-        "1A 00 BC 61 4E "                           // int 12345678
         "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
 
     int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
@@ -428,7 +428,7 @@ void test_bin_export(void)
 {
     const char resp_expected[] =
         "A4 "                       // map with 4 elements
-        "18 1A 1A 00 BC 61 4E "     // int 12345678
+        "10 1A 00 BC 61 4E "        // int 12345678
         "18 71 FA 41 61 99 9a "     // float 14.10
         "18 72 FA 40 a4 28 f6 "     // float 5.13
         "18 73 16 ";                // int 22
@@ -436,4 +436,30 @@ void test_bin_export(void)
     int resp_len = ts_bin_export(&ts, resp_buf, sizeof(resp_buf), SUBSET_REPORT);
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
+}
+
+void test_bin_update_callback(void)
+{
+    const uint8_t req[] = {
+        TS_PATCH,
+        0x18, ID_CONF,
+        0xA1,
+            0x18, 0x31,
+            0x05
+    };
+    const uint8_t resp_expected[] = {
+        TS_STATUS_CHANGED
+    };
+
+    update_callback_called = false;
+
+    // without callback
+    ts_set_update_callback(&ts, SUBSET_NVM, NULL);
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+    TEST_ASSERT_EQUAL(false, update_callback_called);
+
+    // with configured callback
+    ts_set_update_callback(&ts, SUBSET_NVM, update_callback);
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+    TEST_ASSERT_EQUAL(true, update_callback_called);
 }
