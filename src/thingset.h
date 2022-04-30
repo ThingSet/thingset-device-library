@@ -24,51 +24,50 @@ extern "C" {
 /*
  * Protocol function codes (same as CoAP)
  */
-#define TS_GET      0x01
-#define TS_POST     0x02
-#define TS_DELETE   0x04
-#define TS_FETCH    0x05
-#define TS_PATCH    0x07        // it's actually iPATCH
-
-#define TS_PUBMSG   0x1F
+#define TS_GET       0x01 /**< GET request */
+#define TS_POST      0x02 /**< POST request */
+#define TS_DELETE    0x04 /**< DELETE request */
+#define TS_FETCH     0x05 /**< FETCH request */
+#define TS_PATCH     0x07 /**< PATCH request (actually iPATCH equivalent in CBOR) */
+#define TS_STATEMENT 0x1F /**< STATEMENT message */
 
 /*
  * Status codes (same as CoAP)
  */
 
 // success
-#define TS_STATUS_CREATED               0x81
-#define TS_STATUS_DELETED               0x82
-#define TS_STATUS_VALID                 0x83
-#define TS_STATUS_CHANGED               0x84
-#define TS_STATUS_CONTENT               0x85
+#define TS_STATUS_CREATED               0x81 /**< Success status 0x81: Created */
+#define TS_STATUS_DELETED               0x82 /**< Success status 0x82: Deleted */
+#define TS_STATUS_VALID                 0x83 /**< Success status 0x83: Valid */
+#define TS_STATUS_CHANGED               0x84 /**< Success status 0x84: Changed */
+#define TS_STATUS_CONTENT               0x85 /**< Success status 0x85: Content */
 
 // client errors
-#define TS_STATUS_BAD_REQUEST           0xA0
-#define TS_STATUS_UNAUTHORIZED          0xA1        // need to authenticate
-#define TS_STATUS_FORBIDDEN             0xA3        // trying to write read-only value
-#define TS_STATUS_NOT_FOUND             0xA4
-#define TS_STATUS_METHOD_NOT_ALLOWED    0xA5
-#define TS_STATUS_REQUEST_INCOMPLETE    0xA8
-#define TS_STATUS_CONFLICT              0xA9
-#define TS_STATUS_REQUEST_TOO_LARGE     0xAD
-#define TS_STATUS_UNSUPPORTED_FORMAT    0xAF
+#define TS_STATUS_BAD_REQUEST           0xA0 /**< Client error 0xA0: Bad Request */
+#define TS_STATUS_UNAUTHORIZED          0xA1 /**< Client error 0xA1: Authentication required */
+#define TS_STATUS_FORBIDDEN             0xA3 /**< Client error 0xA3: Forbidden to write read-only value */
+#define TS_STATUS_NOT_FOUND             0xA4 /**< Client error 0xA4: Not found */
+#define TS_STATUS_METHOD_NOT_ALLOWED    0xA5 /**< Client error 0xA5: Method not allowed */
+#define TS_STATUS_REQUEST_INCOMPLETE    0xA8 /**< Client error 0xA8: Request incomplete */
+#define TS_STATUS_CONFLICT              0xA9 /**< Client error 0xA9: Conflict */
+#define TS_STATUS_REQUEST_TOO_LARGE     0xAD /**< Client error 0xAD: Request too large */
+#define TS_STATUS_UNSUPPORTED_FORMAT    0xAF /**< Client error 0xAF: Unsupported format */
 
 // server errors
-#define TS_STATUS_INTERNAL_SERVER_ERR   0xC0
-#define TS_STATUS_NOT_IMPLEMENTED       0xC1
+#define TS_STATUS_INTERNAL_SERVER_ERR   0xC0 /**< Server error 0xC0: Internal server error */
+#define TS_STATUS_NOT_IMPLEMENTED       0xC1 /**< Server error 0xC1: Not implemented */
 
 // ThingSet specific errors
-#define TS_STATUS_RESPONSE_TOO_LARGE    0xE1
+#define TS_STATUS_RESPONSE_TOO_LARGE    0xE1 /**< ThingSet error 0xE1: Response too large */
 
 /*
  * Reserved data object IDs
  */
-#define TS_ID_ROOT              0x00
-#define TS_ID_TIME              0x10
-#define TS_ID_NAME              0x17
-#define TS_ID_METADATAURL       0x18
-#define TS_ID_DEVICEID          0x1D
+#define TS_ID_ROOT              0x00 /**< Data Object ID for root element */
+#define TS_ID_TIME              0x10 /**< Data Object ID for timestamp (t_s) */
+#define TS_ID_PATH              0x17 /**< Data Object ID to determine path from ID (_path) */
+#define TS_ID_METADATAURL       0x18 /**< Data Object ID for Metadata URL (cMetadataURL) */
+#define TS_ID_NODEID            0x1D /**< Data Object ID for node ID (cNodeID) */
 
 /*
  * ThingSet addressing in 29-bit CAN ID similar to SAE J1939
@@ -148,41 +147,42 @@ extern "C" {
  * Internal C data types (used to cast void* pointers)
  */
 enum TsType {
-    TS_T_BOOL,
-    TS_T_UINT64,
-    TS_T_INT64,
-    TS_T_UINT32,
-    TS_T_INT32,
-    TS_T_UINT16,
-    TS_T_INT16,
-    TS_T_FLOAT32,
-    TS_T_STRING,
-    TS_T_BYTES,
-    TS_T_ARRAY,
-    TS_T_DECFRAC,       // CBOR decimal fraction
-    TS_T_GROUP,         // internal object to describe data hierarchy
-    TS_T_EXEC,          // functions
-    TS_T_SUBSET
+    TS_T_BOOL,      /**< bool */
+    TS_T_UINT64,    /**< uint64_t */
+    TS_T_INT64,     /**< int64_t */
+    TS_T_UINT32,    /**< uint32_t */
+    TS_T_INT32,     /**< int32_t */
+    TS_T_UINT16,    /**< uint16_t */
+    TS_T_INT16,     /**< int16_t */
+    TS_T_FLOAT32,   /**< float */
+    TS_T_STRING,    /**< String buffer (UTF-8 text) */
+    TS_T_BYTES,     /**< Byte buffer (binary data) */
+    TS_T_ARRAY,     /**< Array */
+    TS_T_DECFRAC,   /**< CBOR decimal fraction */
+    TS_T_GROUP,     /**< Internal object to describe data hierarchy */
+    TS_T_EXEC,      /**< Executable functions */
+    TS_T_SUBSET,    /**< Subset of data items */
 };
 
 /**
  * Data structure to specify a binary data buffer
  */
 struct ts_bytes_buffer {
-    uint8_t *bytes;             ///< Pointer to the buffer
-    uint16_t num_bytes;         ///< Actual number of bytes in the buffer
+    uint8_t *bytes;             /**< Pointer to the buffer */
+    uint16_t num_bytes;         /**< Actual number of bytes in the buffer */
 };
 
 /**
  * Data structure to specify an array data object
  */
 struct ts_array_info {
-    void *ptr;                  ///< Pointer to the array
-    uint16_t max_elements;      ///< Maximum number of elements in the array
-    uint16_t num_elements;      ///< Actual number of elements in the array
-    uint8_t type;               ///< Type of the array elements
+    void *ptr;                  /**< Pointer to the array */
+    uint16_t max_elements;      /**< Maximum number of elements in the array */
+    uint16_t num_elements;      /**< Actual number of elements in the array */
+    uint8_t type;               /**< Type of the array elements */
 };
 
+/** @cond INTERNAL_HIDDEN */
 /*
  * Functions to generate data_objects map and make compiler complain if wrong
  * type is passed
@@ -216,51 +216,79 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define ts_array_to_void(ptr) ((void*)ptr)
 #endif
 
+/** @endcond */
+
+/** Create data item for bool variable. */
 #define TS_ITEM_BOOL(id, name, bool_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_bool_to_void(bool_ptr), TS_T_BOOL, 0, access, subsets}
 
+/** Create data item for uint64_t variable. */
 #define TS_ITEM_UINT64(id, name, uint64_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_uint64_to_void(uint64_ptr), TS_T_UINT64, 0, access, subsets}
 
+/** Create data item for int64_t variable. */
 #define TS_ITEM_INT64(id, name, int64_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_int64_to_void(int64_ptr), TS_T_INT64, 0, access, subsets}
 
+/** Create data item for uint32_t variable. */
 #define TS_ITEM_UINT32(id, name, uint32_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_uint32_to_void(uint32_ptr), TS_T_UINT32, 0, access, subsets}
 
+/** Create data item for int32_t variable. */
 #define TS_ITEM_INT32(id, name, int32_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_int32_to_void(int32_ptr), TS_T_INT32, 0, access, subsets}
 
+/** Create data item for uint16_t variable. */
 #define TS_ITEM_UINT16(id, name, uint16_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_uint16_to_void(uint16_ptr), TS_T_UINT16, 0, access, subsets}
 
+/** Create data item for int16_t variable. */
 #define TS_ITEM_INT16(id, name, int16_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_int16_to_void(int16_ptr), TS_T_INT16, 0, access, subsets}
 
+/** Create data item for float variable. */
 #define TS_ITEM_FLOAT(id, name, float_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_float_to_void(float_ptr), TS_T_FLOAT32, digits, access, subsets}
 
+/**
+ * Create data item for decimal fraction variable. The mantissa is internally stored as int32_t.
+ * The value is cnverted into a float (JSON) or decimal fraction type (CBOR) for the protocol,
+ * based on the specified (fixed) exponent.
+ */
 #define TS_ITEM_DECFRAC(id, name, mantissa_ptr, exponent, parent_id, access, subsets) \
     {id, parent_id, name, ts_int32_to_void(mantissa_ptr), TS_T_DECFRAC, exponent, access, subsets}
 
+/**
+ * Create data item for a string buffer. The string must be null-terminated and buf_size contains
+ * the maximum length of the buffer including the null-termination character.
+ */
 #define TS_ITEM_STRING(id, name, char_ptr, buf_size, parent_id, access, subsets) \
     {id, parent_id, name, ts_string_to_void(char_ptr), TS_T_STRING, buf_size, access, subsets}
 
+/**
+ * Create data item for a byte buffer containing arbitrary binary data. In contrast to string
+ * buffers, no null-termination is used.
+ */
 #define TS_ITEM_BYTES(id, name, bytes_buffer_ptr, buf_size, parent_id, access, subsets) \
     {id, parent_id, name, ts_bytes_to_void(bytes_buffer_ptr), TS_T_BYTES, buf_size, access, subsets}
 
+/** Create an executable data object for function calls. */
 #define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
     {id, parent_id, name, ts_function_to_void(void_function_ptr), TS_T_EXEC, 0, access, 0}
 
+/** Create a data object pointing to an ArrayInfo struct. */
 #define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
+/** Create a subset data object for the provided subset flag. */
 #define TS_SUBSET(id, name, subset, parent_id, access) \
     {id, parent_id, name, NULL, TS_T_SUBSET, subset, access, 0}
 
+/** Create a group for hierarchical structuring of the data. */
 #define TS_GROUP(id, name, void_function_cb_ptr, parent_id) \
     {id, parent_id, name, ts_function_to_void(void_function_cb_ptr), TS_T_GROUP, 0, TS_READ_MASK, 0}
 
+/** @cond INTERNAL_HIDDEN */
 /*
  * Deprecated defines for spec v0.3 to maintain compatibility
  */
@@ -321,49 +349,60 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
     TS_GROUP(_id, _name, _callback, _parent) \
     _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
 
+/** @endcond */
+
 /*
  * Defines to make data object definitions more explicit
  */
-#define TS_NO_CALLBACK  NULL
+#define TS_NO_CALLBACK  NULL    /**< No callback assigned to group */
 
 /*
  * Access right macros for data objects
  */
-#define TS_ROLE_USR     (1U << 0)       // normal user
-#define TS_ROLE_EXP     (1U << 1)       // expert user
-#define TS_ROLE_MKR     (1U << 2)       // maker
 
-#define TS_READ_MASK    0x0F          // read flags stored in 4 least-significant bits
-#define TS_WRITE_MASK   0xF0          // write flags stored in 4 most-significant bits
+/** @cond INTERNAL_HIDDEN */
 
-#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR)
-#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP)
-#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR)
+#define TS_ROLE_USR     (1U << 0)       /**< Normal user */
+#define TS_ROLE_EXP     (1U << 1)       /**< Expert user */
+#define TS_ROLE_MKR     (1U << 2)       /**< Maker */
+
+#define TS_READ_MASK    0x0F          /**< Read flags stored in 4 least-significant bits */
+#define TS_WRITE_MASK   0xF0          /**< Write flags stored in 4 most-significant bits */
+
+#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR) /**< Mask for normal user role */
+#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP) /**< Mask for expert user role */
+#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR) /**< Mask for maker role */
 
 #define TS_READ(roles)          ((roles) & TS_READ_MASK)
 #define TS_WRITE(roles)         (((roles) << 4) & TS_WRITE_MASK)
 #define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
 
-#define TS_USR_R        TS_READ(TS_ROLE_USR)
-#define TS_EXP_R        TS_READ(TS_ROLE_EXP)
-#define TS_MKR_R        TS_READ(TS_ROLE_MKR)
-#define TS_ANY_R        (TS_USR_R | TS_EXP_R | TS_MKR_R)
+/** @endcond */
 
-#define TS_USR_W        TS_WRITE(TS_ROLE_USR)
-#define TS_EXP_W        TS_WRITE(TS_ROLE_EXP)
-#define TS_MKR_W        TS_WRITE(TS_ROLE_MKR)
-#define TS_ANY_W        (TS_USR_W | TS_EXP_W | TS_MKR_W)
+#define TS_USR_R        TS_READ(TS_ROLE_USR) /**< Read-only access for normal user */
+#define TS_EXP_R        TS_READ(TS_ROLE_EXP) /**< Read-only access for expert user */
+#define TS_MKR_R        TS_READ(TS_ROLE_MKR) /**< Read-only access for maker */
+#define TS_ANY_R        (TS_USR_R | TS_EXP_R | TS_MKR_R) /**< Read-only access for any user */
 
-#define TS_USR_RW       TS_READ_WRITE(TS_ROLE_USR)
-#define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP)
-#define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR)
-#define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW)
+#define TS_USR_W        TS_WRITE(TS_ROLE_USR) /**< Write-only access for normal user */
+#define TS_EXP_W        TS_WRITE(TS_ROLE_EXP) /**< Write-only access for expert user */
+#define TS_MKR_W        TS_WRITE(TS_ROLE_MKR) /**< Write-only access for maker */
+#define TS_ANY_W        (TS_USR_W | TS_EXP_W | TS_MKR_W) /**< Write-only access for any user */
 
+#define TS_USR_RW       TS_READ_WRITE(TS_ROLE_USR) /**< Read/write access for normal user */
+#define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP) /**< Read/write access for expert user */
+#define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR) /**< Read/write access for maker */
+#define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW) /**< Read/write access for any user */
 
+/** ThingSet data object ID (16-bit) */
 typedef uint16_t ts_object_id_t;
 
-/* support for legacy code with old nomenclature */
+/** @cond INTERNAL_HIDDEN */
+
+/** Support for legacy code with old nomenclature. Node ID is now called Object ID */
 typedef ts_object_id_t ts_node_id_t __attribute__((deprecated));
+
+/** @endcond */
 
 /**
  * ThingSet data object struct.
@@ -420,8 +459,12 @@ struct ts_data_object {
 
 };
 
+/** @cond INTERNAL_HIDDEN */
+
 /* support for legacy code with old nomenclature */
 typedef struct ts_data_object ts_data_node __attribute__((deprecated));
+
+/** @endcond */
 
 /**
  * ThingSet context.
@@ -598,7 +641,7 @@ int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, 
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
  * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param path ID of group or subset object specifying the items to be published
+ * @param id ID of group or subset object specifying the items to be published
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
@@ -654,7 +697,7 @@ int ts_bin_statement_by_path(struct ts_context *ts, uint8_t *buf, size_t buf_siz
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
  * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param path ID of group or subset object specifying the items to be published
+ * @param id ID of group or subset object specifying the items to be published
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
  */
@@ -862,7 +905,7 @@ public:
      * Generate statement (previously known as publication message) in JSON format.
      *
      * @param buf Pointer to the buffer where the publication message should be stored
-     * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
      * @param subset Flag to select which subset of data items should be published
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
@@ -880,7 +923,7 @@ public:
      * Generate statement (previously known as publication message) in CBOR format.
      *
      * @param buf Pointer to the buffer where the publication message should be stored
-     * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+     * @param size Size of the message buffer, i.e. maximum allowed length of the message
      * @param subset Flag to select which subset of data items should be published
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
@@ -888,7 +931,7 @@ public:
     inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)
         __attribute__((deprecated))
     {
-        buf[0] = TS_PUBMSG;
+        buf[0] = TS_STATEMENT;
         int ret = ts_bin_export(&ts, &buf[1], size - 1, subset);
         return (ret > 0) ? 1 + ret : 0;
     };
@@ -899,14 +942,14 @@ public:
      * @param buf Buffer containing pub message and data that should be written to the data objects
      * @param len Length of the data in the buffer
      * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
-     * @param subset Subscribe channel (as bitfield)
+     * @param subsets Subscribe channel (as bitfield)
      *
      * @returns ThingSet status code
      */
-    inline int bin_sub(uint8_t *cbor_data, size_t len, uint8_t auth_flags, uint16_t subsets)
+    inline int bin_sub(uint8_t *buf, size_t len, uint8_t auth_flags, uint16_t subsets)
         __attribute__((deprecated))
     {
-        return ts_bin_import(&ts, cbor_data + 1, len - 1, auth_flags, subsets);
+        return ts_bin_import(&ts, buf + 1, len - 1, auth_flags, subsets);
     };
 
 private:

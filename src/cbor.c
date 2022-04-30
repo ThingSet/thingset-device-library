@@ -669,7 +669,7 @@ int cbor_size(const uint8_t *data)
         return pos;
     }
 #endif
-    else if (type == CBOR_7) {
+    else if (type == CBOR_MISC) {
         switch (data[0]) {
         case CBOR_FALSE:
         case CBOR_TRUE:

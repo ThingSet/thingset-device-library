@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+/** @cond INTERNAL_HIDDEN */
+
 /* ThingSet adaptations to environment */
 #if CONFIG_THINGSET_ZEPHYR
 
@@ -35,12 +37,14 @@ extern "C" {
 
 #endif /* CONFIG_THINGSET_ZEPHYR */
 
+/** @endcond */
+
 /**
  * Internal return type flags for payload data
  */
-#define TS_RET_IDS              (1U << 0)
-#define TS_RET_NAMES            (1U << 1)
-#define TS_RET_VALUES           (1U << 2)
+#define TS_RET_IDS              (1U << 0)       /**< Return type flag: IDs */
+#define TS_RET_NAMES            (1U << 1)       /**< Return type flag: Names */
+#define TS_RET_VALUES           (1U << 2)       /**< Return type flag: Values */
 
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
@@ -59,8 +63,10 @@ int ts_bin_process(struct ts_context *ts);
  * List child data objects (function called without content / parameters)
  *
  * @param ts Pointer to ThingSet context.
+ * @param parent Pointer to the parent data object.
+ * @param ret_type Return type flags (IDs, names and/or values).
  */
-int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent_object, uint32_t ret_type);
+int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type);
 
 /**
  * GET request (binary mode).
@@ -68,6 +74,8 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent_object
  * List child data objects (function called without content)
  *
  * @param ts Pointer to ThingSet context.
+ * @param parent Pointer to the parent data object.
+ * @param ret_type Return type flags (IDs, names and/or values).
  */
 int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type);
 
@@ -77,8 +85,9 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
  * Read data object values (function called with an array as argument)
  *
  * @param ts Pointer to ThingSet context.
+ * @param parent Pointer to the parent data object.
  */
-int ts_txt_fetch(struct ts_context *ts,  const struct ts_data_object *parent);
+int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent);
 
 /**
  * FETCH request (binary mode).
@@ -86,6 +95,9 @@ int ts_txt_fetch(struct ts_context *ts,  const struct ts_data_object *parent);
  * Read data object values (function called with an array as argument)
  *
  * @param ts Pointer to ThingSet context.
+ * @param parent Pointer to the parent data object.
+ * @param ret_type Return type flags (IDs, names and/or values).
+ * @param pos_payload Position of payload in req buffer.
  */
 int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type,
                  unsigned int pos_payload);
@@ -96,6 +108,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
  * Write data object values in text mode (function called with a map as argument)
  *
  * @param ts Pointer to ThingSet context.
+ * @param parent Pointer to the parent data object.
  */
 int ts_txt_patch(struct ts_context *ts,  const struct ts_data_object *parent);
 
@@ -120,15 +133,19 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
  * POST request to append data.
  *
  * @param ts Pointer to ThingSet context.
+ * @param endpoint Pointer to subset object where a new value shall be created.
  */
-int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object);
+int ts_txt_create(struct ts_context *ts, const struct ts_data_object *endpoint);
 
 /**
  * DELETE request to delete data from object.
  *
  * @param ts Pointer to ThingSet context.
+ * @param endpoint Pointer to subset object from which a value shall be deleted.
+ *
+ * @returns Length of response message in buffer or 0 in case of error.
  */
-int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object);
+int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *endpoint);
 
 /**
  * Execute command in text mode.
@@ -136,25 +153,31 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object);
  * Function called with a single data object name as argument.
  *
  * @param ts Pointer to ThingSet context.
+ * @param endpoint Pointer to executable object which shall be called.
+ *
+ * @returns Length of response message in buffer or 0 in case of error.
  */
-int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object);
+int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *endpoint);
 
 /**
  * Execute command in binary mode (function called with a single data object name/id as argument).
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to executable object
+ * @param endpoint Pointer to executable object which shall be called.
  * @param pos_payload Position of payload in req buffer
+ *
+ * @returns Length of response message in buffer or 0 in case of error.
  */
-int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
+int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *endpoint,
                 unsigned int pos_payload);
 
 /**
  * Fill the resp buffer with a JSON response status message.
  *
  * @param ts Pointer to ThingSet context.
- * @param code Status code
- * @returns length of status message in buffer or 0 in case of error
+ * @param code Numeric status code.
+ *
+ * @returns Length of status message in buffer or 0 in case of error.
  */
 int ts_txt_response(struct ts_context *ts, int code);
 
@@ -162,8 +185,9 @@ int ts_txt_response(struct ts_context *ts, int code);
  * Fill the resp buffer with a CBOR response status message.
  *
  * @param ts Pointer to ThingSet context.
- * @param code Status code
- * @returns length of status message in buffer or 0 in case of error
+ * @param code Numeric status code.
+ *
+ * @returns Length of status message in buffer or 0 in case of error.
  */
 int ts_bin_response(struct ts_context *ts, uint8_t code);
 
@@ -171,11 +195,11 @@ int ts_bin_response(struct ts_context *ts, uint8_t code);
  * Serialize a object value into a JSON string.
  *
  * @param ts Pointer to ThingSet context.
- * @param buf Pointer to the buffer where the JSON value should be stored
- * @param size Size of the buffer, i.e. maximum allowed length of the value
- * @param object Pointer to object which should be serialized
+ * @param buf Pointer to the buffer where the JSON value should be stored.
+ * @param size Size of the buffer, i.e. maximum allowed length of the value.
+ * @param object Pointer to object which should be serialized.
  *
- * @returns Length of data written to buffer or 0 in case of error
+ * @returns Length of data written to buffer or 0 in case of error.
  */
 int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
                             const struct ts_data_object *object);
@@ -183,7 +207,14 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
 /**
  * Serialize object name and value as JSON object.
  *
- * same as ts_priv_json_serialize_value, just that the object name is also serialized
+ * Same as ts_json_serialize_value, just that the object name is also serialized.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the JSON value should be stored.
+ * @param size Size of the buffer, i.e. maximum allowed length of the value.
+ * @param object Pointer to object which should be serialized.
+ *
+ * @returns Length of data written to buffer or 0 in case of error.
  */
 int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
                                  const struct ts_data_object *object);
@@ -192,12 +223,12 @@ int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
  * Deserialize a object value from a JSON string.
  *
  * @param ts Pointer to ThingSet context.
- * @param buf Pointer to the position of the value in a buffer
- * @param len Length of value in the buffer
- * @param type Type of the JSMN token as identified by the parser
- * @param object Pointer to object where the deserialized value should be stored
+ * @param buf Pointer to the position of the value in a buffer.
+ * @param len Length of value in the buffer.
+ * @param type Type of the JSMN token as identified by the parser.
+ * @param object Pointer to object where the deserialized value should be stored.
  *
- * @returns Number of tokens processed (always 1) or 0 in case of error
+ * @returns Number of tokens processed (always 1) or 0 in case of error.
  */
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
                               const struct ts_data_object *object);

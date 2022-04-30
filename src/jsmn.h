@@ -11,42 +11,40 @@ extern "C" {
 #define JSMN_STRICT
 
 /**
- * JSON type identifier. Basic types are:
- * 	o Object
- * 	o Array
- * 	o String
- * 	o Other primitive: number, boolean (true/false) or null
+ * JSON type identifier.
  */
 typedef enum {
+	/** Undefined type */
 	JSMN_UNDEFINED = 0,
+	/** JSON object */
 	JSMN_OBJECT = 1,
+	/** JSON array */
 	JSMN_ARRAY = 2,
+	/** JSON string */
 	JSMN_STRING = 3,
+	/** JSON primitive value: number, boolean (true/false) or null */
 	JSMN_PRIMITIVE = 4
 } jsmntype_t;
 
 enum jsmnerr {
-	/* Not enough tokens were provided */
+	/** Not enough tokens were provided */
 	JSMN_ERROR_NOMEM = -1,
-	/* Invalid character inside JSON string */
+	/** Invalid character inside JSON string */
 	JSMN_ERROR_INVAL = -2,
-	/* The string is not a full JSON packet, more bytes expected */
+	/** The string is not a full JSON packet, more bytes expected */
 	JSMN_ERROR_PART = -3
 };
 
 /**
  * JSON token description.
- * type		type (object, array, string etc.)
- * start	start position in JSON data string
- * end		end position in JSON data string
  */
 typedef struct {
-	jsmntype_t type;
-	int16_t start;
-	int16_t end;
-	int16_t size;
+	jsmntype_t type;	/**< Type (object, array, string etc.) */
+	int16_t start;		/**< Start position in JSON data string */
+	int16_t end;		/**< End position in JSON data string */
+	int16_t size;		/**< Size of the token (in bytes) */
 #ifdef JSMN_PARENT_LINKS
-	int16_t parent;
+	int16_t parent;		/**< Parent token */
 #endif
 } jsmntok_t;
 
@@ -55,9 +53,9 @@ typedef struct {
  * the string being parsed now and current position in that string
  */
 typedef struct {
-	int16_t pos; /**< offset in the JSON string */
-	int16_t toknext; /**< next token to allocate */
-	int16_t toksuper; /**< superior token node, e.g parent object or array */
+	int16_t pos;      /**< Offset in the JSON string */
+	int16_t toknext;  /**< Next token to allocate */
+	int16_t toksuper; /**< Superior token node, e.g parent object or array */
 } jsmn_parser;
 
 /**

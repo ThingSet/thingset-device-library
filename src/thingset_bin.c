@@ -490,7 +490,7 @@ int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
 int ts_bin_statement(struct ts_context *ts, uint8_t *buf, size_t buf_size,
                      struct ts_data_object *object)
 {
-    buf[0] = TS_PUBMSG;
+    buf[0] = TS_STATEMENT;
     int len = 1;
 
     if (!object || object->parent != 0) {

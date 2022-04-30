@@ -36,4 +36,7 @@
 .vscode
 html
 
+# Zephyr unit-test build files
+build
+
 .thingset-shell-history.txt
