@@ -18,7 +18,7 @@
 
 int ts_txt_response(struct ts_context *ts, int code)
 {
-    size_t pos = 0;
+    int pos = 0;
 
 #if TS_VERBOSE_STATUS_MESSAGES
     const char *msg;
@@ -95,30 +95,30 @@ int ts_txt_response(struct ts_context *ts, int code)
 int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
                             const struct ts_data_object *object)
 {
-    size_t pos = 0;
+    int pos = 0;
     struct ts_array_info *array_info;
     float value;
 
     switch (object->type) {
 #if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu64 ",", *((uint64_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)object->data));
         break;
     case TS_T_INT64:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi64 ",", *((int64_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIi64 ",", *((int64_t *)object->data));
         break;
 #endif
     case TS_T_UINT32:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu32 ",", *((uint32_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIu32 ",", *((uint32_t *)object->data));
         break;
     case TS_T_INT32:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 ",", *((int32_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIi32 ",", *((int32_t *)object->data));
         break;
     case TS_T_UINT16:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIu16 ",", *((uint16_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)object->data));
         break;
     case TS_T_INT16:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi16 ",", *((int16_t *)object->data));
+        pos = snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)object->data));
         break;
     case TS_T_FLOAT32:
         value = *((float *)object->data);
@@ -127,98 +127,97 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             return snprintf(buf, size, "null,");
         }
         else {
-            pos = snprintf(&buf[pos], size - pos, "%.*f,", object->detail, value);
+            pos = snprintf(buf, size, "%.*f,", object->detail, value);
         }
         break;
 #if TS_DECFRAC_TYPE_SUPPORT
     case TS_T_DECFRAC:
-        pos = snprintf(&buf[pos], size - pos, "%" PRIi32 "e%" PRIi16 ",",
+        pos = snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",",
             *((uint32_t *)object->data), object->detail);
         break;
 #endif
     case TS_T_BOOL:
-        pos = snprintf(&buf[pos], size - pos, "%s,",
+        pos = snprintf(buf, size, "%s,",
                 (*((bool *)object->data) == true ? "true" : "false"));
         break;
     case TS_T_EXEC:
-        pos = snprintf(&buf[pos], size - pos, "[");
+        pos = snprintf(buf, size, "[");
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].parent == object->id) {
-                pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
+                pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
             }
         }
         if (pos > 1) {
             pos--; // remove trailing comma
-            pos += snprintf(&buf[pos], size - pos, "],");
+            pos += snprintf(buf + pos, size - pos, "],");
         }
         else {
-            pos = 0;
-            pos = snprintf(&buf[pos], size - pos, "null,");
+            pos = snprintf(buf, size, "null,");
         }
         break;
     case TS_T_STRING:
-        pos = snprintf(&buf[pos], size - pos, "\"%s\",", (char *)object->data);
+        pos = snprintf(buf, size, "\"%s\",", (char *)object->data);
         break;
     case TS_T_SUBSET:
-        pos = snprintf(&buf[pos], size - pos, "[");
+        pos = snprintf(buf, size, "[");
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
 #if TS_NESTED_JSON
                 if (ts->data_objects[i].parent == 0) {
-                    pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
+                    pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
                 }
                 else {
                     struct ts_data_object *parent_obj =
                         ts_get_object_by_id(ts, ts->data_objects[i].parent);
                     if (parent_obj != NULL) {
-                        pos += snprintf(&buf[pos], size - pos, "\"%s/%s\",",
+                        pos += snprintf(buf + pos, size - pos, "\"%s/%s\",",
                                         parent_obj->name, ts->data_objects[i].name);
                     }
                 }
 #else
-                pos += snprintf(&buf[pos], size - pos, "\"%s\",", ts->data_objects[i].name);
+                pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
 #endif
             }
         }
         if (pos > 1) {
             pos--; // remove trailing comma
         }
-        pos += snprintf(&buf[pos], size - pos, "],");
+        pos += snprintf(buf + pos, size - pos, "],");
         break;
     case TS_T_ARRAY:
         array_info = (struct ts_array_info *)object->data;
         if (!array_info) {
             return 0;
         }
-        pos += snprintf(&buf[pos], size - pos, "[");
+        pos += snprintf(buf + pos, size - pos, "[");
         for (int i = 0; i < array_info->num_elements; i++) {
             switch (array_info->type) {
             case TS_T_UINT64:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIu64 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIu64 ",",
                         ((uint64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT64:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIi64 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIi64 ",",
                         ((int64_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT32:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIu32 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIu32 ",",
                         ((uint32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT32:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIi32 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIi32 ",",
                         ((int32_t *)array_info->ptr)[i]);
                 break;
             case TS_T_UINT16:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIu16 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIu16 ",",
                         ((uint16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_INT16:
-                pos += snprintf(&buf[pos], size - pos, "%" PRIi16 ",",
+                pos += snprintf(buf + pos, size - pos, "%" PRIi16 ",",
                         ((int16_t *)array_info->ptr)[i]);
                 break;
             case TS_T_FLOAT32:
-                pos += snprintf(&buf[pos], size - pos, "%.*f,", object->detail,
+                pos += snprintf(buf + pos, size - pos, "%.*f,", object->detail,
                         ((float *)array_info->ptr)[i]);
                 break;
             default:
@@ -228,7 +227,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
         if (array_info->num_elements > 0) {
             pos--; // remove trailing comma
         }
-        pos += snprintf(&buf[pos], size - pos, "],");
+        pos += snprintf(buf + pos, size - pos, "],");
         break;
     }
 
@@ -243,17 +242,17 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
 int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
                                  const struct ts_data_object *object)
 {
-    size_t pos = snprintf(buf, size, "\"%s\":", object->name);
-
-    int len_value = ts_json_serialize_value(ts, &buf[pos], size - pos, object);
-    pos += len_value;
-
-    if (len_value > 0 && pos < size) {
-        return pos;
-    }
-    else {
+    size_t len_name = snprintf(buf, size, "\"%s\":", object->name);
+    if (len_name < 0) {
         return 0;
     }
+
+    int len_value = ts_json_serialize_value(ts, &buf[len_name], size - len_name, object);
+    if (len_value < 0) {
+        return 0;
+    }
+
+    return len_name + len_value;
 }
 
 void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level)
@@ -375,7 +374,7 @@ int ts_txt_process(struct ts_context *ts)
 
 int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
 {
-    size_t pos = 0;
+    int pos = 0;
     int tok = 0;       // current token
 
     ts_object_id_t parent_id = (parent == NULL) ? 0 : parent->id;
@@ -666,7 +665,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
         {
             if (include_values) {
                 if (ts->data_objects[i].type == TS_T_GROUP) {
-                    // bad request, as we can't read nternal path object's values
+                    // bad request, as we can't read internal path object's values
                     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
                 }
                 int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len],
