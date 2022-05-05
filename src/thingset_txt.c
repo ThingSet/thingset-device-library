@@ -192,6 +192,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
         pos += snprintf(buf + pos, size - pos, "[");
         for (int i = 0; i < array_info->num_elements; i++) {
             switch (array_info->type) {
+#if TS_64BIT_TYPES_SUPPORT
             case TS_T_UINT64:
                 pos += snprintf(buf + pos, size - pos, "%" PRIu64 ",",
                         ((uint64_t *)array_info->ptr)[i]);
@@ -200,6 +201,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
                 pos += snprintf(buf + pos, size - pos, "%" PRIi64 ",",
                         ((int64_t *)array_info->ptr)[i]);
                 break;
+#endif
             case TS_T_UINT32:
                 pos += snprintf(buf + pos, size - pos, "%" PRIu32 ",",
                         ((uint32_t *)array_info->ptr)[i]);
