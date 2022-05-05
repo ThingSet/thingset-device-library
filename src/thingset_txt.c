@@ -467,12 +467,14 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             *((int32_t*)object->data) = (int32_t)tmp;
             break;
 #endif
+#if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             *((uint64_t*)object->data) = strtoull(buf, NULL, 0);
             break;
         case TS_T_INT64:
             *((int64_t*)object->data) = strtoll(buf, NULL, 0);
             break;
+#endif
         case TS_T_UINT32:
             *((uint32_t*)object->data) = strtoul(buf, NULL, 0);
             break;
