@@ -238,6 +238,10 @@ int ts_bin_process(struct ts_context *ts)
         endpoint = ts_get_object_by_path(ts, str_start, str_len);
         ret_type = TS_RET_NAMES;
     }
+    else if (ts->req[pos] == TS_ID_PATH) {
+        ret_type = TS_RET_PATHS;
+        pos++;
+    }
     else if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
         ts_object_id_t id = 0;
         pos += cbor_deserialize_uint16(&ts->req[pos], &id);
@@ -326,8 +330,30 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
             return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
 
-        num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
-            data_obj);
+        if (ret_type & TS_RET_PATHS) {
+            char temp[30];
+            int pos_path = 0;
+            if (data_obj->parent == 0) {
+                pos_path = snprintf(temp, sizeof(temp), "%s", data_obj->name);
+            }
+            else {
+                struct ts_data_object *parent_obj = ts_get_object_by_id(ts, data_obj->parent);
+                if (parent_obj != NULL) {
+                    pos_path =
+                        snprintf(temp, sizeof(temp), "%s/%s", parent_obj->name, data_obj->name);
+                }
+            }
+            if (pos_path == 0) {
+                return ts_bin_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
+            }
+
+            num_bytes = cbor_serialize_string(&ts->resp[pos_resp], temp, ts->resp_size - pos_resp);
+        }
+        else {
+            num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
+                data_obj);
+        }
+
         if (num_bytes == 0) {
             return ts_bin_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
         }
@@ -624,38 +650,6 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
 
     return msg_len;
 }
-
-/*
-int ThingSet::name_cbor(void)
-{
-    ts->resp[0] = TS_OBJ_NAME + 0x80;    // Function ID
-    int data_obj_id = _req[1] + ((int)_req[2] << 8);
-
-    for (unsigned int i = 0; i < sizeof(ts->data_objects)/sizeof(DataObject); i++) {
-        if (ts->data_objects[i].id == data_obj_id) {
-            if (ts->data_objects[i].access & ACCESS_READ) {
-                ts->resp[1] = T_STRING;
-                int len = strlen(ts->data_objects[i].name);
-                for (int j = 0; j < len; j++) {
-                    ts->resp[j+2] = *(ts->data_objects[i].name + j);
-                }
-                #if DEBUG
-                serial.printf("Get Data Object Name: %s (id = %d)\n", ts->data_objects[i].name, data_obj_id);
-                #endif
-                return len + 2;
-            }
-            else {
-                ts->resp[1] = TS_STATUS_UNAUTHORIZED;
-                return 2;   // length of response
-            }
-        }
-    }
-
-    // data object not found --> send error message
-    ts->resp[1] = TS_STATUS_DATA_UNKNOWN;
-    return 2;   // length of response
-}
-*/
 
 int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type)
 {
