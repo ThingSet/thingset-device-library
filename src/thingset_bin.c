@@ -236,16 +236,13 @@ int ts_bin_process(struct ts_context *ts)
         uint16_t str_len;
         pos += cbor_deserialize_string_zero_copy(&ts->req[pos], &str_start, &str_len);
         endpoint = ts_get_object_by_path(ts, str_start, str_len);
-        ret_type |= TS_RET_NAMES;
+        ret_type = TS_RET_NAMES;
     }
     else if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
         ts_object_id_t id = 0;
         pos += cbor_deserialize_uint16(&ts->req[pos], &id);
         endpoint = ts_get_object_by_id(ts, id);
-        ret_type |= TS_RET_IDS;
-    }
-    else if (ts->req[pos] == CBOR_UNDEFINED) {
-        pos++;
+        ret_type = TS_RET_IDS;
     }
     else {
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
@@ -258,7 +255,8 @@ int ts_bin_process(struct ts_context *ts)
     }
     else if (ts->req[0] == TS_FETCH) {
         if (ts->req[pos] != CBOR_UNDEFINED) {
-            ret_type = TS_RET_VALUES;
+            // undefined is used to discover child nodes, otherwise values are requested
+            ret_type |= TS_RET_VALUES;
         }
         return ts_bin_fetch(ts, endpoint, ret_type, pos);
     }
