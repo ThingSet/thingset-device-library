@@ -307,7 +307,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
             ts->resp_size - pos_resp);
     }
 
-    while (pos_req + 1 < ts->req_len && element < num_elements) {
+    while (pos_req < ts->req_len && element < num_elements) {
 
         size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
 
