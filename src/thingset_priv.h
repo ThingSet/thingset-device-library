@@ -45,6 +45,7 @@ extern "C" {
 #define TS_RET_IDS              (1U << 0)       /**< Return type flag: IDs */
 #define TS_RET_NAMES            (1U << 1)       /**< Return type flag: Names */
 #define TS_RET_VALUES           (1U << 2)       /**< Return type flag: Values */
+#define TS_RET_PATHS            (1U << 3)       /**< Return type flag: Paths */
 
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch

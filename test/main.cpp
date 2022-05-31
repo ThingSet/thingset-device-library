@@ -134,6 +134,9 @@ void tests_binary_mode()
     // update notification
     RUN_TEST(test_bin_update_callback),
 
+    // request paths from IDs
+    RUN_TEST(test_bin_fetch_paths),
+
     UNITY_END();
 }
 
