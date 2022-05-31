@@ -64,10 +64,10 @@ int ts_bin_process(struct ts_context *ts);
  * List child data objects (function called without content / parameters)
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to the parent data object.
+ * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
  */
-int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type);
+int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type);
 
 /**
  * GET request (binary mode).
@@ -75,10 +75,10 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
  * List child data objects (function called without content)
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to the parent data object.
+ * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
  */
-int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type);
+int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type);
 
 /**
  * FETCH request (text mode).
@@ -86,9 +86,9 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
  * Read data object values (function called with an array as argument)
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to the parent data object.
+ * @param endpoint Pointer to the endpoint data object.
  */
-int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent);
+int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint);
 
 /**
  * FETCH request (binary mode).
@@ -96,11 +96,11 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent);
  * Read data object values (function called with an array as argument)
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to the parent data object.
+ * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
  * @param pos_payload Position of payload in req buffer.
  */
-int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type,
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
                  unsigned int pos_payload);
 
 /**
@@ -109,9 +109,9 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
  * Write data object values in text mode (function called with a map as argument)
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to the parent data object.
+ * @param endpoint Pointer to the endpoint data object.
  */
-int ts_txt_patch(struct ts_context *ts,  const struct ts_data_object *parent);
+int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint);
 
 /**
  * PATCH request (binary mode).
@@ -122,12 +122,12 @@ int ts_txt_patch(struct ts_context *ts,  const struct ts_data_object *parent);
  * error is raised.
  *
  * @param ts Pointer to ThingSet context.
- * @param parent Pointer to path / parent object or NULL to consider any object
+ * @param endpoint Pointer to endpoint object or NULL to consider any object
  * @param pos_payload Position of payload in req buffer
  * @param auth_flags Bitset to specify authentication status for different roles
  * @param subsets Bitset to specifiy data item subsets to be considered, 0 to ignore
  */
-int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
+int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
                  unsigned int pos_payload, uint8_t auth_flags, uint16_t subsets);
 
 /**

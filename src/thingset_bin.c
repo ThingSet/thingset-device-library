@@ -282,9 +282,9 @@ int ts_bin_process(struct ts_context *ts)
 }
 
 /*
-* @warning The parent object is currently still ignored. Any found data object is fetched.
+* @warning The endpoint object is currently still ignored. Any found data object is fetched.
 */
-int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type,
+int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
                  unsigned int pos_payload)
 {
     unsigned int pos_req = pos_payload;
@@ -292,7 +292,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *parent, uin
     uint16_t num_elements, element = 0;
 
     if (!(ret_type & TS_RET_VALUES)) {
-        return ts_bin_get(ts, parent, ret_type);
+        return ts_bin_get(ts, endpoint, ret_type);
     }
 
     pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
@@ -381,7 +381,7 @@ int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint8_t auth
     return ts->resp[0];
 }
 
-int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
+int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
                  unsigned int pos_payload, uint8_t auth_flags, uint16_t subsets)
 {
     unsigned int pos_req = pos_payload;
@@ -418,7 +418,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *parent,
                     return ts_bin_response(ts, TS_STATUS_FORBIDDEN);
                 }
             }
-            else if (parent && object->parent != parent->id) {
+            else if (endpoint && object->parent != endpoint->id) {
                 return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
             }
             else if (subsets && !(object->subsets & subsets)) {
@@ -651,13 +651,13 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
     return msg_len;
 }
 
-int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type)
+int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type)
 {
     unsigned int len = 0;       // current length of response
     len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
-    if (parent->type != TS_T_GROUP) {
-        len += cbor_serialize_data_obj(&ts->resp[len], ts->resp_size - len, parent);
+    if (endpoint->type != TS_T_GROUP) {
+        len += cbor_serialize_data_obj(&ts->resp[len], ts->resp_size - len, endpoint);
         return len;
     }
 
@@ -665,7 +665,7 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
     int num_elements = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].access & TS_READ_MASK
-            && (ts->data_objects[i].parent == parent->id))
+            && (ts->data_objects[i].parent == endpoint->id))
         {
             num_elements++;
         }
@@ -680,7 +680,7 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].access & TS_READ_MASK
-            && (ts->data_objects[i].parent == parent->id))
+            && (ts->data_objects[i].parent == endpoint->id))
         {
             int num_bytes = 0;
             if (ret_type & TS_RET_IDS) {

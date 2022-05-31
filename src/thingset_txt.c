@@ -374,12 +374,12 @@ int ts_txt_process(struct ts_context *ts)
     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
+int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
 {
     int pos = 0;
     int tok = 0;       // current token
 
-    ts_object_id_t parent_id = (parent == NULL) ? 0 : parent->id;
+    ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
 
     // initialize response with success message
     pos += ts_txt_response(ts, TS_STATUS_CONTENT);
@@ -399,7 +399,7 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *parent)
 
         const struct ts_data_object *object = ts_get_object_by_name(ts,
             ts->json_str + ts->tokens[tok].start,
-            ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
+            ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         if (object == NULL) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -516,7 +516,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
     return 1;   // value always contained in one token (arrays not yet supported)
 }
 
-int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
+int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
 {
     int tok = 0;       // current token
     bool updated = false;
@@ -525,7 +525,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
     char value_buf[21];
     size_t value_len;   // length of value in buffer
 
-    ts_object_id_t parent_id = (parent == NULL) ? 0 : parent->id;
+    ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
 
     if (ts->tok_count < 2) {
         if (ts->tok_count == JSMN_ERROR_NOMEM) {
@@ -549,7 +549,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
 
         const struct ts_data_object* object = ts_get_object_by_name(ts,
             ts->json_str + ts->tokens[tok].start,
-            ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
+            ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         if (object == NULL) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -611,7 +611,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
 
         const struct ts_data_object *object =
             ts_get_object_by_name(ts, ts->json_str + ts->tokens[tok].start,
-                ts->tokens[tok].end - ts->tokens[tok].start, parent_id);
+                ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         tok++;
 
@@ -637,26 +637,26 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *parent)
     return ts_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint32_t ret_type)
+int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type)
 {
     bool include_values = (ret_type & TS_RET_VALUES);
 
     // initialize response with success message
     size_t len = ts_txt_response(ts, TS_STATUS_CONTENT);
 
-    ts_object_id_t parent_id = (parent == NULL) ? 0 : parent->id;
+    ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
 
-    if (parent != NULL && parent->type != TS_T_GROUP &&
-        parent->type != TS_T_EXEC)
+    if (endpoint != NULL && endpoint->type != TS_T_GROUP &&
+        endpoint->type != TS_T_EXEC)
     {
         // get value of data object
         ts->resp[len++] = ' ';
-        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, parent);
+        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, endpoint);
         ts->resp[--len] = '\0';     // remove trailing comma again
         return len;
     }
 
-    if (parent != NULL && parent->type == TS_T_EXEC && include_values) {
+    if (endpoint != NULL && endpoint->type == TS_T_EXEC && include_values) {
         // bad request, as we can't read exec object's values
         return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
@@ -665,7 +665,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *parent, uint3
     int objects_found = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if ((ts->data_objects[i].access & TS_READ_MASK) &&
-            (ts->data_objects[i].parent == parent_id))
+            (ts->data_objects[i].parent == endpoint_id))
         {
             if (include_values) {
                 if (ts->data_objects[i].type == TS_T_GROUP) {
