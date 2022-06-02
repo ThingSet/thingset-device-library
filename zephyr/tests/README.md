@@ -1,15 +1,12 @@
-Unit testing for the ThingSet device Library
-############################################
+# ThingSet library unit testing with Zephyr
 
 The tests are implemented using the ztest environment integrated in Zephyr.
 The tests are run on the "native-std" board using the host environment for build.
 
-Run the tests using west to build:
+Run the tests using west:
 
     cd <root of thingset-device-library>
-    west build zephyr/tests
-    cd build
-    ./zephyr/zephyr.elf
+    west build -t run zephyr/tests
 
 Run the tests using CMake to build:
 
