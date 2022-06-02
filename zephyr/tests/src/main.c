@@ -83,6 +83,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_fetch_multiple_objects, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_rounded_float, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_by_name, setup, teardown),
         /* Bin mode: POST request */
         ztest_unit_test_setup_teardown(test_bin_exec, setup, teardown),
         /* Bin mode: pub/sub messages */

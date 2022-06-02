@@ -107,6 +107,7 @@ void tests_binary_mode()
     RUN_TEST(test_bin_fetch_multiple_objects);
     RUN_TEST(test_bin_fetch_float_array);
     RUN_TEST(test_bin_fetch_rounded_float);
+    RUN_TEST(test_bin_fetch_by_name);
 
     // POST request
     RUN_TEST(test_bin_exec);

@@ -313,16 +313,18 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
 
     while (pos_req < ts->req_len && element < num_elements) {
 
-        size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
-
-        ts_object_id_t id;
-        num_bytes = cbor_deserialize_uint16(&ts->req[pos_req], &id);
-        if (num_bytes == 0) {
-            return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
+        const struct ts_data_object* data_obj = NULL;
+        if ((ts->req[pos_req] & CBOR_TYPE_MASK) == CBOR_TEXT) {
+            char *str_start = "";
+            uint16_t str_len;
+            pos_req += cbor_deserialize_string_zero_copy(&ts->req[pos_req], &str_start, &str_len);
+            data_obj = ts_get_object_by_name(ts, str_start, str_len, endpoint ? endpoint->id : 0);
         }
-        pos_req += num_bytes;
-
-        const struct ts_data_object* data_obj = ts_get_object_by_id(ts, id);
+        else {
+            ts_object_id_t id = 0;
+            pos_req += cbor_deserialize_uint16(&ts->req[pos_req], &id);
+            data_obj = ts_get_object_by_id(ts, id);
+        }
         if (data_obj == NULL) {
             return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
         }
@@ -330,6 +332,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
             return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
 
+        size_t num_bytes = 0; // temporary storage of cbor data length in response
         if (ret_type & TS_RET_PATHS) {
             char path[30];
             if (ts_get_path(ts, path, sizeof(path), data_obj) <= 0) {
