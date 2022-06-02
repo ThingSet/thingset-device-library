@@ -187,6 +187,7 @@ void test_bin_export(void);
 void test_bin_import(void);
 void test_bin_update_callback(void);
 void test_bin_fetch_paths(void);
+void test_bin_fetch_ids(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

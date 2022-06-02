@@ -46,6 +46,7 @@ extern "C" {
 #define TS_RET_NAMES            (1U << 1)       /**< Return type flag: Names */
 #define TS_RET_VALUES           (1U << 2)       /**< Return type flag: Values */
 #define TS_RET_PATHS            (1U << 3)       /**< Return type flag: Paths */
+#define TS_RET_DISCOVERY        (1U << 4)       /**< Return type flag: Discovery */
 
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
@@ -96,7 +97,8 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint);
  * Read data object values (function called with an array as argument)
  *
  * @param ts Pointer to ThingSet context.
- * @param endpoint Pointer to the endpoint data object.
+ * @param endpoint Pointer to the endpoint data object or NULL for root and special endpoints
+ *                 0x16 ("_ids") and 0x17 ("_paths") as they don't actually exist in the database.
  * @param ret_type Return type flags (IDs, names and/or values).
  * @param pos_payload Position of payload in req buffer.
  */

@@ -483,14 +483,14 @@ void test_bin_update_callback(void)
 
 void test_bin_fetch_paths(void)
 {
-    const uint8_t req[] = {
-        TS_FETCH,
-        0x17,
-        0x83,
-            0x18, 0x71,
-            0x10,
-            ID_INFO,
-    };
+    const char req[] =
+        "05 "       // FETCH
+        "17 "       // _paths
+        "83 "       // array with 3 elements
+        "18 71 "    // uint 0x71
+        "10 "       // uint 0x10
+        "01 ";      // uint 0x01 (ID_INFO)
+
     const char resp_expected[] =
         "85 "                               // status: content
         "83 "                               // array with 3 elements
@@ -498,5 +498,25 @@ void test_bin_fetch_paths(void)
         "63 74 5F 73 "                      // string "t_s"
         "64 69 6E 66 6F ";                  // string "info"
 
-    TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_expected);
+    TEST_ASSERT_BIN_REQ_HEX(req, resp_expected);
+}
+
+void test_bin_fetch_ids(void)
+{
+    const char req[] =
+        "05 "                               // FETCH
+        "16 "                               // _ids
+        "83 "                               // array with 3 elements
+        "6A 6D 65 61 73 2F 42 61 74 5F 56 " // string "meas/Bat_V"
+        "63 74 5F 73 "                      // string "t_s"
+        "64 69 6E 66 6F ";                  // string "info"
+
+    const char resp_expected[] =
+        "85 "       // status: content
+        "83 "       // array with 3 elements
+        "18 71 "    // uint 0x71
+        "10 "       // uint 0x10
+        "01 ";      // uint 0x01 (ID_INFO)
+
+    TEST_ASSERT_BIN_REQ_HEX(req, resp_expected);
 }
