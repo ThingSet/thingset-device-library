@@ -65,7 +65,8 @@ extern "C" {
  */
 #define TS_ID_ROOT              0x00 /**< Data Object ID for root element */
 #define TS_ID_TIME              0x10 /**< Data Object ID for timestamp (t_s) */
-#define TS_ID_PATH              0x17 /**< Data Object ID to determine path from ID (_path) */
+#define TS_ID_IDS               0x16 /**< Data Object ID to determine IDs from paths (_ids) */
+#define TS_ID_PATHS             0x17 /**< Data Object ID to determine paths from IDs (_paths) */
 #define TS_ID_METADATAURL       0x18 /**< Data Object ID for Metadata URL (cMetadataURL) */
 #define TS_ID_NODEID            0x1D /**< Data Object ID for node ID (cNodeID) */
 

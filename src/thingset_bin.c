@@ -238,8 +238,12 @@ int ts_bin_process(struct ts_context *ts)
         endpoint = ts_get_object_by_path(ts, str_start, str_len);
         ret_type = TS_RET_NAMES;
     }
-    else if (ts->req[pos] == TS_ID_PATH) {
-        ret_type = TS_RET_PATHS;
+    else if (ts->req[pos] == TS_ID_IDS) {
+        ret_type = TS_RET_DISCOVERY | TS_RET_IDS;
+        pos++;
+    }
+    else if (ts->req[pos] == TS_ID_PATHS) {
+        ret_type = TS_RET_DISCOVERY | TS_RET_PATHS;
         pos++;
     }
     else if ((ts->req[pos] & CBOR_TYPE_MASK) == CBOR_UINT) {
@@ -318,7 +322,14 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
             char *str_start = "";
             uint16_t str_len;
             pos_req += cbor_deserialize_string_zero_copy(&ts->req[pos_req], &str_start, &str_len);
-            data_obj = ts_get_object_by_name(ts, str_start, str_len, endpoint ? endpoint->id : 0);
+            if (ret_type & TS_RET_DISCOVERY) {
+                // discovery of ID from path, so the string contains entire path and not only name
+                data_obj = ts_get_object_by_path(ts, str_start, str_len);
+            }
+            else {
+                data_obj =
+                    ts_get_object_by_name(ts, str_start, str_len, endpoint ? endpoint->id : 0);
+            }
         }
         else {
             ts_object_id_t id = 0;
@@ -333,7 +344,13 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
         }
 
         size_t num_bytes = 0; // temporary storage of cbor data length in response
-        if (ret_type & TS_RET_PATHS) {
+        if ((ret_type & TS_RET_DISCOVERY) == 0) {
+            // "normal" request to fetch values
+            num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
+                data_obj);
+        }
+        else if (ret_type & TS_RET_PATHS) {
+            // request to determine paths from IDs
             char path[30];
             if (ts_get_path(ts, path, sizeof(path), data_obj) <= 0) {
                 return ts_bin_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
@@ -341,9 +358,10 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
 
             num_bytes = cbor_serialize_string(&ts->resp[pos_resp], path, ts->resp_size - pos_resp);
         }
-        else {
-            num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
-                data_obj);
+        else if (ret_type & TS_RET_IDS) {
+            // request to determine IDs from paths
+            num_bytes =
+                cbor_serialize_uint(&ts->resp[pos_resp], data_obj->id, ts->resp_size - pos_resp);
         }
 
         if (num_bytes == 0) {

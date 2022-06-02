@@ -133,10 +133,11 @@ void tests_binary_mode()
     RUN_TEST(test_bin_import);
 
     // update notification
-    RUN_TEST(test_bin_update_callback),
+    RUN_TEST(test_bin_update_callback);
 
-    // request paths from IDs
-    RUN_TEST(test_bin_fetch_paths),
+    // request paths by IDs and vice versa
+    RUN_TEST(test_bin_fetch_paths);
+    RUN_TEST(test_bin_fetch_ids);
 
     UNITY_END();
 }

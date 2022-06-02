@@ -104,8 +104,9 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_import, setup, teardown),
         /* Bin mode: update notification */
         ztest_unit_test_setup_teardown(test_bin_update_callback, setup, teardown),
-        /* Bin mode: request path from IDs */
-        ztest_unit_test_setup_teardown(test_bin_fetch_paths, setup, teardown)
+        /* Bin mode: request paths by IDs and vice versa */
+        ztest_unit_test_setup_teardown(test_bin_fetch_paths, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_ids, setup, teardown)
     );
 
     ztest_run_test_suite(thingset_tests);
