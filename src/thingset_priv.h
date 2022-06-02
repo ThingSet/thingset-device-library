@@ -234,6 +234,20 @@ int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
                               const struct ts_data_object *object);
 
+/**
+ * Write the path of an object into a buffer.
+ *
+ * This function supports a maximum depth of 2 only (e.g. Meas/Bat_V).
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the JSON value should be stored.
+ * @param size Size of the buffer, i.e. maximum allowed length of the value.
+ * @param object Pointer to object which should be serialized.
+ *
+ * @returns Length of the string written to the buffer or value <= 0 in case of error.
+ */
+int ts_get_path(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *object);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

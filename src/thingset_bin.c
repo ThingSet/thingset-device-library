@@ -331,23 +331,12 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
         }
 
         if (ret_type & TS_RET_PATHS) {
-            char temp[30];
-            int pos_path = 0;
-            if (data_obj->parent == 0) {
-                pos_path = snprintf(temp, sizeof(temp), "%s", data_obj->name);
-            }
-            else {
-                struct ts_data_object *parent_obj = ts_get_object_by_id(ts, data_obj->parent);
-                if (parent_obj != NULL) {
-                    pos_path =
-                        snprintf(temp, sizeof(temp), "%s/%s", parent_obj->name, data_obj->name);
-                }
-            }
-            if (pos_path == 0) {
+            char path[30];
+            if (ts_get_path(ts, path, sizeof(path), data_obj) <= 0) {
                 return ts_bin_response(ts, TS_STATUS_INTERNAL_SERVER_ERR);
             }
 
-            num_bytes = cbor_serialize_string(&ts->resp[pos_resp], temp, ts->resp_size - pos_resp);
+            num_bytes = cbor_serialize_string(&ts->resp[pos_resp], path, ts->resp_size - pos_resp);
         }
         else {
             num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
