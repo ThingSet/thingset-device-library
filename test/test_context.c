@@ -105,13 +105,14 @@ static int _bin2hex(char *hex, size_t hex_size, const uint8_t *bin, size_t bin_s
 void assert_bin_resp(const uint8_t *resp_buf, int resp_len, const char *exp_hex, const char *msg)
 {
     char resp_hex[100];
-    uint8_t exp_b[100];
+    uint8_t exp_buf[100];
 
-    int exp_len = _hex2bin(exp_b, sizeof(exp_b), exp_hex);
+    int exp_len = _hex2bin(exp_buf, sizeof(exp_buf), exp_hex);
     (void)_bin2hex(resp_hex, sizeof(resp_hex), resp_buf, resp_len);
 
+    TEST_ASSERT_EQUAL_HEX8_MESSAGE(exp_buf[0], resp_buf[0], msg);
     TEST_ASSERT_EQUAL_MESSAGE(exp_len, resp_len, msg);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(exp_b, resp_buf, resp_len, msg);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(exp_buf, resp_buf, resp_len, msg);
 }
 
 void assert_bin_req(const uint8_t *req_b, int req_len, const char *exp_hex, const char* msg)
