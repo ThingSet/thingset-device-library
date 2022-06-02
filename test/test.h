@@ -173,6 +173,7 @@ void test_bin_patch_float_array(void);
 void test_bin_fetch_float_array(void);
 void test_bin_patch_rounded_float(void);
 void test_bin_fetch_rounded_float(void);
+void test_bin_fetch_by_name(void);
 void test_bin_statement_subset(void);
 void test_bin_statement_group(void);
 void test_bin_pub_can(void);

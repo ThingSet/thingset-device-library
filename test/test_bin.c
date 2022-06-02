@@ -132,6 +132,23 @@ void test_bin_fetch_multiple_objects(void)
     TEST_ASSERT_BIN_REQ_HEX(req_hex, resp_hex);
 }
 
+void test_bin_fetch_by_name(void)
+{
+    char req_hex[] =
+        "05 "
+        "64 6D 65 61 73 "       // "meas"
+        "82 "                   // array with 2 elements
+        "65 42 61 74 5F 56 "    // "Bat_V"
+        "65 42 61 74 5F 41 ";   // "Bat_A"
+
+    const char resp_hex[] =
+        "85 82 "                // successful response: array with 2 elements
+        "FA 41 61 99 9A "       // 14.1
+        "FA 40 A4 28 F6 ";      // 5.13
+
+    TEST_ASSERT_BIN_REQ_HEX(req_hex, resp_hex);
+}
+
 void test_bin_patch_float_array(void)
 {
     float *arr = (float *)float32_array.ptr;
