@@ -350,6 +350,53 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_RECORD_ITEM_FLOAT(parent_id, id, name, struct_type, struct_member, digits) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
 
+#ifdef __ZEPHYR__
+
+/*
+ * Below macros can be used to populate the data objects array from multiple independent files
+ * using the iterable sections feature provided by Zephyr.
+ *
+ * See also: https://docs.zephyrproject.org/latest/kernel/iterable_sections/index.html
+ *
+ * Example code to add a a data item:
+ * TS_ADD_ITEM_STRING(0x1D, "cNodeID", node_id, sizeof(node_id), ID_ROOT, TS_ANY_R, SUBSET_NVM);
+ *
+ * Content of required linker file thingset_iterables.ld:
+ * ITERABLE_SECTION_RAM(ts_data_object, 4)
+ *
+ * Required line in CMakeLists.txt:
+ * zephyr_linker_sources(DATA_SECTIONS thingset_iterables.ld)
+ *
+ * Initialization ThingSet context with auto-generated data objects array in RAM:
+ * extern struct ts_data_object _ts_data_object_list_start[];
+ * extern struct ts_data_object _ts_data_object_list_end[];
+ * ts_init(&ts, _ts_data_object_list_start, _ts_data_object_list_end - _ts_data_object_list_start);
+ */
+
+/** @cond INTERNAL_HIDDEN */
+#define _TS_ADD_ITERABLE(type, id, ...) \
+        STRUCT_SECTION_ITERABLE(ts_data_object, _CONCAT(obj_, id)) = \
+            _CONCAT(TS_, type) (id, __VA_ARGS__)
+/** @endcond */
+
+#define TS_ADD_ITEM_BOOL(id, ...)       _TS_ADD_ITERABLE(ITEM_BOOL, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT64(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT64, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT64(id, ...)      _TS_ADD_ITERABLE(ITEM_INT64, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT32(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT32, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT32(id, ...)      _TS_ADD_ITERABLE(ITEM_INT32, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT16(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT16, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT16(id, ...)      _TS_ADD_ITERABLE(ITEM_INT16, id, __VA_ARGS__)
+#define TS_ADD_ITEM_FLOAT(id, ...)      _TS_ADD_ITERABLE(ITEM_FLOAT, id, __VA_ARGS__)
+#define TS_ADD_ITEM_DECFRAC(id, ...)    _TS_ADD_ITERABLE(ITEM_DECFRAC, id, __VA_ARGS__)
+#define TS_ADD_ITEM_STRING(id, ...)     _TS_ADD_ITERABLE(ITEM_STRING, id, __VA_ARGS__)
+#define TS_ADD_ITEM_BYTES(id, ...)      _TS_ADD_ITERABLE(ITEM_BYTES, id, __VA_ARGS__)
+#define TS_ADD_FUNCTION(id, ...)        _TS_ADD_ITERABLE(FUNCTION, id, __VA_ARGS__)
+#define TS_ADD_ITEM_ARRAY(id, ...)      _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
+#define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
+#define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
+
+#endif /* __ZEPHYR__ */
+
 /** @cond INTERNAL_HIDDEN */
 /*
  * Deprecated defines for spec v0.3 to maintain compatibility
