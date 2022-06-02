@@ -135,3 +135,28 @@ struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *
     }
     return NULL;
 }
+
+int ts_get_path(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *obj)
+{
+    int pos = 0;
+    if (obj->parent == 0) {
+        pos = snprintf(buf, size, "%s", obj->name);
+    }
+    else {
+        struct ts_data_object *parent_obj = ts_get_object_by_id(ts, obj->parent);
+        if (parent_obj != NULL) {
+            pos = snprintf(buf, size, "%s/%s", parent_obj->name, obj->name);
+        }
+        else {
+            return 0;
+        }
+    }
+
+    if (pos < size) {
+        return pos;
+    }
+    else {
+        // path did not fit into the buffer
+        return 0;
+    }
+}
