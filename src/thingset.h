@@ -176,12 +176,14 @@ struct ts_bytes_buffer {
 /**
  * Data structure to specify an array data object
  */
-struct ts_array_info {
-    void *ptr;                  /**< Pointer to the array */
+struct ts_array {
+    void *elements;             /**< Pointer to the first element of the array */
     uint16_t max_elements;      /**< Maximum number of elements in the array */
     uint16_t num_elements;      /**< Actual number of elements in the array */
     uint8_t type;               /**< Type of the array elements */
 };
+
+#define ts_array_info ts_array __attribute__((deprecated))
 
 /** @cond INTERNAL_HIDDEN */
 /*
@@ -201,7 +203,7 @@ static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
 static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
-static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *) ptr; }
+static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr; }
 #else
 #define ts_bool_to_void(ptr) ((void*)ptr)
 #define ts_uint64_to_void(ptr) ((void*)ptr)
@@ -277,7 +279,7 @@ static inline void *ts_array_to_void(struct ts_array_info *ptr) { return (void *
 #define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
     {id, parent_id, name, ts_function_to_void(void_function_ptr), TS_T_EXEC, 0, access, 0}
 
-/** Create a data object pointing to an ArrayInfo struct. */
+/** Create a data object pointing to a struct ts_array. */
 #define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
@@ -436,9 +438,9 @@ struct ts_data_object {
     const uint32_t type : 4;
 
     /**
-     * Variable storing different detail information depending on th data type
+     * Variable storing different detail information depending on the data type
      *
-     * - FLOAT32: Decimal digits (precision) to use for printing in JSON strings.
+     * - FLOAT32: Decimal digits (precision) to use during serialization to JSON.
      *
      * - DECFRAC: Exponent (10^exponent = factor to convert to internal unit). Example: If
      *   a voltage measurement is internally stored as an integer in mV, use exponent -3 to
@@ -784,7 +786,7 @@ struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *
 /* Provide C++ naming for C constructs. */
 typedef ts_object_id_t ThingSetObjId;
 typedef struct ts_bytes_buffer ThingSetBytesBuffer;
-typedef struct ts_array_info ThingSetArrayInfo;
+typedef struct ts_array ThingSetArrayInfo;
 typedef struct ts_data_object ThingSetDataObject;
 typedef struct ts_context ThingSetContext;
 

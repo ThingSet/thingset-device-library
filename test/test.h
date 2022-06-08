@@ -49,9 +49,9 @@ extern float f32;
 extern int32_t i32;
 extern bool b;
 extern int32_t A[100];
-extern struct ts_array_info int32_array;
+extern struct ts_array int32_array;
 extern float B[100];
-extern struct ts_array_info float32_array;
+extern struct ts_array float32_array;
 extern uint8_t bytes[300];
 extern struct ts_bytes_buffer bytes_buf;
 extern struct ts_data_object data_objects[];
@@ -73,7 +73,7 @@ extern uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 extern bool group_callback_called;
 extern bool update_callback_called;
 extern bool dummy_called_flag;
-extern struct ts_array_info pub_serial_array;
+extern struct ts_array pub_serial_array;
 
 /* Helper functions (see test_context.c) */
 void dummy(void);

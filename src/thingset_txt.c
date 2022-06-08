@@ -96,7 +96,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
                             const struct ts_data_object *object)
 {
     int pos = 0;
-    struct ts_array_info *array_info;
+    struct ts_array *array;
     float value;
 
     switch (object->type) {
@@ -185,48 +185,48 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
         pos += snprintf(buf + pos, size - pos, "],");
         break;
     case TS_T_ARRAY:
-        array_info = (struct ts_array_info *)object->data;
-        if (!array_info) {
+        array = (struct ts_array *)object->data;
+        if (!array) {
             return 0;
         }
         pos += snprintf(buf + pos, size - pos, "[");
-        for (int i = 0; i < array_info->num_elements; i++) {
-            switch (array_info->type) {
+        for (int i = 0; i < array->num_elements; i++) {
+            switch (array->type) {
 #if TS_64BIT_TYPES_SUPPORT
             case TS_T_UINT64:
                 pos += snprintf(buf + pos, size - pos, "%" PRIu64 ",",
-                        ((uint64_t *)array_info->ptr)[i]);
+                        ((uint64_t *)array->elements)[i]);
                 break;
             case TS_T_INT64:
                 pos += snprintf(buf + pos, size - pos, "%" PRIi64 ",",
-                        ((int64_t *)array_info->ptr)[i]);
+                        ((int64_t *)array->elements)[i]);
                 break;
 #endif
             case TS_T_UINT32:
                 pos += snprintf(buf + pos, size - pos, "%" PRIu32 ",",
-                        ((uint32_t *)array_info->ptr)[i]);
+                        ((uint32_t *)array->elements)[i]);
                 break;
             case TS_T_INT32:
                 pos += snprintf(buf + pos, size - pos, "%" PRIi32 ",",
-                        ((int32_t *)array_info->ptr)[i]);
+                        ((int32_t *)array->elements)[i]);
                 break;
             case TS_T_UINT16:
                 pos += snprintf(buf + pos, size - pos, "%" PRIu16 ",",
-                        ((uint16_t *)array_info->ptr)[i]);
+                        ((uint16_t *)array->elements)[i]);
                 break;
             case TS_T_INT16:
                 pos += snprintf(buf + pos, size - pos, "%" PRIi16 ",",
-                        ((int16_t *)array_info->ptr)[i]);
+                        ((int16_t *)array->elements)[i]);
                 break;
             case TS_T_FLOAT32:
                 pos += snprintf(buf + pos, size - pos, "%.*f,", object->detail,
-                        ((float *)array_info->ptr)[i]);
+                        ((float *)array->elements)[i]);
                 break;
             default:
                 break;
             }
         }
-        if (array_info->num_elements > 0) {
+        if (array->num_elements > 0) {
             pos--; // remove trailing comma
         }
         pos += snprintf(buf + pos, size - pos, "],");

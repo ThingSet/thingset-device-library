@@ -63,44 +63,44 @@ static int cbor_deserialize_array_type(const uint8_t *buf, const struct ts_data_
 {
     uint16_t num_elements;
     int pos = 0; // Index of the next value in the buffer
-    struct ts_array_info *array_info;
-    array_info = (struct ts_array_info *)data_obj->data;
+    struct ts_array *array;
+    array = (struct ts_array *)data_obj->data;
 
-    if (!array_info) {
+    if (!array) {
         return 0;
     }
 
     // Deserialize the buffer length, and calculate the actual number of array elements
     pos = cbor_num_elements(buf, &num_elements);
 
-    if (num_elements > array_info->max_elements) {
+    if (num_elements > array->max_elements) {
         return 0;
     }
 
     for (int i = 0; i < num_elements; i++) {
-        switch (array_info->type) {
+        switch (array->type) {
 #if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
-            pos += cbor_deserialize_uint64(&(buf[pos]), &(((uint64_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_uint64(&(buf[pos]), &(((uint64_t *)array->elements)[i]));
             break;
         case TS_T_INT64:
-            pos += cbor_deserialize_int64(&(buf[pos]), &(((int64_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_int64(&(buf[pos]), &(((int64_t *)array->elements)[i]));
             break;
 #endif
         case TS_T_UINT32:
-            pos += cbor_deserialize_uint32(&(buf[pos]), &(((uint32_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_uint32(&(buf[pos]), &(((uint32_t *)array->elements)[i]));
             break;
         case TS_T_INT32:
-            pos += cbor_deserialize_int32(&(buf[pos]), &(((int32_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_int32(&(buf[pos]), &(((int32_t *)array->elements)[i]));
             break;
         case TS_T_UINT16:
-            pos += cbor_deserialize_uint16(&(buf[pos]), &(((uint16_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_uint16(&(buf[pos]), &(((uint16_t *)array->elements)[i]));
             break;
         case TS_T_INT16:
-            pos += cbor_deserialize_int16(&(buf[pos]), &(((int16_t *)array_info->ptr)[i]));
+            pos += cbor_deserialize_int16(&(buf[pos]), &(((int16_t *)array->elements)[i]));
             break;
         case TS_T_FLOAT32:
-            pos += cbor_deserialize_float(&(buf[pos]), &(((float *)array_info->ptr)[i]));
+            pos += cbor_deserialize_float(&(buf[pos]), &(((float *)array->elements)[i]));
             break;
         default:
             break;
@@ -160,50 +160,50 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
 int cbor_serialize_array_type(uint8_t *buf, size_t size, const struct ts_data_object *data_obj)
 {
     int pos = 0; // Index of the next value in the buffer
-    struct ts_array_info *array_info;
-    array_info = (struct ts_array_info *)data_obj->data;
+    struct ts_array *array;
+    array = (struct ts_array *)data_obj->data;
 
-    if (!array_info) {
+    if (!array) {
         return 0;
     }
 
     // Add the length field to the beginning of the CBOR buffer and update the CBOR buffer index
-    pos = cbor_serialize_array(buf, array_info->num_elements, size);
+    pos = cbor_serialize_array(buf, array->num_elements, size);
 
-    for (int i = 0; i < array_info->num_elements; i++) {
-        switch (array_info->type) {
+    for (int i = 0; i < array->num_elements; i++) {
+        switch (array->type) {
 #if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
-            pos += cbor_serialize_uint(&(buf[pos]), ((uint64_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_uint(&(buf[pos]), ((uint64_t *)array->elements)[i], size);
             break;
         case TS_T_INT64:
-            pos += cbor_serialize_int(&(buf[pos]), ((int64_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_int(&(buf[pos]), ((int64_t *)array->elements)[i], size);
             break;
 #endif
         case TS_T_UINT32:
-            pos += cbor_serialize_uint(&(buf[pos]), ((uint32_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_uint(&(buf[pos]), ((uint32_t *)array->elements)[i], size);
             break;
         case TS_T_INT32:
-            pos += cbor_serialize_int(&(buf[pos]), ((int32_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_int(&(buf[pos]), ((int32_t *)array->elements)[i], size);
             break;
         case TS_T_UINT16:
-            pos += cbor_serialize_uint(&(buf[pos]), ((uint16_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_uint(&(buf[pos]), ((uint16_t *)array->elements)[i], size);
             break;
         case TS_T_INT16:
-            pos += cbor_serialize_int(&(buf[pos]), ((int16_t *)array_info->ptr)[i], size);
+            pos += cbor_serialize_int(&(buf[pos]), ((int16_t *)array->elements)[i], size);
             break;
         case TS_T_FLOAT32:
             if (data_obj->detail == 0) { // round to 0 digits: use int
 #if TS_64BIT_TYPES_SUPPORT
                 pos += cbor_serialize_int(&(buf[pos]),
-                    llroundf(((float *)array_info->ptr)[i]), size);
+                    llroundf(((float *)array->elements)[i]), size);
 #else
                 pos += cbor_serialize_int(&(buf[pos]),
-                    lroundf(((float *)array_info->ptr)[i]), size);
+                    lroundf(((float *)array->elements)[i]), size);
 #endif
             }
             else {
-                pos += cbor_serialize_float(&(buf[pos]), ((float *)array_info->ptr)[i], size);
+                pos += cbor_serialize_float(&(buf[pos]), ((float *)array->elements)[i], size);
             }
             break;
         default:

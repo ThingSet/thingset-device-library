@@ -151,7 +151,7 @@ void test_bin_fetch_by_name(void)
 
 void test_bin_patch_float_array(void)
 {
-    float *arr = (float *)float32_array.ptr;
+    float *arr = (float *)float32_array.elements;
     arr[0] = 0;
     arr[1] = 0;
 
@@ -175,7 +175,7 @@ void test_bin_patch_float_array(void)
 
 void test_bin_fetch_float_array(void)
 {
-    float *arr = (float *)float32_array.ptr;
+    float *arr = (float *)float32_array.elements;
     arr[0] = 2.27;
     arr[1] = 3.44;
 
