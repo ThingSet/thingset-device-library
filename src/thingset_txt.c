@@ -644,21 +644,27 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     // initialize response with success message
     size_t len = ts_txt_response(ts, TS_STATUS_CONTENT);
 
-    ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
+    ts_object_id_t endpoint_id = 0;
 
-    if (endpoint != NULL && endpoint->type != TS_T_GROUP &&
-        endpoint->type != TS_T_EXEC)
-    {
-        // get value of data object
-        ts->resp[len++] = ' ';
-        len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len, endpoint);
-        ts->resp[--len] = '\0';     // remove trailing comma again
-        return len;
-    }
-
-    if (endpoint != NULL && endpoint->type == TS_T_EXEC && include_values) {
-        // bad request, as we can't read exec object's values
-        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
+    if (endpoint != NULL) {
+        switch (endpoint->type) {
+            case TS_T_EXEC:
+                if (include_values) {
+                    // bad request, as we can't read exec object's values
+                    return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
+                }
+                break;
+            case TS_T_GROUP:
+                break;
+            default:
+                // get value of data object
+                ts->resp[len++] = ' ';
+                len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len,
+                    endpoint);
+                ts->resp[--len] = '\0'; // remove trailing comma again
+                return len;
+        }
+        endpoint_id = endpoint->id;
     }
 
     len += sprintf((char *)&ts->resp[len], include_values ? " {" : " [");
