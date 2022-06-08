@@ -92,145 +92,106 @@ int ts_txt_response(struct ts_context *ts, int code)
         return 0;
 }
 
-int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
-                            const struct ts_data_object *object)
+static int json_serialize_simple_value(char *buf, size_t size, void *data, int type, int detail)
 {
-    int pos = 0;
-    struct ts_array *array;
-    float value;
-
-    switch (object->type) {
+    switch (type) {
 #if TS_64BIT_TYPES_SUPPORT
     case TS_T_UINT64:
-        pos = snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)object->data));
-        break;
+        return snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)data));
     case TS_T_INT64:
-        pos = snprintf(buf, size, "%" PRIi64 ",", *((int64_t *)object->data));
-        break;
+        return snprintf(buf, size, "%" PRIi64 ",", *((int64_t *)data));
 #endif
     case TS_T_UINT32:
-        pos = snprintf(buf, size, "%" PRIu32 ",", *((uint32_t *)object->data));
-        break;
+        return snprintf(buf, size, "%" PRIu32 ",", *((uint32_t *)data));
     case TS_T_INT32:
-        pos = snprintf(buf, size, "%" PRIi32 ",", *((int32_t *)object->data));
-        break;
+        return snprintf(buf, size, "%" PRIi32 ",", *((int32_t *)data));
     case TS_T_UINT16:
-        pos = snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)object->data));
-        break;
+        return snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)data));
     case TS_T_INT16:
-        pos = snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)object->data));
-        break;
-    case TS_T_FLOAT32:
-        value = *((float *)object->data);
+        return snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)data));
+    case TS_T_FLOAT32: {
+        float value = *((float *)data);
         if (isnan(value) || isinf(value)) {
             /* JSON spec does not support NaN and Inf, so we need to use null instead */
             return snprintf(buf, size, "null,");
         }
         else {
-            pos = snprintf(buf, size, "%.*f,", object->detail, value);
+            return snprintf(buf, size, "%.*f,", detail, value);
         }
-        break;
+    }
 #if TS_DECFRAC_TYPE_SUPPORT
     case TS_T_DECFRAC:
-        pos = snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",",
-            *((uint32_t *)object->data), object->detail);
-        break;
+        return snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",", *((uint32_t *)data), detail);
 #endif
     case TS_T_BOOL:
-        pos = snprintf(buf, size, "%s,",
-                (*((bool *)object->data) == true ? "true" : "false"));
-        break;
-    case TS_T_EXEC:
-        pos = snprintf(buf, size, "[");
-        for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if (ts->data_objects[i].parent == object->id) {
-                pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
-            }
-        }
-        if (pos > 1) {
-            pos--; // remove trailing comma
-            pos += snprintf(buf + pos, size - pos, "],");
-        }
-        else {
-            pos = snprintf(buf, size, "null,");
-        }
-        break;
+        return snprintf(buf, size, "%s,", (*((bool *)data) == true ? "true" : "false"));
     case TS_T_STRING:
-        pos = snprintf(buf, size, "\"%s\",", (char *)object->data);
-        break;
-    case TS_T_SUBSET:
-        pos = snprintf(buf, size, "[");
-        for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
-#if TS_NESTED_JSON
-                if (ts->data_objects[i].parent == 0) {
+        return snprintf(buf, size, "\"%s\",", (char *)data);
+    }
+    return 0;
+}
+
+int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
+                            const struct ts_data_object *object)
+{
+    int pos = json_serialize_simple_value(buf, size, object->data, object->type, object->detail);
+
+    if (pos == 0) {
+        // not a simple value
+        if (object->type == TS_T_EXEC) {
+            pos = snprintf(buf, size, "[");
+            for (unsigned int i = 0; i < ts->num_objects; i++) {
+                if (ts->data_objects[i].parent == object->id) {
                     pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
                 }
-                else {
-                    struct ts_data_object *parent_obj =
-                        ts_get_object_by_id(ts, ts->data_objects[i].parent);
-                    if (parent_obj != NULL) {
-                        pos += snprintf(buf + pos, size - pos, "\"%s/%s\",",
-                                        parent_obj->name, ts->data_objects[i].name);
+            }
+            if (pos > 1) {
+                pos--; // remove trailing comma
+                pos += snprintf(buf + pos, size - pos, "],");
+            }
+            else {
+                pos = snprintf(buf, size, "null,");
+            }
+        }
+        else if (object->type == TS_T_SUBSET) {
+            pos = snprintf(buf, size, "[");
+            for (unsigned int i = 0; i < ts->num_objects; i++) {
+                if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
+#if TS_NESTED_JSON
+                    if (ts->data_objects[i].parent == 0) {
+                        pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
                     }
-                }
+                    else {
+                        struct ts_data_object *parent_obj =
+                            ts_get_object_by_id(ts, ts->data_objects[i].parent);
+                        if (parent_obj != NULL) {
+                            pos += snprintf(buf + pos, size - pos, "\"%s/%s\",",
+                                            parent_obj->name, ts->data_objects[i].name);
+                        }
+                    }
 #else
-                pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
+                    pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
 #endif
+                }
             }
-        }
-        if (pos > 1) {
-            pos--; // remove trailing comma
-        }
-        pos += snprintf(buf + pos, size - pos, "],");
-        break;
-    case TS_T_ARRAY:
-        array = (struct ts_array *)object->data;
-        if (!array) {
-            return 0;
-        }
-        pos += snprintf(buf + pos, size - pos, "[");
-        for (int i = 0; i < array->num_elements; i++) {
-            switch (array->type) {
-#if TS_64BIT_TYPES_SUPPORT
-            case TS_T_UINT64:
-                pos += snprintf(buf + pos, size - pos, "%" PRIu64 ",",
-                        ((uint64_t *)array->elements)[i]);
-                break;
-            case TS_T_INT64:
-                pos += snprintf(buf + pos, size - pos, "%" PRIi64 ",",
-                        ((int64_t *)array->elements)[i]);
-                break;
-#endif
-            case TS_T_UINT32:
-                pos += snprintf(buf + pos, size - pos, "%" PRIu32 ",",
-                        ((uint32_t *)array->elements)[i]);
-                break;
-            case TS_T_INT32:
-                pos += snprintf(buf + pos, size - pos, "%" PRIi32 ",",
-                        ((int32_t *)array->elements)[i]);
-                break;
-            case TS_T_UINT16:
-                pos += snprintf(buf + pos, size - pos, "%" PRIu16 ",",
-                        ((uint16_t *)array->elements)[i]);
-                break;
-            case TS_T_INT16:
-                pos += snprintf(buf + pos, size - pos, "%" PRIi16 ",",
-                        ((int16_t *)array->elements)[i]);
-                break;
-            case TS_T_FLOAT32:
-                pos += snprintf(buf + pos, size - pos, "%.*f,", object->detail,
-                        ((float *)array->elements)[i]);
-                break;
-            default:
-                break;
+            if (pos > 1) {
+                pos--; // remove trailing comma
             }
+            pos += snprintf(buf + pos, size - pos, "],");
         }
-        if (array->num_elements > 0) {
-            pos--; // remove trailing comma
+        else if (object->type == TS_T_ARRAY && object->data != NULL) {
+            struct ts_array *array = (struct ts_array *)object->data;
+            pos += snprintf(buf + pos, size - pos, "[");
+            for (int i = 0; i < array->num_elements; i++) {
+                void *data = (uint8_t *)array->elements + i * array->type_size;
+                pos += json_serialize_simple_value(buf + pos, size - pos,
+                    data, array->type, object->detail);
+            }
+            if (array->num_elements > 0) {
+                pos--; // remove trailing comma
+            }
+            pos += snprintf(buf + pos, size - pos, "],");
         }
-        pos += snprintf(buf + pos, size - pos, "],");
-        break;
     }
 
     if (pos < size) {

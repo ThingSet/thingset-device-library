@@ -62,10 +62,10 @@ static int16_t i16;
 bool b;
 
 int32_t A[100] = {4, 2, 8, 4};
-struct ts_array int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
+struct ts_array int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32, sizeof(int32_t)};
 
 float B[100] = {2.27, 3.44};
-struct ts_array float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
+struct ts_array float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32, sizeof(float)};
 
 uint8_t bytes[300] = {};
 struct ts_bytes_buffer bytes_buf = { bytes, 0 };

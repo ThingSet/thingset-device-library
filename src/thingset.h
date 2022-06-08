@@ -181,6 +181,7 @@ struct ts_array {
     uint16_t max_elements;      /**< Maximum number of elements in the array */
     uint16_t num_elements;      /**< Actual number of elements in the array */
     uint8_t type;               /**< Type of the array elements */
+    uint8_t type_size;          /**< Size of the array element type in bytes */
 };
 
 #define ts_array_info ts_array __attribute__((deprecated))
