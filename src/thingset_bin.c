@@ -203,14 +203,21 @@ int ts_bin_process(struct ts_context *ts)
     // process data
     if (ts->req[0] == TS_GET && endpoint) {
         ret_type |= TS_RET_VALUES;
-        return ts_bin_get(ts, endpoint, ret_type);
+        return ts_bin_get(ts, endpoint, ret_type, 0);
     }
     else if (ts->req[0] == TS_FETCH) {
         if (ts->req[pos] != CBOR_UNDEFINED) {
             // undefined is used to discover child nodes, otherwise values are requested
             ret_type |= TS_RET_VALUES;
         }
-        return ts_bin_fetch(ts, endpoint, ret_type, pos);
+        if (endpoint && endpoint->type == TS_T_RECORDS && !(ret_type & TS_RET_DISCOVERY)) {
+            uint16_t record_index = 0;
+            pos += cbor_deserialize_uint16(&ts->req[pos], &record_index);
+            return ts_bin_get(ts, endpoint, ret_type, record_index);
+        }
+        else {
+            return ts_bin_fetch(ts, endpoint, ret_type, pos);
+        }
     }
     else if (ts->req[0] == TS_PATCH && endpoint) {
         int response = ts_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0);
@@ -229,9 +236,6 @@ int ts_bin_process(struct ts_context *ts)
     return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
 }
 
-/*
-* @warning The endpoint object is currently still ignored. Any found data object is fetched.
-*/
 int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
                  unsigned int pos_payload)
 {
@@ -240,7 +244,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
     uint16_t num_elements, element = 0;
 
     if (!(ret_type & TS_RET_VALUES)) {
-        return ts_bin_get(ts, endpoint, ret_type);
+        return ts_bin_get(ts, endpoint, ret_type, 0);
     }
 
     pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
@@ -284,8 +288,19 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
             return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
         }
 
-        if (!(data_obj->access & TS_READ_MASK) && !(ret_type & TS_RET_DISCOVERY)) {
-            return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+        if (endpoint && endpoint->type == TS_T_RECORDS) {
+            if (!(endpoint->access & TS_READ_MASK)) {
+                return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+            }
+        }
+        else if (!(data_obj->access & TS_READ_MASK) && !(ret_type & TS_RET_DISCOVERY)) {
+            if (data_obj->access != 0) {
+                return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
+            }
+            else {
+                // not exposed at all (e.g. record items or some internal data)
+                return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
+            }
         }
 
         size_t num_bytes = 0; // temporary storage of cbor data length in response
@@ -606,22 +621,38 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
     return msg_len;
 }
 
-int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type)
+int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
+               int record_index)
 {
     unsigned int len = 0;       // current length of response
     len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
 
-    if (endpoint->type != TS_T_GROUP) {
-        len += cbor_serialize_data_obj(&ts->resp[len], ts->resp_size - len, endpoint);
-        return len;
+    if (endpoint == NULL) {
+        return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
+    }
+
+    switch (endpoint->type) {
+        case TS_T_GROUP:
+            break;
+        case TS_T_RECORDS:
+            if (!(ret_type & TS_RET_VALUES)) {
+                struct ts_records *records = (struct ts_records *)endpoint->data;
+                len += cbor_serialize_uint(&ts->resp[len], records->num_records, ts->resp_size - len);
+                return len;
+            }
+            break;
+        default:
+            // single data object
+            len += cbor_serialize_data_obj(&ts->resp[len], ts->resp_size - len, endpoint);
+            return len;
     }
 
     // find out number of elements
     int num_elements = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].access & TS_READ_MASK
-            && (ts->data_objects[i].parent == endpoint->id))
-        {
+        uint8_t access = endpoint->type == TS_T_RECORDS ? endpoint->access :
+            ts->data_objects[i].access;
+        if (access & TS_READ_MASK && (ts->data_objects[i].parent == endpoint->id)) {
             num_elements++;
         }
     }
@@ -634,9 +665,9 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     }
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if (ts->data_objects[i].access & TS_READ_MASK
-            && (ts->data_objects[i].parent == endpoint->id))
-        {
+        uint8_t access = endpoint->type == TS_T_RECORDS ? endpoint->access :
+            ts->data_objects[i].access;
+        if (access & TS_READ_MASK && (ts->data_objects[i].parent == endpoint->id)) {
             int num_bytes = 0;
             if (ret_type & TS_RET_IDS) {
                 num_bytes = cbor_serialize_uint(&ts->resp[len], ts->data_objects[i].id,
@@ -648,8 +679,25 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
             }
 
             if (ret_type & TS_RET_VALUES) {
-                num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
-                    ts->resp_size - len - num_bytes, &ts->data_objects[i]);
+                if (endpoint->type == TS_T_RECORDS) {
+                    struct ts_records *records = (struct ts_records *)endpoint->data;
+                    void *data = (uint8_t *)records->data + record_index * records->record_size +
+                        (size_t)ts->data_objects[i].data;
+                    // create temporary data object with data from struct
+                    struct ts_data_object obj = {
+                        .id = ts->data_objects[i].id,
+                        .name = ts->data_objects[i].name,
+                        .data = data,
+                        .type = ts->data_objects[i].type,
+                        .detail = ts->data_objects[i].detail
+                    };
+                    num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
+                        ts->resp_size - len - num_bytes, &obj);
+                }
+                else {
+                    num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
+                        ts->resp_size - len - num_bytes, &ts->data_objects[i]);
+                }
             }
 
             if (num_bytes == 0) {

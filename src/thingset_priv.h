@@ -67,10 +67,10 @@ int ts_bin_process(struct ts_context *ts);
  * @param ts Pointer to ThingSet context.
  * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
- * @param element_number Element number extracted from path (only used for records).
+ * @param record_index Record index extracted from path (only applicable for TS_T_RECORDS).
  */
 int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
-               int element_number);
+               int record_index);
 
 /**
  * GET request (binary mode).
@@ -80,8 +80,10 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
  * @param ts Pointer to ThingSet context.
  * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
+ * @param record_index Record index (only applicable for TS_T_RECORDS).
  */
-int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type);
+int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
+               int record_index);
 
 /**
  * FETCH request (text mode).

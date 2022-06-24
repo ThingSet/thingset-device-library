@@ -231,6 +231,57 @@ void test_bin_patch_rounded_float(void)
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
 }
 
+void test_bin_fetch_num_records()
+{
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x19, 0x70, 0x05,
+        0xF7 // CBOR undefined
+    };
+    const uint8_t resp_expected[] = {
+        0x85, 0x02
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
+void test_bin_fetch_record()
+{
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x19, 0x70, 0x05,
+        0x01 // second record
+    };
+    const uint8_t resp_expected[] = {
+        0x85,
+        0xA3,
+            0x18, 0x81,
+            0x18, 0x7B, // 123
+            0x18, 0x82,
+            0xFA, 0x41, 0x68, 0x00, 0x00, // 14.5
+            0x18, 0x83,
+            0x02
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
+void test_bin_fetch_record_item()
+{
+    /* a sigle item cannot be fetched from a record, as the IDs are not unique */
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x00,
+        0x81, // array with single item
+            0x18, 0x81, // data object ID
+    };
+    const uint8_t resp_expected[] = {
+        0xA4 // Not found.
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
 void test_bin_statement_subset(void)
 {
     const char resp_expected[] =
