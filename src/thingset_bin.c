@@ -283,7 +283,8 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
         if (data_obj == NULL) {
             return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
         }
-        if (!(data_obj->access & TS_READ_MASK)) {
+
+        if (!(data_obj->access & TS_READ_MASK) && !(ret_type & TS_RET_DISCOVERY)) {
             return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
         }
 
