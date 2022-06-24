@@ -187,51 +187,21 @@ struct ts_array {
 
 #define ts_array_info ts_array __attribute__((deprecated))
 
-struct ts_record_item {
-    /**
-     * Data item name
-     */
-    const char *name;
-
-    /**
-     * Offset of this item inside the struct in bytes
-     */
-    const uint32_t offset : 8;
-
-    /**
-     * One of TS_TYPE_INT32, _FLOAT, ...
-     */
-    const uint32_t type : 4;
-
-    /**
-     * Variable storing different detail information depending on the data type
-     *
-     * See same element in struct ts_data_object for more information.
-     */
-    const int32_t detail : 12;
-};
-
 /**
  * Data structure to specify a record data object for an arbitrary struct
  */
 struct ts_records {
-    /** Pointer to the first element struct object */
+    /** Pointer to the first record */
     const void *data;
 
     /** Size of one record in bytes */
     const size_t record_size;
 
-    /** Maximum number of elements in the array */
+    /** Maximum number of records in the array */
     const uint16_t max_records;
 
-    /** Actual number of elements in the array */
+    /** Actual number of records in the array */
     uint16_t num_records;
-
-    /** Array containing the struct items information */
-    const struct ts_record_item *record_items;
-
-    /** Number of elements in struct_items list */
-    const size_t num_record_items;
 };
 
 /** @cond INTERNAL_HIDDEN */
@@ -348,40 +318,37 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** struct related macros */
 
-#define TS_STRUCT_INFO(struct_type, ...) \
-    { __VA_ARGS__ };
-
 /** Create data item for bool variable. */
-#define TS_STRUCT_ITEM_BOOL(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_BOOL, 0}
+#define TS_RECORD_ITEM_BOOL(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_BOOL, 0}
 
 /** Create data item for uint64_t variable. */
-#define TS_STRUCT_ITEM_UINT64(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_UINT64, 0}
+#define TS_RECORD_ITEM_UINT64(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_UINT64, 0}
 
 /** Create data item for int64_t variable. */
-#define TS_STRUCT_ITEM_INT64(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_INT64, 0}
+#define TS_RECORD_ITEM_INT64(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_INT64, 0}
 
 /** Create data item for uint32_t variable. */
-#define TS_STRUCT_ITEM_UINT32(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_UINT32, 0}
+#define TS_RECORD_ITEM_UINT32(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_UINT32, 0}
 
 /** Create data item for int32_t variable. */
-#define TS_STRUCT_ITEM_INT32(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_INT32, 0}
+#define TS_RECORD_ITEM_INT32(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_INT32, 0}
 
 /** Create data item for uint16_t variable. */
-#define TS_STRUCT_ITEM_UINT16(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_UINT16, 0}
+#define TS_RECORD_ITEM_UINT16(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_UINT16, 0}
 
 /** Create data item for int16_t variable. */
-#define TS_STRUCT_ITEM_INT16(name, struct_type, struct_member) \
-    {name, offsetof(struct_type, struct_member), TS_T_INT16, 0}
+#define TS_RECORD_ITEM_INT16(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_INT16, 0}
 
 /** Create data item for float variable. */
-#define TS_STRUCT_ITEM_FLOAT(name, struct_type, struct_member, digits) \
-    {name, offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
+#define TS_RECORD_ITEM_FLOAT(parent_id, id, name, struct_type, struct_member, digits) \
+    {id, parent_id, name, offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
 
 /** @cond INTERNAL_HIDDEN */
 /*
@@ -520,7 +487,9 @@ struct ts_data_object {
 
     /**
      * Pointer to the variable containing the data. The variable type must match the type as
-     * specified
+     * specified.
+     *
+     * For record items, the offset of this item inside the struct is stored (in bytes).
      */
     void *const data;
 

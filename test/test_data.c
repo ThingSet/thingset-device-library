@@ -77,19 +77,6 @@ struct test_struct {
     float battery_voltage;
 };
 
-/*
- * Example record based on above struct. Note that:
- * - not all struct elements need to be exposed (unused_element is missing)
- * - the order of elements can be changed
- *
- * Important: All elements *must* be from the same struct.
- */
-const struct ts_record_item test_records[] = {
-    TS_STRUCT_ITEM_UINT32("t_s", struct test_struct, timestamp),
-    TS_STRUCT_ITEM_FLOAT("rBat_V", struct test_struct, battery_voltage, 2),
-    TS_STRUCT_ITEM_UINT16("sErrorFlags", struct test_struct, error_flags),
-};
-
 struct test_struct objects[5] = {
     {
         .timestamp = 0,
@@ -109,8 +96,6 @@ struct ts_records records = {
     .record_size = sizeof(struct test_struct),
     .max_records = ARRAY_SIZE(objects),
     .num_records = 2,
-    .record_items = test_records,
-    .num_record_items = ARRAY_SIZE(test_records)
 };
 
 struct ts_data_object data_objects[] = {
@@ -187,6 +172,19 @@ struct ts_data_object data_objects[] = {
     // RECORDS used for logs //////////////////////////////////////////////////
 
     TS_ITEM_RECORDS(0x7005, "Log", &records, ID_ROOT, TS_ANY_R, 0),
+
+    /*
+    * Record items definition.
+    *
+    * Note that:
+    * - not all struct elements need to be exposed (unused_element is missing)
+    * - the order of elements can be changed
+    *
+    * Important: All elements *must* be from the same struct.
+    */
+    TS_RECORD_ITEM_UINT32(0x7005, 0x81, "t_s", struct test_struct, timestamp),
+    TS_RECORD_ITEM_FLOAT(0x7005, 0x82, "rBat_V", struct test_struct, battery_voltage, 2),
+    TS_RECORD_ITEM_UINT16(0x7005, 0x83, "sErrorFlags", struct test_struct, error_flags),
 
     // REPORTS ////////////////////////////////////////////////////////////////
 

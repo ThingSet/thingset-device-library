@@ -644,9 +644,10 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     int objects_found = 0;
     if (endpoint && endpoint->type == TS_T_RECORDS) {
         struct ts_records *records = (struct ts_records *)endpoint->data;
-        for (unsigned int i = 0; i < records->num_record_items; i++) {
-            const struct ts_record_item *item = &records->record_items[i];
 
+        /* record item definitions are expected to start behind endpoint data object */
+        const struct ts_data_object *item = endpoint + 1;
+        while (item < &ts->data_objects[ts->num_objects] && item->parent == endpoint->id) {
             size_t len_name = snprintf((char *)ts->resp + len, ts->resp_size - len, "\"%s\":",
                 item->name);
             if (len_name < 0) {
@@ -654,7 +655,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
             }
 
             void *data = (uint8_t *)records->data + record_index * records->record_size +
-                item->offset;
+                (size_t)item->data;
             int len_value = json_serialize_simple_value((char *)ts->resp + len + len_name,
                 ts->resp_size - len - len_name, data, item->type, item->detail);
             if (len_value < 0) {
@@ -663,6 +664,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
 
             len += len_name + len_value;
             objects_found++;
+            item++;
         }
     }
     else {
