@@ -144,6 +144,8 @@ void test_txt_fetch_nan(void);
 void test_txt_fetch_inf(void);
 void test_txt_fetch_int32_array(void);
 void test_txt_fetch_float_array(void);
+void test_txt_fetch_num_records(void);
+void test_txt_fetch_record(void);
 void test_txt_patch_wrong_data_structure(void);
 void test_txt_patch_array(void);
 void test_txt_patch_readonly(void);

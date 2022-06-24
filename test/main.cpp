@@ -48,6 +48,8 @@ void tests_text_mode()
     RUN_TEST(test_txt_fetch_inf);
     RUN_TEST(test_txt_fetch_int32_array);
     RUN_TEST(test_txt_fetch_float_array);
+    RUN_TEST(test_txt_fetch_num_records);
+    RUN_TEST(test_txt_fetch_record);
 
     // PATCH request
     RUN_TEST(test_txt_patch_wrong_data_structure);

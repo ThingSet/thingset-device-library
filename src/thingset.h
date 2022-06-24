@@ -159,6 +159,7 @@ enum TsType {
     TS_T_STRING,    /**< String buffer (UTF-8 text) */
     TS_T_BYTES,     /**< Byte buffer (binary data) */
     TS_T_ARRAY,     /**< Array */
+    TS_T_RECORDS,   /**< Records (array of arbitrary struct object) */
     TS_T_DECFRAC,   /**< CBOR decimal fraction */
     TS_T_GROUP,     /**< Internal object to describe data hierarchy */
     TS_T_EXEC,      /**< Executable functions */
@@ -186,6 +187,53 @@ struct ts_array {
 
 #define ts_array_info ts_array __attribute__((deprecated))
 
+struct ts_record_item {
+    /**
+     * Data item name
+     */
+    const char *name;
+
+    /**
+     * Offset of this item inside the struct in bytes
+     */
+    const uint32_t offset : 8;
+
+    /**
+     * One of TS_TYPE_INT32, _FLOAT, ...
+     */
+    const uint32_t type : 4;
+
+    /**
+     * Variable storing different detail information depending on the data type
+     *
+     * See same element in struct ts_data_object for more information.
+     */
+    const int32_t detail : 12;
+};
+
+/**
+ * Data structure to specify a record data object for an arbitrary struct
+ */
+struct ts_records {
+    /** Pointer to the first element struct object */
+    const void *data;
+
+    /** Size of one record in bytes */
+    const size_t record_size;
+
+    /** Maximum number of elements in the array */
+    const uint16_t max_records;
+
+    /** Actual number of elements in the array */
+    uint16_t num_records;
+
+    /** Array containing the struct items information */
+    const struct ts_record_item *record_items;
+
+    /** Number of elements in struct_items list */
+    const size_t num_record_items;
+};
+
 /** @cond INTERNAL_HIDDEN */
 /*
  * Functions to generate data_objects map and make compiler complain if wrong
@@ -205,6 +253,7 @@ static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
 static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
 static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr; }
+static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *) ptr; }
 #else
 #define ts_bool_to_void(ptr) ((void*)ptr)
 #define ts_uint64_to_void(ptr) ((void*)ptr)
@@ -218,6 +267,7 @@ static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr
 #define ts_bytes_to_void(ptr) ((void*)ptr)
 #define ts_function_to_void(ptr) ((void*)ptr)
 #define ts_array_to_void(ptr) ((void*)ptr)
+#define ts_records_to_void(ptr) ((void*)ptr)
 #endif
 
 /** @endcond */
@@ -284,6 +334,10 @@ static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr
 #define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
+/** Create a data object pointing to a struct ts_array. */
+#define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_records_to_void(records_ptr), TS_T_RECORDS, 0, access, subsets}
+
 /** Create a subset data object for the provided subset flag. */
 #define TS_SUBSET(id, name, subset, parent_id, access) \
     {id, parent_id, name, NULL, TS_T_SUBSET, subset, access, 0}
@@ -291,6 +345,43 @@ static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr
 /** Create a group for hierarchical structuring of the data. */
 #define TS_GROUP(id, name, void_function_cb_ptr, parent_id) \
     {id, parent_id, name, ts_function_to_void(void_function_cb_ptr), TS_T_GROUP, 0, TS_READ_MASK, 0}
+
+/** struct related macros */
+
+#define TS_STRUCT_INFO(struct_type, ...) \
+    { __VA_ARGS__ };
+
+/** Create data item for bool variable. */
+#define TS_STRUCT_ITEM_BOOL(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_BOOL, 0}
+
+/** Create data item for uint64_t variable. */
+#define TS_STRUCT_ITEM_UINT64(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_UINT64, 0}
+
+/** Create data item for int64_t variable. */
+#define TS_STRUCT_ITEM_INT64(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_INT64, 0}
+
+/** Create data item for uint32_t variable. */
+#define TS_STRUCT_ITEM_UINT32(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_UINT32, 0}
+
+/** Create data item for int32_t variable. */
+#define TS_STRUCT_ITEM_INT32(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_INT32, 0}
+
+/** Create data item for uint16_t variable. */
+#define TS_STRUCT_ITEM_UINT16(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_UINT16, 0}
+
+/** Create data item for int16_t variable. */
+#define TS_STRUCT_ITEM_INT16(name, struct_type, struct_member) \
+    {name, offsetof(struct_type, struct_member), TS_T_INT16, 0}
+
+/** Create data item for float variable. */
+#define TS_STRUCT_ITEM_FLOAT(name, struct_type, struct_member, digits) \
+    {name, offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
 
 /** @cond INTERNAL_HIDDEN */
 /*

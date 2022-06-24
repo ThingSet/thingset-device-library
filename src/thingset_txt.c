@@ -262,11 +262,12 @@ int ts_txt_process(struct ts_context *ts)
         path_len = (uint8_t *)path_end - ts->req - 1;
     }
 
+    uint16_t record_index = 0;
     const struct ts_data_object *endpoint =
-        ts_get_object_by_path(ts, (char *)ts->req + 1, path_len);
+        ts_get_endpoint_by_path(ts, (char *)ts->req + 1, path_len, &record_index);
     if (!endpoint) {
         if (ts->req[0] == '?' && ts->req[1] == '/' && path_len == 1) {
-            return ts_txt_get(ts, NULL, TS_RET_NAMES);
+            return ts_txt_get(ts, NULL, TS_RET_NAMES, record_index);
         }
         else if (path_len > 0) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -291,8 +292,10 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
-                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC)) {
-                    return ts_txt_get(ts, endpoint, TS_RET_NAMES);
+                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC ||
+                    endpoint->type == TS_T_RECORDS))
+                {
+                    return ts_txt_get(ts, endpoint, TS_RET_NAMES, record_index);
                 }
                 else {
                     // device discovery is only allowed for internal objects
@@ -300,7 +303,7 @@ int ts_txt_process(struct ts_context *ts)
                 }
             }
             else {
-                return ts_txt_get(ts, endpoint, TS_RET_NAMES | TS_RET_VALUES);
+                return ts_txt_get(ts, endpoint, TS_RET_NAMES | TS_RET_VALUES, record_index);
             }
         }
         else if (ts->req[0] == '!') {
@@ -598,7 +601,8 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
     return ts_txt_response(ts, TS_STATUS_CHANGED);
 }
 
-int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type)
+int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
+               int record_index)
 {
     bool include_values = (ret_type & TS_RET_VALUES);
 
@@ -617,6 +621,14 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
                 break;
             case TS_T_GROUP:
                 break;
+            case TS_T_RECORDS:
+                if (ret_type == TS_RET_NAMES) {
+                    struct ts_records *records = (struct ts_records *)endpoint->data;
+                    len += snprintf((char *)&ts->resp[len], ts->resp_size - len, " %d",
+                        records->num_records);
+                    return len;
+                }
+                break;
             default:
                 // get value of data object
                 ts->resp[len++] = ' ';
@@ -630,33 +642,58 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
 
     len += sprintf((char *)&ts->resp[len], include_values ? " {" : " [");
     int objects_found = 0;
-    for (unsigned int i = 0; i < ts->num_objects; i++) {
-        if ((ts->data_objects[i].access & TS_READ_MASK) &&
-            (ts->data_objects[i].parent == endpoint_id))
-        {
-            if (include_values) {
-                if (ts->data_objects[i].type == TS_T_GROUP) {
-                    // bad request, as we can't read internal path object's values
-                    return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
-                }
-                int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len],
-                    ts->resp_size - len, &ts->data_objects[i]);
-                if (ret > 0) {
-                    len += ret;
+    if (endpoint && endpoint->type == TS_T_RECORDS) {
+        struct ts_records *records = (struct ts_records *)endpoint->data;
+        for (unsigned int i = 0; i < records->num_record_items; i++) {
+            const struct ts_record_item *item = &records->record_items[i];
+
+            size_t len_name = snprintf((char *)ts->resp + len, ts->resp_size - len, "\"%s\":",
+                item->name);
+            if (len_name < 0) {
+                return 0;
+            }
+
+            void *data = (uint8_t *)records->data + record_index * records->record_size +
+                item->offset;
+            int len_value = json_serialize_simple_value((char *)ts->resp + len + len_name,
+                ts->resp_size - len - len_name, data, item->type, item->detail);
+            if (len_value < 0) {
+                return 0;
+            }
+
+            len += len_name + len_value;
+            objects_found++;
+        }
+    }
+    else {
+        for (unsigned int i = 0; i < ts->num_objects; i++) {
+            if ((ts->data_objects[i].access & TS_READ_MASK) &&
+                (ts->data_objects[i].parent == endpoint_id))
+            {
+                if (include_values) {
+                    if (ts->data_objects[i].type == TS_T_GROUP) {
+                        // bad request, as we can't read internal path object's values
+                        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
+                    }
+                    int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len],
+                        ts->resp_size - len, &ts->data_objects[i]);
+                    if (ret > 0) {
+                        len += ret;
+                    }
+                    else {
+                        return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
+                    }
                 }
                 else {
+                    len += snprintf((char *)&ts->resp[len],
+                        ts->resp_size - len,
+                        "\"%s\",", ts->data_objects[i].name);
+                }
+                objects_found++;
+
+                if (len >= ts->resp_size - 1) {
                     return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
                 }
-            }
-            else {
-                len += snprintf((char *)&ts->resp[len],
-                    ts->resp_size - len,
-                    "\"%s\",", ts->data_objects[i].name);
-            }
-            objects_found++;
-
-            if (len >= ts->resp_size - 1) {
-                return ts_txt_response(ts, TS_STATUS_RESPONSE_TOO_LARGE);
             }
         }
     }
