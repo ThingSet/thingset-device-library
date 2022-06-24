@@ -93,6 +93,10 @@ void assert_txt_req(const char *req_s, const char *exp_s, const char*msg);
 void assert_json2cbor(char const *name, char const *json_value, uint16_t id, const char *const cbor_value_hex, const char*msg);
 void assert_cbor2json(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex, const char*msg);
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+#endif
+
 #ifndef STRINGIFY
 #define STRINGIFY(x) _STRINGIFY(x)
 #define _STRINGIFY(x) #x
