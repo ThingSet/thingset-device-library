@@ -67,8 +67,10 @@ int ts_bin_process(struct ts_context *ts);
  * @param ts Pointer to ThingSet context.
  * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
+ * @param record_index Record index extracted from path (only applicable for TS_T_RECORDS).
  */
-int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type);
+int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
+               int record_index);
 
 /**
  * GET request (binary mode).
@@ -78,8 +80,10 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
  * @param ts Pointer to ThingSet context.
  * @param endpoint Pointer to the endpoint data object.
  * @param ret_type Return type flags (IDs, names and/or values).
+ * @param record_index Record index (only applicable for TS_T_RECORDS).
  */
-int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type);
+int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
+               int record_index);
 
 /**
  * FETCH request (text mode).
@@ -249,6 +253,21 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
  * @returns Length of the string written to the buffer or value <= 0 in case of error.
  */
 int ts_get_path(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *object);
+
+/**
+ * Get the endpoint object of a provided path.
+ *
+ * Similar to ts_get_object_by_path, but considers the number at the end if requesting a record
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param path Path with multiple object names separated by forward slash.
+ * @param len Length of the entire path
+ * @param index Pointer to a variable used to store the index of a record.
+ *
+ * @returns Pointer to data object or NULL if object is not found
+ */
+struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char *path, size_t len,
+                                               uint16_t *index);
 
 #ifdef __cplusplus
 } /* extern "C" */

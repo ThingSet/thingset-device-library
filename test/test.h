@@ -49,9 +49,9 @@ extern float f32;
 extern int32_t i32;
 extern bool b;
 extern int32_t A[100];
-extern struct ts_array_info int32_array;
+extern struct ts_array int32_array;
 extern float B[100];
-extern struct ts_array_info float32_array;
+extern struct ts_array float32_array;
 extern uint8_t bytes[300];
 extern struct ts_bytes_buffer bytes_buf;
 extern struct ts_data_object data_objects[];
@@ -73,7 +73,7 @@ extern uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 extern bool group_callback_called;
 extern bool update_callback_called;
 extern bool dummy_called_flag;
-extern struct ts_array_info pub_serial_array;
+extern struct ts_array pub_serial_array;
 
 /* Helper functions (see test_context.c) */
 void dummy(void);
@@ -92,6 +92,10 @@ void assert_txt_resp(int exp_len, const char *exp_s, const char*msg);
 void assert_txt_req(const char *req_s, const char *exp_s, const char*msg);
 void assert_json2cbor(char const *name, char const *json_value, uint16_t id, const char *const cbor_value_hex, const char*msg);
 void assert_cbor2json(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex, const char*msg);
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+#endif
 
 #ifndef STRINGIFY
 #define STRINGIFY(x) _STRINGIFY(x)
@@ -140,6 +144,8 @@ void test_txt_fetch_nan(void);
 void test_txt_fetch_inf(void);
 void test_txt_fetch_int32_array(void);
 void test_txt_fetch_float_array(void);
+void test_txt_fetch_num_records(void);
+void test_txt_fetch_record(void);
 void test_txt_patch_wrong_data_structure(void);
 void test_txt_patch_array(void);
 void test_txt_patch_readonly(void);
@@ -173,6 +179,9 @@ void test_bin_patch_float_array(void);
 void test_bin_fetch_float_array(void);
 void test_bin_patch_rounded_float(void);
 void test_bin_fetch_rounded_float(void);
+void test_bin_fetch_num_records(void);
+void test_bin_fetch_record(void);
+void test_bin_fetch_record_item(void);
 void test_bin_fetch_by_name(void);
 void test_bin_statement_subset(void);
 void test_bin_statement_group(void);

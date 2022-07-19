@@ -151,7 +151,7 @@ void test_bin_fetch_by_name(void)
 
 void test_bin_patch_float_array(void)
 {
-    float *arr = (float *)float32_array.ptr;
+    float *arr = (float *)float32_array.elements;
     arr[0] = 0;
     arr[1] = 0;
 
@@ -175,7 +175,7 @@ void test_bin_patch_float_array(void)
 
 void test_bin_fetch_float_array(void)
 {
-    float *arr = (float *)float32_array.ptr;
+    float *arr = (float *)float32_array.elements;
     arr[0] = 2.27;
     arr[1] = 3.44;
 
@@ -229,6 +229,57 @@ void test_bin_patch_rounded_float(void)
     TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 
     TEST_ASSERT_EQUAL_FLOAT(5.0, f32);
+}
+
+void test_bin_fetch_num_records()
+{
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x19, 0x70, 0x05,
+        0xF7 // CBOR undefined
+    };
+    const uint8_t resp_expected[] = {
+        0x85, 0x02
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
+void test_bin_fetch_record()
+{
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x19, 0x70, 0x05,
+        0x01 // second record
+    };
+    const uint8_t resp_expected[] = {
+        0x85,
+        0xA3,
+            0x18, 0x81,
+            0x18, 0x7B, // 123
+            0x18, 0x82,
+            0xFA, 0x41, 0x68, 0x00, 0x00, // 14.5
+            0x18, 0x83,
+            0x02
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
+void test_bin_fetch_record_item()
+{
+    /* a sigle item cannot be fetched from a record, as the IDs are not unique */
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x00,
+        0x81, // array with single item
+            0x18, 0x81, // data object ID
+    };
+    const uint8_t resp_expected[] = {
+        0xA4 // Not found.
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
 }
 
 void test_bin_statement_subset(void)
@@ -486,15 +537,17 @@ void test_bin_fetch_paths(void)
     const char req[] =
         "05 "       // FETCH
         "17 "       // _paths
-        "83 "       // array with 3 elements
+        "84 "       // array with 4 elements
         "18 71 "    // uint 0x71
+        "18 81 "    // uint 0x81
         "10 "       // uint 0x10
         "01 ";      // uint 0x01 (ID_INFO)
 
     const char resp_expected[] =
         "85 "                               // status: content
-        "83 "                               // array with 3 elements
+        "84 "                               // array with 4 elements
         "6A 6D 65 61 73 2F 42 61 74 5F 56 " // string "meas/Bat_V"
+        "67 4C 6F 67 2F 74 5F 73 "          // string "Log/t_s"
         "63 74 5F 73 "                      // string "t_s"
         "64 69 6E 66 6F ";                  // string "info"
 
@@ -506,15 +559,17 @@ void test_bin_fetch_ids(void)
     const char req[] =
         "05 "                               // FETCH
         "16 "                               // _ids
-        "83 "                               // array with 3 elements
+        "84 "                               // array with 4 elements
         "6A 6D 65 61 73 2F 42 61 74 5F 56 " // string "meas/Bat_V"
+        "67 4C 6F 67 2F 74 5F 73 "          // string "Log/t_s"
         "63 74 5F 73 "                      // string "t_s"
         "64 69 6E 66 6F ";                  // string "info"
 
     const char resp_expected[] =
         "85 "       // status: content
-        "83 "       // array with 3 elements
+        "84 "       // array with 4 elements
         "18 71 "    // uint 0x71
+        "18 81 "    // uint 0x81
         "10 "       // uint 0x10
         "01 ";      // uint 0x01 (ID_INFO)
 

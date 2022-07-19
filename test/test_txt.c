@@ -67,6 +67,16 @@ void test_txt_fetch_float_array(void)
     TEST_ASSERT_TXT_REQ("?conf [\"arrayfloat\"]", ":85 Content. [[2.27,3.44]]");
 }
 
+void test_txt_fetch_num_records()
+{
+    TEST_ASSERT_TXT_REQ("?Log/", ":85 Content. 2");
+}
+
+void test_txt_fetch_record()
+{
+    TEST_ASSERT_TXT_REQ("?Log/1", ":85 Content. {\"t_s\":123,\"rBat_V\":14.50,\"sErrorFlags\":2}");
+}
+
 void test_txt_patch_wrong_data_structure(void)
 {
     TEST_ASSERT_TXT_REQ("!conf [\"f32\":54.3", ":A0 Bad Request.");

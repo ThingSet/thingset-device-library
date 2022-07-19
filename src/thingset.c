@@ -11,7 +11,7 @@
 #include "thingset_priv.h"
 
 #include <stdio.h>
-
+#include <stdlib.h>
 
 static void _check_id_duplicates(const struct ts_data_object *data, size_t num)
 {
@@ -103,9 +103,10 @@ struct ts_data_object *ts_get_object_by_id(struct ts_context *ts, ts_object_id_t
     return NULL;
 }
 
-struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *path, size_t len)
+struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char *path, size_t len,
+    uint16_t *index)
 {
-    struct ts_data_object *object;
+    struct ts_data_object *object = NULL;
     const char *start = path;
     const char *end;
     uint16_t parent = 0;
@@ -115,7 +116,18 @@ struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *
         end = strchr(start, '/');
         if (end == NULL || end >= path + len) {
             // we are at the end of the path
-            return ts_get_object_by_name(ts, start, path + len - start, parent);
+            if (object != NULL && object->type == TS_T_RECORDS &&
+                start[0] >= '0' && start[0] <= '9')
+            {
+                // numeric ID, only valid to select index in an array of records
+                if (index != NULL) {
+                    *index = strtoul(start, NULL, 0);
+                }
+                return object;
+            }
+            else {
+                return ts_get_object_by_name(ts, start, path + len - start, parent);
+            }
         }
         else if (end == path + len - 1) {
             // path ends with slash
@@ -134,6 +146,11 @@ struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *
         }
     }
     return NULL;
+}
+
+struct ts_data_object *ts_get_object_by_path(struct ts_context *ts, const char *path, size_t len)
+{
+    return ts_get_endpoint_by_path(ts, path, len, NULL);
 }
 
 int ts_get_path(struct ts_context *ts, char *buf, size_t size, const struct ts_data_object *obj)

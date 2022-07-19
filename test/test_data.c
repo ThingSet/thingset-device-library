@@ -62,13 +62,41 @@ static int16_t i16;
 bool b;
 
 int32_t A[100] = {4, 2, 8, 4};
-struct ts_array_info int32_array = {A, sizeof(A)/sizeof(int32_t), 4, TS_T_INT32};
+struct ts_array int32_array = {A, ARRAY_SIZE(A), 4, TS_T_INT32, sizeof(int32_t)};
 
 float B[100] = {2.27, 3.44};
-struct ts_array_info float32_array = {B, sizeof(B)/sizeof(float), 2, TS_T_FLOAT32};
+struct ts_array float32_array = {B, ARRAY_SIZE(B), 2, TS_T_FLOAT32, sizeof(float)};
 
 uint8_t bytes[300] = {};
 struct ts_bytes_buffer bytes_buf = { bytes, 0 };
+
+struct test_struct {
+    uint32_t timestamp;
+    uint8_t unused_element;
+    uint16_t error_flags;
+    float battery_voltage;
+};
+
+struct test_struct objects[5] = {
+    {
+        .timestamp = 0,
+        .unused_element = 0,
+        .error_flags = 0,
+        .battery_voltage = 12.5,
+    }, {
+        .timestamp = 123,
+        .unused_element = 0,
+        .error_flags = 2,
+        .battery_voltage = 14.5,
+    }
+};
+
+struct ts_records records = {
+    .data = objects,
+    .record_size = sizeof(struct test_struct),
+    .max_records = ARRAY_SIZE(objects),
+    .num_records = 2,
+};
 
 struct ts_data_object data_objects[] = {
 
@@ -141,6 +169,23 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_STRING(0xE3, "Password", auth_password, sizeof(auth_password),
         0xE2, TS_ANY_RW, 0),
 
+    // RECORDS used for logs //////////////////////////////////////////////////
+
+    TS_ITEM_RECORDS(0x7005, "Log", &records, ID_ROOT, TS_ANY_R, 0),
+
+    /*
+    * Record items definition.
+    *
+    * Note that:
+    * - not all struct elements need to be exposed (unused_element is missing)
+    * - the order of elements can be changed
+    *
+    * Important: All elements *must* be from the same struct.
+    */
+    TS_RECORD_ITEM_UINT32(0x7005, 0x81, "t_s", struct test_struct, timestamp),
+    TS_RECORD_ITEM_FLOAT(0x7005, 0x82, "rBat_V", struct test_struct, battery_voltage, 2),
+    TS_RECORD_ITEM_UINT16(0x7005, 0x83, "sErrorFlags", struct test_struct, error_flags),
+
     // REPORTS ////////////////////////////////////////////////////////////////
 
     TS_SUBSET(ID_REPORT, "report", SUBSET_REPORT, ID_ROOT, TS_ANY_RW),
@@ -197,10 +242,6 @@ struct ts_data_object data_objects[] = {
 
     TS_ITEM_BYTES(0x8000, "bytesbuf", &bytes_buf, sizeof(bytes), ID_CONF, TS_ANY_RW, 0),
 };
-
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
-#endif
 
 size_t data_objects_size = ARRAY_SIZE(data_objects);
 

@@ -15,7 +15,7 @@ uint8_t resp_buf[TS_RESP_BUFFER_LEN];
 bool group_callback_called;
 bool update_callback_called;
 bool dummy_called_flag;
-struct ts_array_info pub_serial_array;
+struct ts_array pub_serial_array;
 
 
 void dummy(void)

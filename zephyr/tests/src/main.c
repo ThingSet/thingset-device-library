@@ -41,6 +41,8 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_fetch_inf, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_fetch_int32_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_fetch_float_array, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_fetch_num_records, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_fetch_record, setup, teardown),
         /* Text mode: PATCH request */
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_data_structure, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_array, setup, teardown),
@@ -84,6 +86,9 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_fetch_float_array, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_rounded_float, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_fetch_by_name, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_num_records, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_record, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_fetch_record_item, setup, teardown),
         /* Bin mode: POST request */
         ztest_unit_test_setup_teardown(test_bin_exec, setup, teardown),
         /* Bin mode: pub/sub messages */
