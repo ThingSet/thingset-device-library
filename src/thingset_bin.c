@@ -31,6 +31,10 @@ static int cbor_deserialize_simple_value(const uint8_t *buf, void *data, int typ
         return cbor_deserialize_uint16(buf, (uint16_t *)data);
     case TS_T_INT16:
         return cbor_deserialize_int16(buf, (int16_t *)data);
+    case TS_T_UINT8:
+        return cbor_deserialize_uint8(buf, (uint8_t *)data);
+    case TS_T_INT8:
+        return cbor_deserialize_int8(buf, (int8_t *)data);
     case TS_T_FLOAT32:
         return cbor_deserialize_float(buf, (float *)data);
 #if TS_DECFRAC_TYPE_SUPPORT
@@ -100,6 +104,10 @@ static int cbor_serialize_simple_value(uint8_t *buf, size_t size, void *data, in
         return cbor_serialize_uint(buf, *((uint16_t *)data), size);
     case TS_T_INT16:
         return cbor_serialize_int(buf, *((int16_t *)data), size);
+    case TS_T_UINT8:
+        return cbor_serialize_uint(buf, *((uint8_t *)data), size);
+    case TS_T_INT8:
+        return cbor_serialize_int(buf, *((int8_t *)data), size);
     case TS_T_FLOAT32:
         if (detail == 0) { // round to 0 digits: use int
 #if TS_64BIT_TYPES_SUPPORT

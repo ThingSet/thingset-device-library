@@ -59,6 +59,9 @@ int32_t i32;
 static uint16_t ui16;
 static int16_t i16;
 
+static uint16_t ui8;
+static int16_t i8;
+
 bool b;
 
 int32_t A[100] = {4, 2, 8, 4};
@@ -224,6 +227,8 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_INT32(0x6004, "i32", &i32, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_UINT16(0x6005, "ui16", &ui16, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_INT16(0x6006, "i16", &i16, ID_CONF, TS_ANY_RW, 0),
+    TS_ITEM_UINT8(0x600C, "ui8", &ui8, ID_CONF, TS_ANY_RW, 0),
+    TS_ITEM_INT8(0x600D, "i8", &i8, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_FLOAT(0x6007, "f32", &f32, 2, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_BOOL(0x6008, "bool", &b, ID_CONF, TS_ANY_RW, 0),
 

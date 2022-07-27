@@ -109,6 +109,10 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
         return snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)data));
     case TS_T_INT16:
         return snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)data));
+    case TS_T_UINT8:
+        return snprintf(buf, size, "%" PRIu8 ",", *((uint8_t *)data));
+    case TS_T_INT8:
+        return snprintf(buf, size, "%" PRIi8 ",", *((int8_t *)data));
     case TS_T_FLOAT32: {
         float value = *((float *)data);
         if (isnan(value) || isinf(value)) {
@@ -450,6 +454,12 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             break;
         case TS_T_INT16:
             *((uint16_t*)object->data) = strtol(buf, NULL, 0);
+            break;
+        case TS_T_UINT8:
+            *((uint8_t*)object->data) = strtoul(buf, NULL, 0);
+            break;
+        case TS_T_INT8:
+            *((uint8_t*)object->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_BOOL:
             if (buf[0] == 't' || buf[0] == '1') {

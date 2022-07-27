@@ -405,6 +405,30 @@ int cbor_deserialize_int16(const uint8_t *data, int16_t *value)
     return 0;
 }
 
+int cbor_deserialize_uint8(const uint8_t *data, uint8_t *value)
+{
+    uint32_t tmp;
+    int size = cbor_deserialize_uint32(data, &tmp); // also checks value for null-pointer
+
+    if (size > 0 && tmp <= UINT8_MAX) {
+        *value = tmp;
+        return size;
+    }
+    return 0;
+}
+
+int cbor_deserialize_int8(const uint8_t *data, int8_t *value)
+{
+    int32_t tmp;
+    int size = cbor_deserialize_int32(data, &tmp); // also checks value for null-pointer
+
+    if (size > 0 && tmp <= INT8_MAX && tmp >= INT8_MIN) {
+        *value = tmp;
+        return size;
+    }
+    return 0;
+}
+
 #if TS_DECFRAC_TYPE_SUPPORT
 int cbor_deserialize_decfrac(const uint8_t *data, int32_t *mantissa, const int16_t exponent)
 {

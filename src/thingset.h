@@ -155,6 +155,8 @@ enum TsType {
     TS_T_INT32,     /**< int32_t */
     TS_T_UINT16,    /**< uint16_t */
     TS_T_INT16,     /**< int16_t */
+    TS_T_UINT8,     /**< uint8_t */
+    TS_T_INT8,      /**< int8_t */
     TS_T_FLOAT32,   /**< float */
     TS_T_STRING,    /**< String buffer (UTF-8 text) */
     TS_T_BYTES,     /**< Byte buffer (binary data) */
@@ -218,6 +220,8 @@ static inline void *ts_uint32_to_void(uint32_t *ptr) { return (void*) ptr; }
 static inline void *ts_int32_to_void(int32_t *ptr) { return (void*) ptr; }
 static inline void *ts_uint16_to_void(uint16_t *ptr) { return (void*) ptr; }
 static inline void *ts_int16_to_void(int16_t *ptr) { return (void*) ptr; }
+static inline void *ts_uint8_to_void(uint8_t *ptr) { return (void*) ptr; }
+static inline void *ts_int8_to_void(int8_t *ptr) { return (void*) ptr; }
 static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
@@ -232,6 +236,8 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define ts_int32_to_void(ptr) ((void*)ptr)
 #define ts_uint16_to_void(ptr) ((void*)ptr)
 #define ts_int16_to_void(ptr) ((void*)ptr)
+#define ts_uint8_to_void(ptr) ((void*)ptr)
+#define ts_int8_to_void(ptr) ((void*)ptr)
 #define ts_float_to_void(ptr) ((void*)ptr)
 #define ts_string_to_void(ptr) ((void*)ptr)
 #define ts_bytes_to_void(ptr) ((void*)ptr)
@@ -270,13 +276,21 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ITEM_INT16(id, name, int16_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_int16_to_void(int16_ptr), TS_T_INT16, 0, access, subsets}
 
+/** Create data item for uint8_t variable. */
+#define TS_ITEM_UINT8(id, name, uint8_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_uint8_to_void(uint8_ptr), TS_T_UINT8, 0, access, subsets}
+
+/** Create data item for int8_t variable. */
+#define TS_ITEM_INT8(id, name, int8_ptr, parent_id, access, subsets) \
+    {id, parent_id, name, ts_int8_to_void(int8_ptr), TS_T_INT8, 0, access, subsets}
+
 /** Create data item for float variable. */
 #define TS_ITEM_FLOAT(id, name, float_ptr, digits, parent_id, access, subsets) \
     {id, parent_id, name, ts_float_to_void(float_ptr), TS_T_FLOAT32, digits, access, subsets}
 
 /**
  * Create data item for decimal fraction variable. The mantissa is internally stored as int32_t.
- * The value is cnverted into a float (JSON) or decimal fraction type (CBOR) for the protocol,
+ * The value is converted into a float (JSON) or decimal fraction type (CBOR) for the protocol,
  * based on the specified (fixed) exponent.
  */
 #define TS_ITEM_DECFRAC(id, name, mantissa_ptr, exponent, parent_id, access, subsets) \
@@ -346,6 +360,14 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_RECORD_ITEM_INT16(parent_id, id, name, struct_type, struct_member) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT16, 0}
 
+/** Create data item for uint8_t variable. */
+#define TS_RECORD_ITEM_UINT8(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_UINT8, 0}
+
+/** Create data item for int8_t variable. */
+#define TS_RECORD_ITEM_INT8(parent_id, id, name, struct_type, struct_member) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT8, 0}
+
 /** Create data item for float variable. */
 #define TS_RECORD_ITEM_FLOAT(parent_id, id, name, struct_type, struct_member, digits) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
@@ -386,6 +408,8 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_ITEM_INT32(id, ...)      _TS_ADD_ITERABLE(ITEM_INT32, id, __VA_ARGS__)
 #define TS_ADD_ITEM_UINT16(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT16, id, __VA_ARGS__)
 #define TS_ADD_ITEM_INT16(id, ...)      _TS_ADD_ITERABLE(ITEM_INT16, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT8(id, ...)      _TS_ADD_ITERABLE(ITEM_UINT8, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT8(id, ...)       _TS_ADD_ITERABLE(ITEM_INT8, id, __VA_ARGS__)
 #define TS_ADD_ITEM_FLOAT(id, ...)      _TS_ADD_ITERABLE(ITEM_FLOAT, id, __VA_ARGS__)
 #define TS_ADD_ITEM_DECFRAC(id, ...)    _TS_ADD_ITERABLE(ITEM_DECFRAC, id, __VA_ARGS__)
 #define TS_ADD_ITEM_STRING(id, ...)     _TS_ADD_ITERABLE(ITEM_STRING, id, __VA_ARGS__)
@@ -543,7 +567,7 @@ struct ts_data_object {
     /**
      * One of TS_TYPE_INT32, _FLOAT, ...
      */
-    const uint32_t type : 4;
+    const uint32_t type : 5;
 
     /**
      * Variable storing different detail information depending on the data type
@@ -566,7 +590,7 @@ struct ts_data_object {
     /**
      * Flags to assign data item to different data item subsets (e.g. for publication messages)
      */
-    uint32_t subsets : 8;
+    uint32_t subsets : 7;
 
 };
 
