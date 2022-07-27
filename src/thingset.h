@@ -319,7 +319,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
     {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
 /** Create a data object pointing to a struct ts_array. */
-#define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+#define TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_records_to_void(records_ptr), TS_T_RECORDS, 0, access, subsets}
 
 /** Create a subset data object for the provided subset flag. */
@@ -481,6 +481,10 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
     TS_GROUP(_id, _name, _callback, _parent) \
     _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
+
+#define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+    TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+    _Pragma ("GCC warning \"'TS_ITEM_RECORDS' macro is deprecated, use 'TS_RECORDS'\"")
 
 /** @endcond */
 
