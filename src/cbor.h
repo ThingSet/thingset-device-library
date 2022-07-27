@@ -232,6 +232,26 @@ int cbor_deserialize_uint16(const uint8_t *data, uint16_t *value);
 int cbor_deserialize_int16(const uint8_t *data, int16_t *value);
 
 /**
+ * Deserialize 8-bit unsigned integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
+int cbor_deserialize_uint8(const uint8_t *data, uint8_t *value);
+
+/**
+ * Deserialize 8-bit signed integer
+ *
+ * @param data Buffer containing CBOR data with matching type
+ * @param value Pointer to the variable where the value should be stored
+ *
+ * @returns Number of bytes read from buffer or 0 in case of error
+ */
+int cbor_deserialize_int8(const uint8_t *data, int8_t *value);
+
+/**
  * Deserialize decimal fraction type
  *
  * The exponent is fixed, so the mantissa is multiplied to match the exponent
