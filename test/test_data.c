@@ -185,9 +185,9 @@ struct ts_data_object data_objects[] = {
     *
     * Important: All elements *must* be from the same struct.
     */
-    TS_RECORD_ITEM_UINT32(0x7005, 0x81, "t_s", struct test_struct, timestamp),
-    TS_RECORD_ITEM_FLOAT(0x7005, 0x82, "rBat_V", struct test_struct, battery_voltage, 2),
-    TS_RECORD_ITEM_UINT16(0x7005, 0x83, "sErrorFlags", struct test_struct, error_flags),
+    TS_RECORD_ITEM_UINT32(0x81, "t_s", struct test_struct, timestamp, 0x7005),
+    TS_RECORD_ITEM_FLOAT(0x82, "rBat_V", struct test_struct, battery_voltage, 2, 0x7005),
+    TS_RECORD_ITEM_UINT16(0x83, "sErrorFlags", struct test_struct, error_flags, 0x7005),
 
     // REPORTS ////////////////////////////////////////////////////////////////
 
