@@ -372,6 +372,18 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_RECORD_ITEM_FLOAT(id, name, struct_type, struct_member, digits, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
 
+/** Create data item for decimal fraction variable. */
+#define TS_RECORD_ITEM_DECFRAC(id, name, struct_type, struct_member, exponent, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_DECFRAC, exponent}
+
+/** Create data item for string variable. */
+#define TS_RECORD_ITEM_STRING(id, name, struct_type, struct_member, buf_size, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_STRING, buf_size}
+
+/** Create data item for bytes variable. */
+#define TS_RECORD_ITEM_BYTES(id, name, struct_type, struct_member, buf_size, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_BYTES, buf_size}
+
 #ifdef __ZEPHYR__
 
 /*
@@ -419,16 +431,19 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
 #define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
 #define TS_ADD_RECORDS(id, ...)         _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_BOOL(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_BOOL, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_UINT64(id, ...) _TS_ADD_ITERABLE(RECORD_ITEM_UINT64, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_INT64(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_INT64, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_UINT32(id, ...) _TS_ADD_ITERABLE(RECORD_ITEM_UINT32, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_INT32(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_INT32, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_UINT16(id, ...) _TS_ADD_ITERABLE(RECORD_ITEM_UINT16, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_INT16(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_INT16, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_UINT8(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT8, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_INT8(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT8, id, __VA_ARGS__)
-#define TS_ADD_RECORD_ITEM_FLOAT(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_FLOAT, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_BOOL(id, ...)    _TS_ADD_ITERABLE(RECORD_ITEM_BOOL, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT64(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT64, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT64(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT64, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT32(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT32, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT32(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT32, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT16(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT16, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT16(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT16, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT8(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_UINT8, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT8(id, ...)    _TS_ADD_ITERABLE(RECORD_ITEM_INT8, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_FLOAT(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_FLOAT, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_DECFRAC(id, ...) _TS_ADD_ITERABLE(RECORD_ITEM_DECFRAC, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_STRING(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_STRING, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_BYTES(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_BYTES, id, __VA_ARGS__)
 
 #endif /* __ZEPHYR__ */
 
