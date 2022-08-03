@@ -319,7 +319,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
     {id, parent_id, name, ts_array_to_void(array_info_ptr), TS_T_ARRAY, digits, access, subsets}
 
 /** Create a data object pointing to a struct ts_array. */
-#define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+#define TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
     {id, parent_id, name, ts_records_to_void(records_ptr), TS_T_RECORDS, 0, access, subsets}
 
 /** Create a subset data object for the provided subset flag. */
@@ -333,44 +333,56 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 /** struct related macros */
 
 /** Create data item for bool variable. */
-#define TS_RECORD_ITEM_BOOL(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_BOOL(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_BOOL, 0}
 
 /** Create data item for uint64_t variable. */
-#define TS_RECORD_ITEM_UINT64(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_UINT64(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_UINT64, 0}
 
 /** Create data item for int64_t variable. */
-#define TS_RECORD_ITEM_INT64(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_INT64(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT64, 0}
 
 /** Create data item for uint32_t variable. */
-#define TS_RECORD_ITEM_UINT32(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_UINT32(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_UINT32, 0}
 
 /** Create data item for int32_t variable. */
-#define TS_RECORD_ITEM_INT32(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_INT32(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT32, 0}
 
 /** Create data item for uint16_t variable. */
-#define TS_RECORD_ITEM_UINT16(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_UINT16(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_UINT16, 0}
 
 /** Create data item for int16_t variable. */
-#define TS_RECORD_ITEM_INT16(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_INT16(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT16, 0}
 
 /** Create data item for uint8_t variable. */
-#define TS_RECORD_ITEM_UINT8(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_UINT8(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_UINT8, 0}
 
 /** Create data item for int8_t variable. */
-#define TS_RECORD_ITEM_INT8(parent_id, id, name, struct_type, struct_member) \
+#define TS_RECORD_ITEM_INT8(id, name, struct_type, struct_member, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_INT8, 0}
 
 /** Create data item for float variable. */
-#define TS_RECORD_ITEM_FLOAT(parent_id, id, name, struct_type, struct_member, digits) \
+#define TS_RECORD_ITEM_FLOAT(id, name, struct_type, struct_member, digits, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_FLOAT32, digits}
+
+/** Create data item for decimal fraction variable. */
+#define TS_RECORD_ITEM_DECFRAC(id, name, struct_type, struct_member, exponent, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_DECFRAC, exponent}
+
+/** Create data item for string variable. */
+#define TS_RECORD_ITEM_STRING(id, name, struct_type, struct_member, buf_size, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_STRING, buf_size}
+
+/** Create data item for bytes variable. */
+#define TS_RECORD_ITEM_BYTES(id, name, struct_type, struct_member, buf_size, parent_id) \
+    {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_BYTES, buf_size}
 
 #ifdef __ZEPHYR__
 
@@ -418,6 +430,20 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_ITEM_ARRAY(id, ...)      _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
 #define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
 #define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
+#define TS_ADD_RECORDS(id, ...)         _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_BOOL(id, ...)    _TS_ADD_ITERABLE(RECORD_ITEM_BOOL, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT64(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT64, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT64(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT64, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT32(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT32, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT32(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT32, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT16(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT16, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT16(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT16, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_UINT8(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_UINT8, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_INT8(id, ...)    _TS_ADD_ITERABLE(RECORD_ITEM_INT8, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_FLOAT(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_FLOAT, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_DECFRAC(id, ...) _TS_ADD_ITERABLE(RECORD_ITEM_DECFRAC, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_STRING(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_STRING, id, __VA_ARGS__)
+#define TS_ADD_RECORD_ITEM_BYTES(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_BYTES, id, __VA_ARGS__)
 
 #endif /* __ZEPHYR__ */
 
@@ -481,6 +507,10 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
     TS_GROUP(_id, _name, _callback, _parent) \
     _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
+
+#define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+    TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
+    _Pragma ("GCC warning \"'TS_ITEM_RECORDS' macro is deprecated, use 'TS_RECORDS'\"")
 
 /** @endcond */
 
