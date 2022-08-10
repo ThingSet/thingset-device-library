@@ -104,7 +104,7 @@ struct ts_data_object *ts_get_object_by_id(struct ts_context *ts, ts_object_id_t
 }
 
 struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char *path, size_t len,
-    uint16_t *index)
+    int *index)
 {
     struct ts_data_object *object = NULL;
     const char *start = path;

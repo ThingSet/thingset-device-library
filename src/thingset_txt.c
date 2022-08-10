@@ -196,6 +196,9 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             }
             pos += snprintf(buf + pos, size - pos, "],");
         }
+        else if (object->type == TS_T_RECORDS) {
+            pos = snprintf(buf, size, "null,");
+        }
     }
 
     if (pos < size) {
@@ -266,7 +269,7 @@ int ts_txt_process(struct ts_context *ts)
         path_len = (uint8_t *)path_end - ts->req - 1;
     }
 
-    uint16_t record_index = 0;
+    int record_index = RECORD_INDEX_NONE;
     const struct ts_data_object *endpoint =
         ts_get_endpoint_by_path(ts, (char *)ts->req + 1, path_len, &record_index);
     if (!endpoint) {
@@ -654,6 +657,12 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     int objects_found = 0;
     if (endpoint && endpoint->type == TS_T_RECORDS) {
         struct ts_records *records = (struct ts_records *)endpoint->data;
+
+        if (record_index == RECORD_INDEX_NONE) {
+            len--;
+            len += snprintf((char *)ts->resp + len, ts->resp_size - len, "null");
+            return len;
+        }
 
         /* record item definitions are expected to start behind endpoint data object */
         const struct ts_data_object *item = endpoint + 1;

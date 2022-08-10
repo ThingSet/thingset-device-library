@@ -47,6 +47,9 @@ extern "C" {
 #define TS_RET_PATHS            (1U << 3)       /**< Return type flag: Paths */
 #define TS_RET_DISCOVERY        (1U << 4)       /**< Return type flag: Discovery */
 
+/** Value to use for record index if no index was specified */
+#define RECORD_INDEX_NONE (-1)
+
 /**
  * Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch
  * functions.
@@ -266,7 +269,7 @@ int ts_get_path(struct ts_context *ts, char *buf, size_t size, const struct ts_d
  * @returns Pointer to data object or NULL if object is not found
  */
 struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char *path, size_t len,
-                                               uint16_t *index);
+                                               int *index);
 
 #ifdef __cplusplus
 } /* extern "C" */
