@@ -248,7 +248,7 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level)
                     &ts->data_objects[i]);
                 if (pos > 0) {
                     buf[pos-1] = '\0';  // remove trailing comma
-                    LOG_DBG("%*s%s", 4 * (level + 1), "", LOG_ALLOC_STR((char *)buf));
+                    LOG_DBG("%*s%s", 4 * (level + 1), "", (char *)buf);
                 }
             }
         }

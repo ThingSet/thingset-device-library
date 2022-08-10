@@ -15,18 +15,22 @@
 #define LOG_MODULE_NAME thingset
 #define LOG_LEVEL CONFIG_THINGSET_LOG_LEVEL
 #endif
+
+#include <version.h>
+
+#if ZEPHYR_VERSION_CODE >= 0x030100
+#include <zephyr/zephyr.h>
+#include <zephyr/logging/log.h>
+#else
+#include <zephyr.h>
 #include <logging/log.h>
+#endif
 
 #ifdef THINGSET_MAIN
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #else
 LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 #endif
-
-#define LOG_ALLOC_STR(str)	((str == NULL) ? log_strdup("null") : \
-                                                log_strdup(str))
-
-#include <zephyr.h>
 
 #if CONFIG_MINIMAL_LIBC
 /*

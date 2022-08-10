@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#include <ztest.h>
+#include <zephyr/ztest.h>
 
 #define TEST_ASSERT(condition) \
         zassert_true(condition, "exp: true: actual: %d", (int)(condition))

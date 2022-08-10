@@ -27,7 +27,6 @@ extern "C" {
 
 #define LOG_DBG(...) printf(__VA_ARGS__)
 #define LOG_ERR(...) printf(__VA_ARGS__)
-#define LOG_ALLOC_STR(str) str
 
 #include <stdio.h>
 
