@@ -23,14 +23,14 @@ void test_bin_get_meas_ids_values(void)
 
 void test_bin_get_meas_names_values()
 {
-    const uint8_t req[] = { TS_GET, 0x64, 0x6D, 0x65, 0x61, 0x73 };
+    const uint8_t req[] = { TS_GET, 0x64, 0x4D, 0x65, 0x61, 0x73 };
     const char resp_hex[] =
         "85 A3 "     // successful response: map with 3 elements
-        "65 42 61 74 5F 56 "
+        "66 72 42 61 74 5F 56 "
         "FA 41 61 99 9A "        // 14.1
-        "65 42 61 74 5F 41 "
+        "66 72 42 61 74 5F 41 "
         "FA 40 A4 28 F6 "        // 5.13
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
+        "6D 72 41 6D 62 69 65 6E 74 5F 64 65 67 43 "
         "16";
 
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
@@ -59,13 +59,13 @@ void test_bin_fetch_meas_ids(void)
 void test_bin_fetch_meas_names(void)
 {
     const uint8_t req[] = { TS_FETCH,
-        0x64, 0x6D, 0x65, 0x61, 0x73,   // "meas"
+        0x64, 0x4D, 0x65, 0x61, 0x73,   // "Meas"
         0xF7 };                         // CBOR undefined
     const char resp_hex[] =
         "85 83 "     // successful response: array with 3 elements
-        "65 42 61 74 5F 56 "
-        "65 42 61 74 5F 41 "
-        "6C 41 6D 62 69 65 6E 74 5F 64 65 67 43";
+        "66 72 42 61 74 5F 56 "
+        "66 72 42 61 74 5F 41 "
+        "6D 72 41 6D 62 69 65 6E 74 5F 64 65 67 43";
 
     TEST_ASSERT_BIN_REQ(req, sizeof(req), resp_hex);
 }
@@ -136,10 +136,10 @@ void test_bin_fetch_by_name(void)
 {
     char req_hex[] =
         "05 "
-        "64 6D 65 61 73 "       // "meas"
-        "82 "                   // array with 2 elements
-        "65 42 61 74 5F 56 "    // "Bat_V"
-        "65 42 61 74 5F 41 ";   // "Bat_A"
+        "64 4D 65 61 73 "           // "Meas"
+        "82 "                       // array with 2 elements
+        "66 72 42 61 74 5F 56 "     // "rBat_V"
+        "66 72 42 61 74 5F 41 ";    // "rBat_A"
 
     const char resp_hex[] =
         "85 82 "                // successful response: array with 2 elements
@@ -286,14 +286,14 @@ void test_bin_statement_subset(void)
 {
     const char resp_expected[] =
         "1F "
-        "0A "                   // ID of "report"
+        "0A "                   // ID of "mReport"
         "84 "                   // array with 4 elements
         "1A 00 BC 61 4E "       // int 12345678
         "FA 41 61 99 9a "       // float 14.10
         "FA 40 a4 28 f6 "       // float 5.13
         "16 ";                  // int 22
 
-    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "report");
+    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "mReport");
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 
@@ -306,12 +306,12 @@ void test_bin_statement_group(void)
 {
     const char resp_expected[] =
         "1F "
-        "01 "                                       // ID of "info"
+        "01 "                                       // ID of "Info"
         "82 "                                       // array with 2 elements
         "6B 4C 69 62 72 65 20 53 6F 6C 61 72 "      // "Libre Solar"
         "68 41 42 43 44 31 32 33 34 ";              // "ABCD1234"
 
-    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "info");
+    int resp_len = ts_bin_statement_by_path(&ts, resp_buf, sizeof(resp_buf), "Info");
 
     TEST_ASSERT_BIN_RESP(resp_buf, resp_len, resp_expected);
 
@@ -326,10 +326,10 @@ void test_bin_pub_can(void)
     uint32_t msg_id;
     uint8_t can_data[8];
 
-    const uint8_t Bat_V_hex[] = { 0xFA, 0x41, 0x61, 0x99, 0x9a };
-    const uint8_t Bat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
+    const uint8_t rBat_V_hex[] = { 0xFA, 0x41, 0x61, 0x99, 0x9a };
+    const uint8_t rBat_A_hex[] = { 0xFA, 0x40, 0xa4, 0x28, 0xf6 };
 
-    // first call (should return Bat_V)
+    // first call (should return rBat_V)
     int can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
@@ -339,9 +339,9 @@ void test_bin_pub_can(void)
     TEST_ASSERT_EQUAL_UINT16(0x71, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
     TEST_ASSERT(can_subsets);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_V_hex[0], &can_data[0], sizeof(Bat_V_hex));
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(&rBat_V_hex[0], &can_data[0], sizeof(rBat_V_hex));
 
-    // second call (should return Bat_A)
+    // second call (should return rBat_A)
     can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
     TEST_ASSERT_NOT_EQUAL(-1, can_data_len);
 
@@ -351,7 +351,7 @@ void test_bin_pub_can(void)
     TEST_ASSERT_EQUAL_UINT16(0x72, can_dev_id);
     TEST_ASSERT_EQUAL_UINT32(TS_CAN_PRIO_PUBSUB_LOW, can_prio);
     TEST_ASSERT(can_subsets);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(&Bat_A_hex[0], &can_data[0], sizeof(Bat_A_hex));
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(&rBat_A_hex[0], &can_data[0], sizeof(rBat_A_hex));
 
     // third call (should not find further objects)
     can_data_len = ts_bin_pub_can(&ts, &start_pos, SUBSET_CAN, 123, &msg_id, &can_data[0]);
@@ -546,10 +546,10 @@ void test_bin_fetch_paths(void)
     const char resp_expected[] =
         "85 "                               // status: content
         "84 "                               // array with 4 elements
-        "6A 6D 65 61 73 2F 42 61 74 5F 56 " // string "meas/Bat_V"
+        "6B 4D 65 61 73 2F 72 42 61 74 5F 56 " // string "Meas/rBat_V"
         "67 4C 6F 67 2F 74 5F 73 "          // string "Log/t_s"
         "63 74 5F 73 "                      // string "t_s"
-        "64 69 6E 66 6F ";                  // string "info"
+        "64 49 6E 66 6F ";                  // string "Info"
 
     TEST_ASSERT_BIN_REQ_HEX(req, resp_expected);
 }
@@ -560,10 +560,10 @@ void test_bin_fetch_ids(void)
         "05 "                               // FETCH
         "16 "                               // _ids
         "84 "                               // array with 4 elements
-        "6A 6D 65 61 73 2F 42 61 74 5F 56 " // string "meas/Bat_V"
+        "6B 4D 65 61 73 2F 72 42 61 74 5F 56 " // string "Meas/rBat_V"
         "67 4C 6F 67 2F 74 5F 73 "          // string "Log/t_s"
         "63 74 5F 73 "                      // string "t_s"
-        "64 69 6E 66 6F ";                  // string "info"
+        "64 49 6E 66 6F ";                  // string "Info"
 
     const char resp_expected[] =
         "85 "       // status: content

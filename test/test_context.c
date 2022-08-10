@@ -159,7 +159,7 @@ void assert_txt_req(const char *req_s, const char *exp_s, const char *msg)
 
 static void _txt_patch(char const *name, char const *value, const char *msg)
 {
-    int req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=conf {\"%s\":%s}", name, value);
+    int req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "=Conf {\"%s\":%s}", name, value);
     int resp_len = ts_process(&ts, req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     int resp_buf_len = strlen((char *)resp_buf);
 
@@ -169,7 +169,7 @@ static void _txt_patch(char const *name, char const *value, const char *msg)
 
 static int _txt_fetch(char const *name, char *value_read, const char *msg)
 {
-    int req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?conf \"%s\"", name);
+    int req_len = snprintf((char *)req_buf, TS_REQ_BUFFER_LEN, "?Conf \"%s\"", name);
     int resp_len = ts_process(&ts, req_buf, req_len, resp_buf, TS_RESP_BUFFER_LEN);
     int resp_buf_len = strlen((char *)resp_buf);
 
