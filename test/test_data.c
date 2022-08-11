@@ -146,6 +146,32 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_INT16(0x73, "rAmbient_degC", &ambient_temp,
         ID_MEAS, TS_ANY_R, SUBSET_REPORT),
 
+    // NESTED DATA ///////////////////////////////////////////////////////
+
+    TS_GROUP(ID_NESTED, "Nested", TS_NO_CALLBACK, ID_ROOT),
+
+    TS_GROUP(0x90, "Bat1", TS_NO_CALLBACK, ID_NESTED),
+
+    TS_ITEM_FLOAT(0x91, "r_V", &battery_voltage, 2,
+        0x90, TS_ANY_R, SUBSET_NESTED),
+
+    TS_ITEM_FLOAT(0x92, "r_A", &battery_current, 2,
+        0x90, TS_ANY_R, SUBSET_NESTED),
+
+    TS_ITEM_INT16(0x93, "rDummy_degC", &ambient_temp,
+        ID_NESTED, TS_ANY_R, 0),
+
+    TS_GROUP(0x94, "Bat2", TS_NO_CALLBACK, ID_NESTED),
+
+    TS_ITEM_FLOAT(0x95, "r_V", &battery_voltage, 2,
+        0x94, TS_ANY_R, SUBSET_NESTED),
+
+    TS_ITEM_FLOAT(0x96, "r_A", &battery_current, 2,
+        0x94, TS_ANY_R, SUBSET_NESTED),
+
+    TS_ITEM_INT16(0x97, "rAmbient_degC", &ambient_temp,
+        ID_NESTED, TS_ANY_R, SUBSET_NESTED),
+
     // RECORDED DATA //////////////////////////////////////////////////////////
 
     TS_GROUP(ID_REC, "Rec", TS_NO_CALLBACK, ID_ROOT),

@@ -29,6 +29,7 @@ extern "C" {
 #define ID_INPUT    0x05        // input data (e.g. set-points)
 #define ID_CONF     0x06        // configurable settings
 #define ID_CAL      0x07        // calibration
+#define ID_NESTED   0x09        // dummy data for tests
 #define ID_REPORT   0x0A        // reports
 #define ID_DFU      0x0D        // device firmware upgrade
 #define ID_RPC      0x0E        // remote procedure calls
@@ -37,6 +38,7 @@ extern "C" {
 #define SUBSET_REPORT  (1U << 0)   // report subset of data items for publication
 #define SUBSET_CAN     (1U << 1)   // data nodes used for CAN bus publication messages
 #define SUBSET_NVM     (1U << 2)   // data that should be stored in EEPROM
+#define SUBSET_NESTED  (1U << 3)
 
 extern char manufacturer[];
 extern bool pub_report_enable;

@@ -292,10 +292,22 @@ void test_txt_get_endpoint(void)
 
 void test_txt_export(void)
 {
-    const char expected[] =
+    char *expected =
         "{\"t_s\":12345678,\"Meas\":{\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}}";
 
     int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
+    resp_buf[resp_len] = '\0';
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+
+    expected =
+        "{\"Nested\":{"
+            "\"Bat1\":{\"r_V\":14.10,\"r_A\":5.13},"
+            "\"Bat2\":{\"r_V\":14.10,\"r_A\":5.13},"
+            "\"rAmbient_degC\":22}"
+        "}";
+
+    resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_NESTED);
     resp_buf[resp_len] = '\0';
 
     TEST_ASSERT_TXT_RESP(resp_len, expected);

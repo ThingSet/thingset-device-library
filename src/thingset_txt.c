@@ -840,27 +840,47 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
 
 #if TS_NESTED_JSON
 
-/* currently only supporting nesting of depth 1 */
+/* currently only supporting nesting of depth 2 (parent and grandparent != 0) */
 int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t subsets)
 {
-    unsigned int len = 1;
+    struct ts_data_object *ancestors[2];
+    int depth = 0;
+    int len = 1;
     buf[0] = '{';
-    uint16_t prev_parent = 0;
-    unsigned int depth = 0;
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subsets) {
             const uint16_t parent_id = ts->data_objects[i].parent;
-            if (prev_parent != parent_id) {
-                if (prev_parent != 0) {
-                    // close object of previous parent
-                    buf[len-1] = '}';    // overwrite comma
-                    buf[len++] = ',';
-                }
+            if (depth > 0 && parent_id != ancestors[depth - 1]->id) {
+                // close object of previous parent
+                buf[len-1] = '}';    // overwrite comma
+                buf[len++] = ',';
+                depth--;
+            }
+
+            if (depth == 0 && parent_id != 0) {
                 struct ts_data_object *parent = ts_get_object_by_id(ts, parent_id);
-                len += snprintf(&buf[len], buf_size - len, "\"%s\":{", parent->name);
-                prev_parent = parent_id;
-                depth = 1;
+                if (parent != NULL) {
+                    if (parent->parent != 0) {
+                        struct ts_data_object *grandparent = ts_get_object_by_id(ts,
+                            parent->parent);
+                        if (grandparent != NULL) {
+                            len += snprintf(&buf[len], buf_size - len, "\"%s\":{",
+                                grandparent->name);
+                            ancestors[depth++] = grandparent;
+                        }
+                    }
+                    len += snprintf(&buf[len], buf_size - len, "\"%s\":{", parent->name);
+                    ancestors[depth++] = parent;
+                }
+            }
+            else if (depth > 0 && parent_id != ancestors[depth - 1]->id) {
+                struct ts_data_object *parent = ts_get_object_by_id(ts, parent_id);
+                if (parent != NULL) {
+                    len += snprintf(&buf[len], buf_size - len, "\"%s\":{", parent->name);
+                    ancestors[depth++] = parent;
+                }
+
             }
             len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len,
                 &ts->data_objects[i]);
@@ -870,10 +890,11 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
         }
     }
 
-    buf[len-1] = '}';    // overwrite comma
+    len--; // to overwrite comma
 
-    if (depth == 1) {
+    while (depth >= 0) {
         buf[len++] = '}';
+        depth--;
     }
 
     return len;
