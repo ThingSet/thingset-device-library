@@ -248,7 +248,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
  * This function supports a maximum depth of 2 only (e.g. Meas/rBat_V).
  *
  * @param ts Pointer to ThingSet context.
- * @param buf Pointer to the buffer where the JSON value should be stored.
+ * @param buf Pointer to the buffer where the path should be stored.
  * @param size Size of the buffer, i.e. maximum allowed length of the value.
  * @param object Pointer to object which should be serialized.
  *

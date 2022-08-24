@@ -927,19 +927,27 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
 int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
                      struct ts_data_object *object)
 {
-    unsigned int len;
+    unsigned int len = 0;
 
-    if (!object || object->parent != 0) {
-        // currently only supporting top level objects
+    if (!object) {
+        return 0;
+    }
+
+    buf[len++] = '#';
+    len += ts_get_path(ts, &buf[len], buf_size - len, object);
+
+    if (len > 1 && buf_size > len) {
+        buf[len++] = ' ';
+    }
+    else {
         return 0;
     }
 
     if (object->type == TS_T_SUBSET) {
-        len = snprintf(buf, buf_size, "#%s ", object->name);
         len += ts_txt_export(ts, &buf[len], buf_size - len, object->detail);
     }
     else if (object->type == TS_T_GROUP) {
-        len = snprintf(buf, buf_size, "#%s {", object->name);
+        buf[len++] = '{';
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].parent == object->id) {
                 len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len,

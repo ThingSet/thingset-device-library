@@ -169,6 +169,10 @@ void test_txt_statement_group(void)
     resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
 
     TEST_ASSERT_TXT_RESP(resp_len, "#Info {\"cManufacturer\":\"Libre Solar\",\"cNodeID\":\"ABCD1234\"}");
+
+    resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "Nested/Bat1");
+
+    TEST_ASSERT_TXT_RESP(resp_len, "#Nested/Bat1 {\"r_V\":14.10,\"r_A\":5.13}");
 }
 
 void test_txt_pub_list_channels(void)
