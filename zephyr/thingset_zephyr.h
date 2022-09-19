@@ -19,7 +19,7 @@
 #include <version.h>
 
 #if ZEPHYR_VERSION_CODE >= 0x030100
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #else
 #include <zephyr.h>
