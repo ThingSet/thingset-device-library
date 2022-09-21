@@ -140,6 +140,7 @@ void test_ts_init(void);
 void test_txt_get_meas_names(void);
 void test_txt_get_meas_names_values(void);
 void test_txt_get_single_value(void);
+void test_txt_get_nested(void);
 void test_txt_fetch_array(void);
 void test_txt_fetch_rounded(void);
 void test_txt_fetch_nan(void);

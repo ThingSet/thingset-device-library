@@ -196,7 +196,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             }
             pos += snprintf(buf + pos, size - pos, "],");
         }
-        else if (object->type == TS_T_RECORDS) {
+        else if (object->type == TS_T_GROUP || object->type == TS_T_RECORDS) {
             pos = snprintf(buf, size, "null,");
         }
     }
@@ -692,10 +692,6 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
                 (ts->data_objects[i].parent == endpoint_id))
             {
                 if (include_values) {
-                    if (ts->data_objects[i].type == TS_T_GROUP) {
-                        // bad request, as we can't read internal path object's values
-                        return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
-                    }
                     int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len],
                         ts->resp_size - len, &ts->data_objects[i]);
                     if (ret > 0) {

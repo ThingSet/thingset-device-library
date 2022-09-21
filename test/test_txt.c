@@ -23,6 +23,12 @@ void test_txt_get_single_value()
     TEST_ASSERT_TXT_REQ("?Meas/rBat_V", ":85 Content. 14.10");
 }
 
+void test_txt_get_nested()
+{
+    TEST_ASSERT_TXT_REQ("?Nested",
+        ":85 Content. {\"Bat1\":null,\"rDummy_degC\":22,\"Bat2\":null,\"rAmbient_degC\":22}");
+}
+
 void test_txt_fetch_array()
 {
     f32 = 52.80;
