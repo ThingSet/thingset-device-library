@@ -55,6 +55,7 @@ inline double strtod(const char * string, char **endPtr)
     return ts_strtod(string, endPtr);
 };
 
+#if ZEPHYR_VERSION_CODE < 0x030100
 inline long long strtoll(const char *str, char **endptr, int base)
 {
     /* XXX good enough for thingset uses ?*/
@@ -66,7 +67,9 @@ inline unsigned long long strtoull(const char *str, char **endptr, int base)
     /* XXX good enough for thingset uses ?*/
     return (unsigned long long)strtoul(str, endptr, base);
 };
-#endif
+#endif /* ZEPHYR_VERSION_CODE < 0x030100 */
+
+#endif /* CONFIG_MINIMAL_LIBC */
 
 #if CONFIG_ZTEST
 /*
