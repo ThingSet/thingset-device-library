@@ -31,6 +31,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_patch_txt_fetch, setup, teardown),
 
         /* Text mode: GET request */
+        ztest_unit_test_setup_teardown(test_txt_get_root, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_meas_names, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_meas_names_values, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_get_single_value, setup, teardown),

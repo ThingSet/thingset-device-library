@@ -137,6 +137,7 @@ void test_txt_patch_bin_fetch(void);
 void test_bin_patch_txt_fetch(void);
 void test_ts_init(void);
 
+void test_txt_get_root(void);
 void test_txt_get_meas_names(void);
 void test_txt_get_meas_names_values(void);
 void test_txt_get_single_value(void);

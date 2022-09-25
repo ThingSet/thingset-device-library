@@ -8,6 +8,25 @@
 
 #include "test.h"
 
+void test_txt_get_root()
+{
+#if TS_NESTED_JSON
+    TEST_ASSERT_TXT_REQ("?", ":85 Content. "
+        "{\"t_s\":12345678,\"Info\":null,\"Conf\":null,\"Input\":null,\"Meas\":null,"
+        "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":null,"
+        "\"mReport\":[\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"],"
+        "\"_pub\":null,\"Test\":null}"
+    );
+#else
+    TEST_ASSERT_TXT_REQ("?", ":85 Content. "
+        "{\"t_s\":12345678,\"Info\":null,\"Conf\":null,\"Input\":null,\"Meas\":null,"
+        "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":2,"
+        "\"mReport\":[\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"],"
+        "\"_pub\":null,\"Test\":null}"
+    );
+#endif
+}
+
 void test_txt_get_meas_names()
 {
     TEST_ASSERT_TXT_REQ("?Meas/", ":85 Content. [\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");

@@ -37,6 +37,7 @@ void tests_text_mode()
     UNITY_BEGIN();
 
     // GET request
+    RUN_TEST(test_txt_get_root);
     RUN_TEST(test_txt_get_meas_names);
     RUN_TEST(test_txt_get_meas_names_values);
     RUN_TEST(test_txt_get_single_value);
