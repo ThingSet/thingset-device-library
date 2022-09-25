@@ -890,6 +890,7 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
 
     while (depth >= 0) {
         buf[len++] = '}';
+        buf[len] = '\0';
         depth--;
     }
 
@@ -914,6 +915,7 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
     }
 
     buf[len-1] = '}';    // overwrite comma
+    buf[len] = '\0';
 
     return len;
 }
@@ -954,6 +956,7 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
             }
         }
         buf[len-1] = '}';    // overwrite comma
+        buf[len] = '\0';
     }
     else {
         return 0;
