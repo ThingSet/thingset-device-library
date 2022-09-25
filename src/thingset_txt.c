@@ -193,8 +193,12 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             }
             pos += snprintf(buf + pos, size - pos, "],");
         }
-        else if (object->type == TS_T_GROUP || object->type == TS_T_RECORDS) {
+        else if (object->type == TS_T_GROUP) {
             pos = snprintf(buf, size, "null,");
+        }
+        else if (object->type == TS_T_RECORDS) {
+            struct ts_records *records = (struct ts_records *)object->data;
+            pos = snprintf(buf, size, "%d,", records->num_records);
         }
     }
 
@@ -632,7 +636,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
             case TS_T_GROUP:
                 break;
             case TS_T_RECORDS:
-                if (ret_type == TS_RET_NAMES) {
+                if (ret_type == TS_RET_NAMES || record_index == RECORD_INDEX_NONE) {
                     struct ts_records *records = (struct ts_records *)endpoint->data;
                     len += snprintf((char *)&ts->resp[len], ts->resp_size - len, " %d",
                         records->num_records);
@@ -654,12 +658,6 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     int objects_found = 0;
     if (endpoint && endpoint->type == TS_T_RECORDS) {
         struct ts_records *records = (struct ts_records *)endpoint->data;
-
-        if (record_index == RECORD_INDEX_NONE) {
-            len--;
-            len += snprintf((char *)ts->resp + len, ts->resp_size - len, "null");
-            return len;
-        }
 
         /* record item definitions are expected to start behind endpoint data object */
         const struct ts_data_object *item = endpoint + 1;

@@ -13,7 +13,7 @@ void test_txt_get_root()
 #if TS_NESTED_JSON
     TEST_ASSERT_TXT_REQ("?", ":85 Content. "
         "{\"t_s\":12345678,\"Info\":null,\"Conf\":null,\"Input\":null,\"Meas\":null,"
-        "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":null,"
+        "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":2,"
         "\"mReport\":[\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"],"
         "\"_pub\":null,\"Test\":null}"
     );
@@ -101,16 +101,12 @@ void test_txt_fetch_float_array(void)
 void test_txt_fetch_num_records()
 {
     TEST_ASSERT_TXT_REQ("?Log/", ":85 Content. 2");
+    TEST_ASSERT_TXT_REQ("?Log", ":85 Content. 2");
 }
 
 void test_txt_fetch_record()
 {
     TEST_ASSERT_TXT_REQ("?Log/1", ":85 Content. {\"t_s\":123,\"rBat_V\":14.50,\"sErrorFlags\":2}");
-}
-
-void test_txt_fetch_records_object()
-{
-    TEST_ASSERT_TXT_REQ("?Log", ":85 Content. null");
 }
 
 void test_txt_patch_wrong_data_structure(void)
