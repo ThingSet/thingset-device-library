@@ -48,6 +48,12 @@ void test_txt_get_nested()
         ":85 Content. {\"Bat1\":null,\"rDummy_degC\":22,\"Bat2\":null,\"rAmbient_degC\":22}");
 }
 
+void test_txt_get_rpc()
+{
+    TEST_ASSERT_TXT_REQ("?RPC",
+        ":85 Content. {\"xReset\":[],\"xAuth\":[\"uPassword\"],\"xDummy\":[]}");
+}
+
 void test_txt_fetch_array()
 {
     f32 = 52.80;

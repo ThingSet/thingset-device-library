@@ -151,11 +151,8 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             }
             if (pos > 1) {
                 pos--; // remove trailing comma
-                pos += snprintf(buf + pos, size - pos, "],");
             }
-            else {
-                pos = snprintf(buf, size, "null,");
-            }
+            pos += snprintf(buf + pos, size - pos, "],");
         }
         else if (object->type == TS_T_SUBSET) {
             pos = snprintf(buf, size, "[");

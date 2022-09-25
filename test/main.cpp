@@ -42,6 +42,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_get_meas_names_values);
     RUN_TEST(test_txt_get_single_value);
     RUN_TEST(test_txt_get_nested);
+    RUN_TEST(test_txt_get_rpc);
 
     // FETCH request
     RUN_TEST(test_txt_fetch_array);
