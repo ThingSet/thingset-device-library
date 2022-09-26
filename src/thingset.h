@@ -384,8 +384,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_RECORD_ITEM_BYTES(id, name, struct_type, struct_member, buf_size, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_BYTES, buf_size}
 
-#ifdef __ZEPHYR__
-
+#ifdef CONFIG_THINGSET_ITERABLE_SECTIONS
 /*
  * Below macros can be used to populate the data objects array from multiple independent files
  * using the iterable sections feature provided by Zephyr.
@@ -445,7 +444,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_RECORD_ITEM_STRING(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_STRING, id, __VA_ARGS__)
 #define TS_ADD_RECORD_ITEM_BYTES(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_BYTES, id, __VA_ARGS__)
 
-#endif /* __ZEPHYR__ */
+#endif /* CONFIG_THINGSET_ITERABLE_SECTIONS */
 
 /** @cond INTERNAL_HIDDEN */
 /*
@@ -707,6 +706,20 @@ struct ts_context {
  * @param num Number of elements in that array
  */
 int ts_init(struct ts_context *ts, struct ts_data_object *data, size_t num);
+
+#ifdef CONFIG_THINGSET_ITERABLE_SECTIONS
+
+/**
+ * Initialize a ThingSet context using Zephyr iterable sections.
+ *
+ * Data objects defined using TS_ADD_* macros will be magically added to the object database by the
+ * linker.
+ *
+ * @param ts Pointer to ThingSet context.
+ */
+int ts_init_global(struct ts_context *ts);
+
+#endif /* CONFIG_THINGSET_ITERABLE_SECTIONS */
 
 /**
  * Process ThingSet request.

@@ -35,6 +35,30 @@ int ts_init(struct ts_context *ts, struct ts_data_object *data, size_t num)
     return 0;
 }
 
+#ifdef CONFIG_THINGSET_ITERABLE_SECTIONS
+
+/*
+ * ThingSet data objects are generated in each module using Zephyr's iterable section feature.
+ *
+ * Below pointers are normally used in the STRUCT_SECTION_FOREACH macro, but we want to use
+ * a pointer to the array of data objects directly, so we extract the memory locations manually.
+ */
+extern struct ts_data_object _ts_data_object_list_start[];
+extern struct ts_data_object _ts_data_object_list_end[];
+
+int ts_init_global(struct ts_context *ts)
+{
+    /* duplicates are checked at compile-time */
+
+    ts->data_objects = _ts_data_object_list_start;
+    ts->num_objects = _ts_data_object_list_end - _ts_data_object_list_start;
+    ts->_auth_flags = TS_USR_MASK;
+
+    return 0;
+}
+
+#endif
+
 int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len,
                uint8_t *response, size_t response_size)
 {

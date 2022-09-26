@@ -19,6 +19,11 @@ zephyr_library_named("ts")
 
 zephyr_include_directories(${THINGSET_BASE}/src)
 
+if(DEFINED CONFIG_THINGSET_ITERABLE_SECTIONS)
+    # required for auto-generation of ts_data_objects array
+    zephyr_linker_sources(DATA_SECTIONS thingset_iterables.ld)
+endif()
+
 add_subdirectory(${THINGSET_BASE}/src build/thingset)
 
 if(DEFINED CONFIG_MINIMAL_LIBC)
