@@ -14,6 +14,15 @@ config THINGSET_ZEPHYR
         help
           ThingSet on Zephyr.
 
+config THINGSET_ITERABLE_SECTIONS
+        bool "Use iterable sections to define data objects globally"
+        default y
+        help
+          This option allows to define data objects where they are needed throughout the code
+          using the TS_ADD_* macros.
+
+          If enabled, the ThingSet context should be initialized with ts_init_global.
+
 config THINGSET_NUM_JSON_TOKENS
         int "Maximum number of expected JSON tokens."
         default 50
