@@ -226,6 +226,39 @@ int ts_json_serialize_name_value(struct ts_context *ts, char *buf, size_t size,
     return len_name + len_value;
 }
 
+int ts_json_serialize_record(struct ts_context *ts, char *buf, size_t size,
+                             const struct ts_data_object *endpoint, int record_index,
+                             int *objects_found)
+{
+    struct ts_records *records = (struct ts_records *)endpoint->data;
+    size_t len = 0;
+
+    /* record item definitions are expected to start behind endpoint data object */
+    const struct ts_data_object *item = endpoint + 1;
+    while (item < &ts->data_objects[ts->num_objects] && item->parent == endpoint->id) {
+        size_t len_name = snprintf(buf + len, size - len, "\"%s\":", item->name);
+        if (len_name < 0) {
+            return 0;
+        }
+
+        void *data = (uint8_t *)records->data + record_index * records->record_size +
+            (size_t)item->data;
+        int len_value = json_serialize_simple_value(buf + len + len_name, size - len - len_name,
+            data, item->type, item->detail);
+        if (len_value < 0) {
+            return 0;
+        }
+
+        len += len_name + len_value;
+        item++;
+        if (objects_found != NULL) {
+            *objects_found += 1;
+        }
+    }
+
+    return len;
+}
+
 void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level)
 {
     uint8_t buf[100];
@@ -657,28 +690,13 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     len += sprintf((char *)&ts->resp[len], include_values ? " {" : " [");
     int objects_found = 0;
     if (endpoint && endpoint->type == TS_T_RECORDS) {
-        struct ts_records *records = (struct ts_records *)endpoint->data;
-
-        /* record item definitions are expected to start behind endpoint data object */
-        const struct ts_data_object *item = endpoint + 1;
-        while (item < &ts->data_objects[ts->num_objects] && item->parent == endpoint->id) {
-            size_t len_name = snprintf((char *)ts->resp + len, ts->resp_size - len, "\"%s\":",
-                item->name);
-            if (len_name < 0) {
-                return 0;
-            }
-
-            void *data = (uint8_t *)records->data + record_index * records->record_size +
-                (size_t)item->data;
-            int len_value = json_serialize_simple_value((char *)ts->resp + len + len_name,
-                ts->resp_size - len - len_name, data, item->type, item->detail);
-            if (len_value < 0) {
-                return 0;
-            }
-
-            len += len_name + len_value;
-            objects_found++;
-            item++;
+        int record_len = ts_json_serialize_record(ts, (char *)ts->resp + len, ts->resp_size - len,
+                                                  endpoint, record_index, &objects_found);
+        if (record_len > 0) {
+            len += record_len;
+        }
+        else {
+            return 0;
         }
     }
     else {
@@ -917,8 +935,8 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
 
 #endif /* TS_NESTED_JSON */
 
-int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
-                     struct ts_data_object *object)
+static int ts_serialize_statement(struct ts_context *ts, char *buf, size_t buf_size,
+                                  struct ts_data_object *object, int record_index)
 {
     unsigned int len = 0;
 
@@ -928,6 +946,9 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
 
     buf[len++] = '#';
     len += ts_get_path(ts, &buf[len], buf_size - len, object);
+    if (record_index != RECORD_INDEX_NONE) {
+        len += snprintf(buf + len, buf_size - len, "/%d", record_index);
+    }
 
     if (len > 1 && buf_size > len) {
         buf[len++] = ' ';
@@ -953,6 +974,12 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
         buf[len-1] = '}';    // overwrite comma
         buf[len] = '\0';
     }
+    else if (object->type == TS_T_RECORDS) {
+        buf[len++] = '{';
+        len += ts_json_serialize_record(ts, buf + len, buf_size - len, object, record_index, NULL);
+        buf[len-1] = '}';    // overwrite comma
+        buf[len] = '\0';
+    }
     else {
         return 0;
     }
@@ -960,12 +987,26 @@ int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
     return len;
 }
 
+int ts_txt_statement(struct ts_context *ts, char *buf, size_t buf_size,
+                     struct ts_data_object *object)
+{
+    return ts_serialize_statement(ts, buf, buf_size, object, RECORD_INDEX_NONE);
+}
+
 int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, const char *path)
 {
-    return ts_txt_statement(ts, buf, buf_size, ts_get_object_by_path(ts, path, strlen(path)));
+    return ts_serialize_statement(ts, buf, buf_size, ts_get_object_by_path(ts, path, strlen(path)),
+                                  RECORD_INDEX_NONE);
 }
 
 int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts_object_id_t id)
 {
-    return ts_txt_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id));
+    return ts_serialize_statement(ts, buf, buf_size, ts_get_object_by_id(ts, id),
+                                  RECORD_INDEX_NONE);
+}
+
+int ts_txt_statement_record(struct ts_context *ts, char *buf, size_t buf_size,
+                            struct ts_data_object *object, int record_index)
+{
+    return ts_serialize_statement(ts, buf, buf_size, object, record_index);
 }

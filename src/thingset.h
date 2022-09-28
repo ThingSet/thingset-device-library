@@ -826,6 +826,23 @@ int ts_txt_statement_by_path(struct ts_context *ts, char *buf, size_t buf_size, 
 int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts_object_id_t id);
 
 /**
+ * Generate statement message in JSON format based on pointer to group or subset.
+ *
+ * This is the fastest method to generate a statement as it does not require to search through the
+ * entire data objects array.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param buf Pointer to the buffer where the publication message should be stored
+ * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
+ * @param object Group or subset object specifying the items to be published
+ * @param record_index Element number extracted from path (only used for records).
+ *
+ * @returns Actual length of the message written to the buffer or 0 in case of error
+ */
+int ts_txt_statement_record(struct ts_context *ts, char *buf, size_t buf_size,
+                            struct ts_data_object *object, int record_index);
+
+/**
  * Retrieve data in CBOR format for given subset(s).
  *
  * This function does not return a complete ThingSet message, but only the payload data as an

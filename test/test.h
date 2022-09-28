@@ -160,6 +160,7 @@ void test_txt_group_callback(void);
 void test_txt_exec(void);
 void test_txt_statement_subset(void);
 void test_txt_statement_group(void);
+void test_txt_statement_record(void);
 void test_txt_pub_list_channels(void);
 void test_txt_pub_enable(void);
 void test_txt_pub_delete_append_object(void);

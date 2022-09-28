@@ -202,6 +202,17 @@ void test_txt_statement_group(void)
     TEST_ASSERT_TXT_RESP(resp_len, "#Nested/Bat1 {\"r_V\":14.10,\"r_A\":5.13}");
 }
 
+void test_txt_statement_record(void)
+{
+    const char expected[] = "#Log/1 {\"t_s\":123,\"rBat_V\":14.50,\"sErrorFlags\":2}";
+
+    struct ts_data_object *obj = ts_get_object_by_path(&ts, "Log", strlen("Log"));
+
+    int resp_len = ts_txt_statement_record(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, obj, 1);
+
+    TEST_ASSERT_TXT_RESP(resp_len, expected);
+}
+
 void test_txt_pub_list_channels(void)
 {
     TEST_ASSERT_TXT_REQ("?_pub/", ":85 Content. [\"mReport\",\"Info\"]");
