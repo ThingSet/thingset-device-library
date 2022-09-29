@@ -606,7 +606,7 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
 
     for (unsigned int i = *start_pos; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subset) {
-            *msg_id = TS_CAN_BASE_PUBSUB | TS_CAN_PRIO_PUBSUB_LOW
+            *msg_id = TS_CAN_TYPE_PUBSUB | TS_CAN_PRIO_PUBSUB_LOW
                 | TS_CAN_DATA_ID_SET(ts->data_objects[i].id)
                 | TS_CAN_SOURCE_SET(can_dev_id);
 
