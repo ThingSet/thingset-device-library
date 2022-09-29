@@ -71,74 +71,102 @@ extern "C" {
 #define TS_ID_NODEID            0x1D /**< Data Object ID for node ID (cNodeID) */
 
 /*
- * ThingSet addressing in 29-bit CAN ID similar to SAE J1939
- *
- * In order to avoid collisions with SAE J1939 and NMEA 2000, bit 25 (EDP) is always set to 1 and
- * bit 24 (DP) is used to distinguish between request/response and pub/sub messages.
+ * ThingSet addressing in 29-bit CAN ID
  *
  * Request/response messages using ISO-TP:
  *
- *   --------------------------------------------------------------------
- *   | 28 .. 26 | 25 | 24 |    23 .. 16     |   15 .. 8   |   7 .. 0    |
- *   --------------------------------------------------------------------
- *   | Priority | 1  | 0  | reserved (0xDA) | target addr | source addr |
- *   --------------------------------------------------------------------
+ *    28      26 25 24 23           16 15            8 7             0
+ *   +----------+-----+---------------+---------------+---------------+
+ *   | Priority | 0x0 |     bus ID    |  target addr  |  source addr  |
+ *   +----------+-----+---------------+---------------+---------------+
  *
- *   Bits 23..16 are set to 218 (0xDA) as suggested by ISO-TP standard (ISO 15765-2) for normal
- *   fixed addressing with N_TAtype = physical
+ *   Priority: 6
+ *
+ *   Bus ID:
+ *     Set to 218 (0xDA) by default as suggested by ISO-TP standard (ISO 15765-2)
+ *     for normal fixed addressing with N_TAtype = physical.
  *
  * Control and pub/sub messages (always single-frame):
  *
- *   --------------------------------------------------------------------
- *   | 28 .. 26 | 25 | 24 |   23 .. 16    |   15 .. 8     |   7 .. 0    |
- *   --------------------------------------------------------------------
- *   | Priority | 1  | 1  | data ID (MSB) | data ID (LSB) | source addr |
- *   --------------------------------------------------------------------
+ *    28      26 25 24 23           16 15            8 7             0
+ *   +----------+-----+---------------+---------------+---------------+
+ *   | Priority | 0x2 | data ID (MSB) | data ID (LSB) |  source addr  |
+ *   +----------+-----+---------------+---------------+---------------+
  *
  *   Priority:
  *     0 .. 3: High-priority control frames
- *     4 .. 7: Normal pub/sub frames for monitoring
+ *     5, 7: Normal pub/sub frames for monitoring
+ *
+ * Network management (e.g. address claiming):
+ *
+ *    28      26 25 24 23           16 15            8 7             0
+ *   +----------+-----+---------------+---------------+---------------+
+ *   | Priority | 0x3 | variable byte |  target addr  |  source addr  |
+ *   +----------+-----+---------------+---------------+---------------+
+ *
+ *   Priority: 4
+ *
+ *   Variable byte:
+ *     - Random data for address discovery frame
+ *     - Bus ID for address claiming frame (same as request/response)
  */
 
-#define TS_CAN_SOURCE_POS               (0U)
-#define TS_CAN_SOURCE_MASK              (0xFF << TS_CAN_SOURCE_POS)
-#define TS_CAN_SOURCE_SET(addr)         ((uint32_t)addr << TS_CAN_SOURCE_POS)
+/* source and target addresses */
+#define TS_CAN_SOURCE_POS           (0U)
+#define TS_CAN_SOURCE_MASK          (0xFF << TS_CAN_SOURCE_POS)
+#define TS_CAN_SOURCE_SET(addr)     (((uint32_t)addr << TS_CAN_SOURCE_POS) & TS_CAN_SOURCE_MASK)
+#define TS_CAN_SOURCE_GET(id)       (((uint32_t)id & TS_CAN_SOURCE_MASK) >> TS_CAN_SOURCE_POS)
 
-#define TS_CAN_TARGET_POS               (8U)
-#define TS_CAN_TARGET_MASK              (0xFF << TS_CAN_TARGET_POS)
-#define TS_CAN_TARGET_SET(addr)         ((uint32_t)addr << TS_CAN_TARGET_POS)
+#define TS_CAN_TARGET_POS           (8U)
+#define TS_CAN_TARGET_MASK          (0xFF << TS_CAN_TARGET_POS)
+#define TS_CAN_TARGET_SET(addr)     (((uint32_t)addr << TS_CAN_TARGET_POS) & TS_CAN_TARGET_MASK)
+#define TS_CAN_TARGET_GET(id)       (((uint32_t)id & TS_CAN_TARGET_MASK) >> TS_CAN_TARGET_POS)
 
-#define TS_CAN_DATA_ID_POS              (8U)
-#define TS_CAN_DATA_ID_MASK             (0xFFFF << TS_CAN_DATA_ID_POS)
-#define TS_CAN_DATA_ID_SET(id)          ((uint32_t)id << TS_CAN_DATA_ID_POS)
+#define TS_CAN_ADDR_MAX             (0xFD)
+#define TS_CAN_ADDR_ANONYMOUS       (0xFE)
+#define TS_CAN_ADDR_BROADCAST       (0xFF)
 
-#define TS_CAN_J1939_DP                 (0x1 << 24U)
-#define TS_CAN_J1939_EDP                (0x1 << 25U)
+/* data IDs for publication messages */
+#define TS_CAN_DATA_ID_POS          (8U)
+#define TS_CAN_DATA_ID_MASK         (0xFFFF << TS_CAN_DATA_ID_POS)
+#define TS_CAN_DATA_ID_SET(id)      (((uint32_t)id << TS_CAN_DATA_ID_POS) & TS_CAN_DATA_ID_MASK)
+#define TS_CAN_DATA_ID_GET(id)      (((uint32_t)id & TS_CAN_DATA_ID_MASK) >> TS_CAN_DATA_ID_POS)
 
-#define TS_CAN_TYPE_REQRESP             (TS_CAN_J1939_EDP)
-#define TS_CAN_TYPE_PUBSUB              (TS_CAN_J1939_EDP | TS_CAN_J1939_DP)
-#define TS_CAN_TYPE_MASK                (TS_CAN_J1939_EDP | TS_CAN_J1939_DP)
+/* bus ID for request/response messages */
+#define TS_CAN_BUS_ID_POS           (16U)
+#define TS_CAN_BUS_ID_MASK          (0xFF << TS_CAN_BUS_ID_POS)
+#define TS_CAN_BUS_ID_SET(id)       (((uint32_t)id << TS_CAN_BUS_ID_POS) & TS_CAN_BUS_ID_MASK)
+#define TS_CAN_BUS_ID_GET(id)       (((uint32_t)id & TS_CAN_BUS_ID_MASK) >> TS_CAN_BUS_ID_POS)
+#define TS_CAN_BUS_ID_DEFAULT       (0xDA) // 218, N_TAtype = physical
 
+/* random number for address discovery messages */
+#define TS_CAN_RAND_SET             TS_CAN_BUS_ID_SET
+#define TS_CAN_RAND_GET             TS_CAN_BUS_ID_GET
+
+/* message types */
+#define TS_CAN_TYPE_POS             (24U)
+#define TS_CAN_TYPE_MASK            (0x3 << TS_CAN_TYPE_POS)
+
+#define TS_CAN_TYPE_REQRESP         (0x0 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_PUBSUB          (0x2 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_NETWORK         (0x3 << TS_CAN_TYPE_POS)
+
+/* message priorities */
 #define TS_CAN_PRIO_POS                 (26U)
 #define TS_CAN_PRIO_MASK                (0x7 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_SET(prio)           ((uint32_t)prio << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_GET(id)             (((uint32_t)id & TS_CAN_PRIO_MASK) >> TS_CAN_PRIO_POS)
 
-// some pre-defined priorities
 #define TS_CAN_PRIO_CONTROL_EMERGENCY   (0x0 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_CONTROL_HIGH        (0x2 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_CONTROL_LOW         (0x3 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_NETWORK_MGMT        (0x4 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_PUBSUB_HIGH         (0x5 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_REQRESP             (0x6 << TS_CAN_PRIO_POS)
 #define TS_CAN_PRIO_PUBSUB_LOW          (0x7 << TS_CAN_PRIO_POS)
 
-// base configuration to create valid CAN IDs
-#define TS_CAN_BASE_CONTROL             TS_CAN_TYPE_PUBSUB
-#define TS_CAN_BASE_PUBSUB              TS_CAN_TYPE_PUBSUB
-#define TS_CAN_BASE_REQRESP             (TS_CAN_TYPE_REQRESP | 218U << 16)  // N_TAtype = physical
-
-// below macros return true if the CAN ID matches the specified message type
-#define TS_CAN_CONTROL(id)              (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_PUBSUB) && \
+/* below macros return true if the CAN ID matches the specified message type */
+#define TS_CAN_CONTROL(id)              (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_CONTROL) && \
                                         TS_CAN_PRIO_GET(id) < 4)
 #define TS_CAN_PUBSUB(id)               (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_PUBSUB) && \
                                         TS_CAN_PRIO_GET(id) >= 4)
