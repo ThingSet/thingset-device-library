@@ -749,6 +749,7 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
+#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
 #if TS_NESTED_JSON
@@ -765,6 +766,8 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
+#endif /* !CONFIG_THINGSET_IMMUTABLE_OBJECTS */
+
     return ts_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 
@@ -779,6 +782,7 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
+#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
 #if TS_NESTED_JSON
@@ -795,6 +799,8 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
         }
     }
+#endif /* !CONFIG_THINGSET_IMMUTABLE_OBJECTS */
+
     return ts_txt_response(ts, TS_STATUS_METHOD_NOT_ALLOWED);
 }
 

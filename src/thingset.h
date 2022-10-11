@@ -172,6 +172,12 @@ extern "C" {
                                         TS_CAN_PRIO_GET(id) >= 4)
 #define TS_CAN_REQRESP(id)              ((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_REQRESP)
 
+#ifdef CONFIG_THINGSET_IMMUTABLE_OBJECTS
+#define MAYBE_CONST const
+#else
+#define MAYBE_CONST
+#endif
+
 /**
  * Internal C data types (used to cast void* pointers)
  */
@@ -436,7 +442,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** @cond INTERNAL_HIDDEN */
 #define _TS_ADD_ITERABLE(type, id, ...) \
-        STRUCT_SECTION_ITERABLE(ts_data_object, _CONCAT(obj_, id)) = \
+        MAYBE_CONST STRUCT_SECTION_ITERABLE(ts_data_object, _CONCAT(obj_, id)) = \
             _CONCAT(TS_, type) (id, __VA_ARGS__)
 /** @endcond */
 
@@ -647,7 +653,7 @@ struct ts_data_object {
     /**
      * Flags to assign data item to different data item subsets (e.g. for publication messages)
      */
-    uint32_t subsets : 7;
+    MAYBE_CONST uint32_t subsets : 7;
 
 };
 

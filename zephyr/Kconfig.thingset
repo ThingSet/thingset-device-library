@@ -23,6 +23,22 @@ config THINGSET_ITERABLE_SECTIONS
 
           If enabled, the ThingSet context should be initialized with ts_init_global.
 
+config THINGSET_IMMUTABLE_OBJECTS
+        bool "Make data objects immutable and store them in ROM"
+        depends on THINGSET_ITERABLE_SECTIONS
+        default n
+        help
+          This option adds const specifiers to the data object structs and stores them in iterable
+          sections in ROM instead of RAM.
+
+          The data itself still resides in RAM, only the pointers, object names, etc. are stored in
+          ROM, as they are not changed anyways.
+
+          The only disadvantage of this option is that no elements can be added to or removed from
+          subsets via the protocol anymore, as this information is now stored in read-only memory.
+
+          Possible future improvement: Store only subset information in RAM and the rest in ROM.
+
 config THINGSET_NUM_JSON_TOKENS
         int "Maximum number of expected JSON tokens."
         default 50
