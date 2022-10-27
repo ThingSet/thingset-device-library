@@ -200,6 +200,7 @@ void test_bin_deserialize_bytes(void);
 void test_bin_patch_fetch_bytes(void);
 void test_bin_export(void);
 void test_bin_import(void);
+void test_bin_import_record(void);
 void test_bin_update_callback(void);
 void test_bin_fetch_paths(void);
 void test_bin_fetch_ids(void);

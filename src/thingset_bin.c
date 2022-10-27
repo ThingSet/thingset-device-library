@@ -228,7 +228,7 @@ int ts_bin_process(struct ts_context *ts)
         }
     }
     else if (ts->req[0] == TS_PATCH && endpoint) {
-        int response = ts_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0);
+        int response = ts_bin_patch(ts, endpoint, pos, ts->_auth_flags, 0, 0);
 
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && ts->resp[0] == TS_STATUS_CHANGED) {
@@ -347,7 +347,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
     }
 }
 
-int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint8_t auth_flags,
+int ts_bin_import(struct ts_context *ts, const uint8_t *data, size_t len, uint8_t auth_flags,
                   uint16_t subsets)
 {
     uint8_t resp_tmp[1] = {};   // only one character as response expected
@@ -355,12 +355,25 @@ int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint8_t auth
     ts->req_len = len;
     ts->resp = resp_tmp;
     ts->resp_size = sizeof(resp_tmp);
-    ts_bin_patch(ts, NULL, 0, auth_flags, subsets);
+    ts_bin_patch(ts, NULL, 0, auth_flags, subsets, 0);
+    return ts->resp[0];
+}
+
+int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len,
+                         uint8_t auth_flags, uint16_t subsets,
+                         struct ts_data_object *object, int record_index)
+{
+    uint8_t resp_tmp[1] = {};   // only one character as response expected
+    ts->req = data;
+    ts->req_len = len;
+    ts->resp = resp_tmp;
+    ts->resp_size = sizeof(resp_tmp);
+    ts_bin_patch(ts, object, 0, auth_flags, subsets, record_index);
     return ts->resp[0];
 }
 
 int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
-                 unsigned int pos_payload, uint8_t auth_flags, uint16_t subsets)
+                 unsigned int pos_payload, uint8_t auth_flags, uint16_t subsets, int record_index)
 {
     unsigned int pos_req = pos_payload;
     uint16_t num_elements, element = 0;
@@ -388,8 +401,10 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
 
         const struct ts_data_object* object = ts_get_object_by_id(ts, id);
         if (object) {
-            if ((object->access & TS_WRITE_MASK & auth_flags) == 0) {
-                if (object->access & TS_WRITE_MASK) {
+            uint8_t access = (endpoint && endpoint->type == TS_T_RECORDS) ? endpoint->access :
+                object->access;
+            if ((access & TS_WRITE_MASK & auth_flags) == 0) {
+                if (access & TS_WRITE_MASK) {
                     return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
                 }
                 else {
@@ -405,7 +420,23 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
             }
             else {
                 // actually deserialize the data and update object
-                num_bytes = cbor_deserialize_data_obj(&ts->req[pos_req], object);
+                if (endpoint && endpoint->type == TS_T_RECORDS) {
+                    struct ts_records *records = (struct ts_records *)endpoint->data;
+                    void *data = (uint8_t *)records->data + record_index * records->record_size +
+                        (ptrdiff_t)object->data;
+
+                    struct ts_data_object obj_tmp = {
+                        .data = data,
+                        .type = object->type,
+                        .detail = object->detail
+                    };
+
+                    num_bytes = cbor_deserialize_data_obj(&ts->req[pos_req], &obj_tmp);
+                }
+                else {
+                    num_bytes = cbor_deserialize_data_obj(&ts->req[pos_req], object);
+                }
+
                 if (ts->_update_subsets & object->subsets) {
                     updated = true;
                 }
@@ -436,6 +467,7 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
         }
         return ts_bin_response(ts, TS_STATUS_CHANGED);
     } else {
+        printf("oops, elem = %d, num_elem = %d\n", element, num_elements);
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 }

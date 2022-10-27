@@ -200,7 +200,7 @@ struct ts_data_object data_objects[] = {
 
     // RECORDS used for logs //////////////////////////////////////////////////
 
-    TS_RECORDS(0x7005, "Log", &records, ID_ROOT, TS_ANY_R, 0),
+    TS_RECORDS(0x7005, "Log", &records, ID_ROOT, TS_ANY_RW, 0),
 
     /*
     * Record items definition.

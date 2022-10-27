@@ -111,6 +111,7 @@ void test_main(void)
         /* Bin mode: exporting/importing of data */
         ztest_unit_test_setup_teardown(test_bin_export, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_import, setup, teardown),
+        ztest_unit_test_setup_teardown(test_bin_import_record, setup, teardown),
         /* Bin mode: update notification */
         ztest_unit_test_setup_teardown(test_bin_update_callback, setup, teardown),
         /* Bin mode: request paths by IDs and vice versa */

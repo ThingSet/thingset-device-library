@@ -371,6 +371,42 @@ void test_bin_import(void)
     TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
 }
 
+void test_bin_import_record(void)
+{
+    /* only update 2 of the existing elements */
+    const uint8_t data[] = {
+        0xA2,
+            0x18, 0x81,
+            0x18, 0x7C, // 124
+            0x18, 0x83,
+            0x05,       // 5
+    };
+
+    struct ts_data_object *obj = ts_get_object_by_path(&ts, "Log", strlen("Log"));
+
+    int ret = ts_bin_import_record(&ts, data, sizeof(data), TS_WRITE_MASK, 0, obj, 0);
+
+    TEST_ASSERT_EQUAL(TS_STATUS_CHANGED, ret);
+
+    const uint8_t req[] = {
+        TS_FETCH,
+        0x19, 0x70, 0x05,
+        0x00 // first record
+    };
+    const uint8_t resp_expected[] = {
+        0x85,
+        0xA3,
+            0x18, 0x81,
+            0x18, 0x7C, // 124
+            0x18, 0x82,
+            0xFA, 0x41, 0x48, 0x00, 0x00, // 12.5
+            0x18, 0x83,
+            0x05
+    };
+
+    TEST_ASSERT_BIN_REQ_EXP_BIN(req, sizeof(req), resp_expected, sizeof(resp_expected));
+}
+
 void test_bin_exec(void)
 {
     dummy_called_flag = 0;

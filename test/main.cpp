@@ -140,6 +140,7 @@ void tests_binary_mode()
     // data export/import
     RUN_TEST(test_bin_export);
     RUN_TEST(test_bin_import);
+    RUN_TEST(test_bin_import_record);
 
     // update notification
     RUN_TEST(test_bin_update_callback);

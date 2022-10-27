@@ -868,7 +868,7 @@ int ts_txt_statement_by_id(struct ts_context *ts, char *buf, size_t buf_size, ts
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
  * @param buf_size Size of the message buffer, i.e. maximum allowed length of the message
- * @param object Group or subset object specifying the items to be published
+ * @param object Records object with the data to be published
  * @param record_index Element number extracted from path (only used for records).
  *
  * @returns Actual length of the message written to the buffer or 0 in case of error
@@ -894,8 +894,8 @@ int ts_bin_export(struct ts_context *ts, uint8_t *buf, size_t buf_size, uint16_t
 /**
  * Generate statement message in CBOR format based on pointer to group or subset.
  *
- * This is the fastest method to generate a statement as it does not require to search through the
- * entire date nodes array.
+ * This is the fastest method to generate a statement as it avoids searching through the entire
+ * data objects array.
  *
  * @param ts Pointer to ThingSet context.
  * @param buf Pointer to the buffer where the publication message should be stored
@@ -966,8 +966,25 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
  *
  * @returns ThingSet status code
  */
-int ts_bin_import(struct ts_context *ts, uint8_t *data, size_t len, uint8_t auth_flags,
+int ts_bin_import(struct ts_context *ts, const uint8_t *data, size_t len, uint8_t auth_flags,
                   uint16_t subsets);
+
+/**
+ * Import data in CBOR format as a record.
+ *
+ * @param ts Pointer to ThingSet context.
+ * @param data Buffer containing ID/value map that should be written to the record
+ * @param len Length of the data in the buffer
+ * @param auth_flags Authentication flags to be used in this function (to override _auth_flags)
+ * @param subsets Flags to select which subset(s) of data items should be imported
+ * @param object Records object with the data to be published
+ * @param record_index Index of the record to which the data should be written.
+ *
+ * @returns ThingSet status code
+ */
+int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len,
+                         uint8_t auth_flags, uint16_t subsets,
+                         struct ts_data_object *object, int record_index);
 
 /**
  * Get data object by ID.
