@@ -208,6 +208,14 @@ int ts_bin_process(struct ts_context *ts)
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
+    // check that the found endpoint is not part of a record, which cannot be queried like this
+    if (endpoint) {
+        struct ts_data_object *parent = ts_get_object_by_id(ts, endpoint->parent);
+        if (parent != NULL && parent->type == TS_T_RECORDS) {
+            return ts_bin_response(ts, TS_STATUS_NOT_FOUND);
+        }
+    }
+
     // process data
     if (ts->req[0] == TS_GET && endpoint) {
         ret_type |= TS_RET_VALUES;
