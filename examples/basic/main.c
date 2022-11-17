@@ -35,7 +35,7 @@ static struct ts_data_object data_objects[] = {
     TS_ITEM_BOOL(0x61, "wHeaterEnable", &enable_switch,
         TS_ID_ROOT, TS_ANY_RW, 0),
 
-    TS_FUNCTION(0xE1, "xReset", &reset,
+    TS_FN_VOID(0xE1, "xReset", &reset,
         TS_ID_ROOT, TS_ANY_RW),
 };
 

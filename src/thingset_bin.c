@@ -491,7 +491,7 @@ int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
     }
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
 
-    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_EXEC)) {
+    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_FN_VOID)) {
         // object is generally executable, but are we authorized?
         if ((object->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
             return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);

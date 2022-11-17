@@ -189,10 +189,10 @@ struct ts_data_object data_objects[] = {
 
     TS_GROUP(ID_RPC, "RPC", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_FUNCTION(0xE1, "xReset", &reset_function,
+    TS_FN_VOID(0xE1, "xReset", &reset_function,
         ID_RPC, TS_ANY_RW),
 
-    TS_FUNCTION(0xE2, "xAuth", &auth_function,
+    TS_FN_VOID(0xE2, "xAuth", &auth_function,
         ID_RPC, TS_ANY_RW),
 
     TS_ITEM_STRING(0xE3, "uPassword", auth_password, sizeof(auth_password),
@@ -243,7 +243,7 @@ struct ts_data_object data_objects[] = {
 
     TS_ITEM_INT32(0x4001, "i32_readonly", &i32, 0x1000, TS_ANY_R, 0),
 
-    TS_FUNCTION(0x5001, "xDummy", &dummy, ID_RPC, TS_ANY_RW),
+    TS_FN_VOID(0x5001, "xDummy", &dummy, ID_RPC, TS_ANY_RW),
 
 #if TS_64BIT_TYPES_SUPPORT
     TS_ITEM_UINT64(0x6001, "ui64", &ui64, ID_CONF, TS_ANY_RW, 0),

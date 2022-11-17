@@ -198,8 +198,8 @@ enum TsType {
     TS_T_RECORDS,   /**< Records (array of arbitrary struct object) */
     TS_T_DECFRAC,   /**< CBOR decimal fraction */
     TS_T_GROUP,     /**< Internal object to describe data hierarchy */
-    TS_T_EXEC,      /**< Executable functions */
     TS_T_SUBSET,    /**< Subset of data items */
+    TS_T_FN_VOID,   /**< Function with void return value */
 };
 
 /**
@@ -259,7 +259,7 @@ static inline void *ts_int8_to_void(int8_t *ptr) { return (void*) ptr; }
 static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
-static inline void *ts_function_to_void(void (*fnptr)()) { return (void*) fnptr; }
+static inline void *ts_fn_void_to_void(void (*fnptr)()) { return (void*) fnptr; }
 static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr; }
 static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *) ptr; }
 #else
@@ -275,7 +275,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define ts_float_to_void(ptr) ((void*)ptr)
 #define ts_string_to_void(ptr) ((void*)ptr)
 #define ts_bytes_to_void(ptr) ((void*)ptr)
-#define ts_function_to_void(ptr) ((void*)ptr)
+#define ts_fn_void_to_void(ptr) ((void*)ptr)
 #define ts_array_to_void(ptr) ((void*)ptr)
 #define ts_records_to_void(ptr) ((void*)ptr)
 #endif
@@ -345,8 +345,8 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
     {id, parent_id, name, ts_bytes_to_void(bytes_buffer_ptr), TS_T_BYTES, buf_size, access, subsets}
 
 /** Create an executable data object for function calls. */
-#define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
-    {id, parent_id, name, ts_function_to_void(void_function_ptr), TS_T_EXEC, 0, access, 0}
+#define TS_FN_VOID(id, name, void_function_ptr, parent_id, access) \
+    {id, parent_id, name, ts_fn_void_to_void(void_function_ptr), TS_T_FN_VOID, 0, access, 0}
 
 /** Create a data object pointing to a struct ts_array. */
 #define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
@@ -362,7 +362,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** Create a group for hierarchical structuring of the data. */
 #define TS_GROUP(id, name, void_function_cb_ptr, parent_id) \
-    {id, parent_id, name, ts_function_to_void(void_function_cb_ptr), TS_T_GROUP, 0, TS_READ_MASK, 0}
+    {id, parent_id, name, ts_fn_void_to_void(void_function_cb_ptr), TS_T_GROUP, 0, TS_READ_MASK, 0}
 
 /** struct related macros */
 
@@ -459,8 +459,8 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_ITEM_DECFRAC(id, ...)    _TS_ADD_ITERABLE(ITEM_DECFRAC, id, __VA_ARGS__)
 #define TS_ADD_ITEM_STRING(id, ...)     _TS_ADD_ITERABLE(ITEM_STRING, id, __VA_ARGS__)
 #define TS_ADD_ITEM_BYTES(id, ...)      _TS_ADD_ITERABLE(ITEM_BYTES, id, __VA_ARGS__)
-#define TS_ADD_FUNCTION(id, ...)        _TS_ADD_ITERABLE(FUNCTION, id, __VA_ARGS__)
 #define TS_ADD_ITEM_ARRAY(id, ...)      _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
+#define TS_ADD_FN_VOID(id, ...)         _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__)
 #define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
 #define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
 #define TS_ADD_RECORDS(id, ...)         _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)
@@ -482,7 +482,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** @cond INTERNAL_HIDDEN */
 /*
- * Deprecated defines for spec v0.3 to maintain compatibility
+ * Deprecated defines to maintain compatibility
  */
 
 #define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
@@ -527,7 +527,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
     TS_FUNCTION(_id, _name, _function_ptr, _parent, _acc) \
-    _Pragma ("GCC warning \"'TS_NODE_EXEC' macro is deprecated, use 'TS_FUNCTION'\"")
+    _Pragma ("GCC warning \"'TS_NODE_EXEC' macro is deprecated, use 'TS_FN_VOID'\"")
 
 #define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     TS_ITEM_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
@@ -544,6 +544,16 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
     TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
     _Pragma ("GCC warning \"'TS_ITEM_RECORDS' macro is deprecated, use 'TS_RECORDS'\"")
+
+/* remove after 11/2023 */
+#define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
+    TS_FN_VOID(id, name, void_function_ptr, parent_id, access) \
+    _Pragma ("GCC warning \"'TS_FUNCTION' macro is deprecated, use 'TS_FN_VOID'\"")
+
+/* remove after 11/2023 */
+#define TS_ADD_FUNCTION(id, ...) \
+    _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__); \
+    _Pragma ("GCC warning \"'TS_ADD_FUNCTION' macro is deprecated, use 'TS_ADD_FN_VOID'\"")
 
 /** @endcond */
 

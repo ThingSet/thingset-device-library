@@ -142,7 +142,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
 
     if (pos == 0) {
         // not a simple value
-        if (object->type == TS_T_EXEC) {
+        if (object->type == TS_T_FN_VOID) {
             pos = snprintf(buf, size, "[");
             for (unsigned int i = 0; i < ts->num_objects; i++) {
                 if (ts->data_objects[i].parent == object->id) {
@@ -333,7 +333,7 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
-                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_EXEC ||
+                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_FN_VOID ||
                     endpoint->type == TS_T_RECORDS))
                 {
                     return ts_txt_get(ts, endpoint, TS_RET_NAMES, record_index);
@@ -366,7 +366,7 @@ int ts_txt_process(struct ts_context *ts)
             }
             return len;
         }
-        else if (ts->req[0] == '!' && endpoint && endpoint->type == TS_T_EXEC) {
+        else if (ts->req[0] == '!' && endpoint && endpoint->type == TS_T_FN_VOID) {
             return ts_txt_exec(ts, endpoint);
         }
         else if (ts->req[0] == '+') {
@@ -660,7 +660,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
 
     if (endpoint != NULL) {
         switch (endpoint->type) {
-            case TS_T_EXEC:
+            case TS_T_FN_VOID:
                 if (include_values) {
                     // bad request, as we can't read exec object's values
                     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
@@ -813,7 +813,7 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
         tok++;      // go to first element of array
     }
 
-    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_EXEC)) {
+    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_FN_VOID)) {
         // object is generally executable, but are we authorized?
         if ((object->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
             return ts_txt_response(ts, TS_STATUS_UNAUTHORIZED);
