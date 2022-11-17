@@ -200,6 +200,7 @@ enum TsType {
     TS_T_GROUP,     /**< Internal object to describe data hierarchy */
     TS_T_SUBSET,    /**< Subset of data items */
     TS_T_FN_VOID,   /**< Function with void return value */
+    TS_T_FN_INT32,  /**< Function with int32_t return value */
 };
 
 /**
@@ -260,6 +261,7 @@ static inline void *ts_float_to_void(float *ptr) { return (void*) ptr; }
 static inline void *ts_string_to_void(const char *ptr) { return (void*) ptr; }
 static inline void *ts_bytes_to_void(struct ts_bytes_buffer *ptr) { return (void *) ptr; }
 static inline void *ts_fn_void_to_void(void (*fnptr)()) { return (void*) fnptr; }
+static inline void *ts_fn_int32_to_void(int32_t (*fnptr)()) { return (void*) fnptr; }
 static inline void *ts_array_to_void(struct ts_array *ptr) { return (void *) ptr; }
 static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *) ptr; }
 #else
@@ -276,6 +278,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define ts_string_to_void(ptr) ((void*)ptr)
 #define ts_bytes_to_void(ptr) ((void*)ptr)
 #define ts_fn_void_to_void(ptr) ((void*)ptr)
+#define ts_fn_int32_to_void(ptr) ((void*)ptr)
 #define ts_array_to_void(ptr) ((void*)ptr)
 #define ts_records_to_void(ptr) ((void*)ptr)
 #endif
@@ -344,9 +347,13 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ITEM_BYTES(id, name, bytes_buffer_ptr, buf_size, parent_id, access, subsets) \
     {id, parent_id, name, ts_bytes_to_void(bytes_buffer_ptr), TS_T_BYTES, buf_size, access, subsets}
 
-/** Create an executable data object for function calls. */
+/** Create an executable data object (function) with void return value. */
 #define TS_FN_VOID(id, name, void_function_ptr, parent_id, access) \
     {id, parent_id, name, ts_fn_void_to_void(void_function_ptr), TS_T_FN_VOID, 0, access, 0}
+
+/** Create an executable data object (function) with int32_t return value. */
+#define TS_FN_INT32(id, name, int32_function_ptr, parent_id, access) \
+    {id, parent_id, name, ts_fn_int32_to_void(int32_function_ptr), TS_T_FN_INT32, 0, access, 0}
 
 /** Create a data object pointing to a struct ts_array. */
 #define TS_ITEM_ARRAY(id, name, array_info_ptr, digits, parent_id, access, subsets) \
@@ -461,6 +468,7 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_ADD_ITEM_BYTES(id, ...)      _TS_ADD_ITERABLE(ITEM_BYTES, id, __VA_ARGS__)
 #define TS_ADD_ITEM_ARRAY(id, ...)      _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
 #define TS_ADD_FN_VOID(id, ...)         _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__)
+#define TS_ADD_FN_INT32(id, ...)        _TS_ADD_ITERABLE(FN_INT32, id, __VA_ARGS__)
 #define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
 #define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
 #define TS_ADD_RECORDS(id, ...)         _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)

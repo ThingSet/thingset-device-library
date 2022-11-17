@@ -54,7 +54,8 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_patch_unknown_object, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_group_callback, setup, teardown),
         /* Text mode: POST request */
-        ztest_unit_test_setup_teardown(test_txt_exec, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_fn_void, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_fn_int32, setup, teardown),
         /* Text mode: statements (pub/sub messages) */
         ztest_unit_test_setup_teardown(test_txt_statement_subset, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_statement_group, setup, teardown),

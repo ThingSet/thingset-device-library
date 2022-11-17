@@ -51,7 +51,7 @@ void test_txt_get_nested()
 void test_txt_get_rpc()
 {
     TEST_ASSERT_TXT_REQ("?RPC",
-        ":85 Content. {\"xReset\":[],\"xAuth\":[\"uPassword\"],\"xDummy\":[]}");
+        ":85 Content. {\"xReset\":[],\"xAuth\":[\"uPassword\"],\"xIntFunction\":[],\"xDummy\":[]}");
 }
 
 void test_txt_fetch_array()
@@ -147,13 +147,18 @@ void test_txt_group_callback(void)
     TEST_ASSERT_EQUAL(true, group_callback_called);
 }
 
-void test_txt_exec(void)
+void test_txt_fn_void(void)
 {
     dummy_called_flag = 0;
 
     TEST_ASSERT_TXT_REQ("!RPC/xDummy", ":83 Valid.");
 
     TEST_ASSERT_EQUAL(1, dummy_called_flag);
+}
+
+void test_txt_fn_int32(void)
+{
+    TEST_ASSERT_TXT_REQ("!RPC/xIntFunction", ":83 Valid. -1");
 }
 
 #if TS_NESTED_JSON

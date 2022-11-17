@@ -142,7 +142,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
 
     if (pos == 0) {
         // not a simple value
-        if (object->type == TS_T_FN_VOID) {
+        if (object->type == TS_T_FN_VOID || object->type == TS_T_FN_INT32) {
             pos = snprintf(buf, size, "[");
             for (unsigned int i = 0; i < ts->num_objects; i++) {
                 if (ts->data_objects[i].parent == object->id) {
@@ -334,7 +334,7 @@ int ts_txt_process(struct ts_context *ts)
             // no payload data
             if ((char)ts->req[path_len] == '/') {
                 if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_FN_VOID ||
-                    endpoint->type == TS_T_RECORDS))
+                    endpoint->type == TS_T_FN_INT32 || endpoint->type == TS_T_RECORDS))
                 {
                     return ts_txt_get(ts, endpoint, TS_RET_NAMES, record_index);
                 }
@@ -366,7 +366,9 @@ int ts_txt_process(struct ts_context *ts)
             }
             return len;
         }
-        else if (ts->req[0] == '!' && endpoint && endpoint->type == TS_T_FN_VOID) {
+        else if (ts->req[0] == '!' && endpoint && (endpoint->type == TS_T_FN_VOID ||
+                 endpoint->type == TS_T_FN_INT32))
+        {
             return ts_txt_exec(ts, endpoint);
         }
         else if (ts->req[0] == '+') {
@@ -661,6 +663,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     if (endpoint != NULL) {
         switch (endpoint->type) {
             case TS_T_FN_VOID:
+            case TS_T_FN_INT32:
                 if (include_values) {
                     // bad request, as we can't read exec object's values
                     return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
@@ -806,6 +809,7 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
 
 int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
 {
+    int len;
     int tok = 0;            // current token
     int objects_found = 0;    // number of child objects found
 
@@ -813,7 +817,9 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
         tok++;      // go to first element of array
     }
 
-    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_FN_VOID)) {
+    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_FN_VOID ||
+        object->type == TS_T_FN_INT32))
+    {
         // object is generally executable, but are we authorized?
         if ((object->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
             return ts_txt_response(ts, TS_STATUS_UNAUTHORIZED);
@@ -846,11 +852,22 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
         return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
-    // if we got here, finally create function pointer and call function
-    void (*fun)(void) = (void(*)(void))object->data;
-    fun();
+    len = ts_txt_response(ts, TS_STATUS_VALID);
 
-    return ts_txt_response(ts, TS_STATUS_VALID);
+    // if we got here, finally create function pointer and call function
+    if (object->type == TS_T_FN_INT32) {
+        int32_t (*fun)(void) = (int32_t(*)(void))object->data;
+        int32_t ret = fun();
+        ts->resp[len++] = ' ';
+        len += json_serialize_simple_value(&ts->resp[len], ts->resp_size - len, &ret, TS_T_INT32, 0);
+        ts->resp[--len] = '\0'; // remove trailing comma again
+    }
+    else {
+        void (*fun)(void) = (void(*)(void))object->data;
+        fun();
+    }
+
+    return len;
 }
 
 #if TS_NESTED_JSON

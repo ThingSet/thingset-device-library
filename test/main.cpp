@@ -63,7 +63,8 @@ void tests_text_mode()
     RUN_TEST(test_txt_group_callback);
 
     // POST request
-    RUN_TEST(test_txt_exec);
+    RUN_TEST(test_txt_fn_void);
+    RUN_TEST(test_txt_fn_int32);
 
     // statements (pub/sub messages)
     RUN_TEST(test_txt_statement_subset);

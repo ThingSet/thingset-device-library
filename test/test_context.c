@@ -60,6 +60,11 @@ void auth_function()
     LOG_DBG("Auth function called, password: %s\n", auth_password);
 }
 
+int32_t int_function(void)
+{
+    return -1;
+}
+
 int _hex2bin(uint8_t *bin, size_t bin_size, const char *hex)
 {
     int len = strlen(hex);
@@ -143,8 +148,8 @@ void assert_txt_resp(int exp_len, const char *exp_s, const char *msg)
 {
     int resp_buf_len = strlen((char *)resp_buf);
 
-   // TEST_ASSERT_EQUAL_MESSAGE(exp_len, resp_buf_len, msg);
     TEST_ASSERT_EQUAL_STRING_MESSAGE(exp_s, (char *)resp_buf, msg);
+    TEST_ASSERT_EQUAL_MESSAGE(exp_len, resp_buf_len, msg);
 }
 
 void assert_txt_req(const char *req_s, const char *exp_s, const char *msg)

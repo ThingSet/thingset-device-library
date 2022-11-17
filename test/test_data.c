@@ -42,6 +42,7 @@ bool pub_info_enable = true;
 void reset_function(void);
 void auth_function(void);
 char auth_password[11];
+int32_t int_function(void);
 
 char strbuf[300];
 
@@ -197,6 +198,9 @@ struct ts_data_object data_objects[] = {
 
     TS_ITEM_STRING(0xE3, "uPassword", auth_password, sizeof(auth_password),
         0xE2, TS_ANY_RW, 0),
+
+    TS_FN_INT32(0xE4, "xIntFunction", &int_function,
+        ID_RPC, TS_ANY_RW),
 
     // RECORDS used for logs //////////////////////////////////////////////////
 
