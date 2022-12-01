@@ -162,6 +162,12 @@ void test_txt_patch_bin_fetch(void)
     // string
     TEST_ASSERT_JSON2CBOR("strbuf", "\"Test\"",  0x6009, "64 54 65 73 74");
     TEST_ASSERT_JSON2CBOR("strbuf", "\"Hello World!\"",  0x6009, "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
+
+#ifdef CONFIG_BASE64
+    // bytes (base64-encoded)
+    TEST_ASSERT_JSON2CBOR("bytesbuf", "\"ABEiM0RVZneImaq7zN3u/w==\"", 0x8000,
+        "50 00 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF");
+#endif
 }
 
 /**
@@ -297,6 +303,12 @@ void test_bin_patch_txt_fetch(void)
     // string
     TEST_ASSERT_CBOR2JSON("strbuf", "\"Test\"",  0x6009, "64 54 65 73 74");
     TEST_ASSERT_CBOR2JSON("strbuf", "\"Hello World!\"",  0x6009, "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
+
+#ifdef CONFIG_BASE64
+    // bytes (base64-encoded)
+    TEST_ASSERT_CBOR2JSON("bytesbuf", "\"ABEiM0RVZneImaq7zN3u/w==\"", 0x8000,
+        "50 00 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF");
+#endif
 }
 
 /**

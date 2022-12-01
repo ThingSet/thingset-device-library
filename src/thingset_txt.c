@@ -16,6 +16,11 @@
 #include <errno.h>
 #include <inttypes.h>
 
+#ifdef CONFIG_BASE64
+/* base64-encoded binary strings only supported for Zephyr environments */
+#include <zephyr/sys/base64.h>
+#endif
+
 int ts_txt_response(struct ts_context *ts, int code)
 {
     int pos = 0;
@@ -131,6 +136,24 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
         return snprintf(buf, size, "%s,", (*((bool *)data) == true ? "true" : "false"));
     case TS_T_STRING:
         return snprintf(buf, size, "\"%s\",", (char *)data);
+#ifdef CONFIG_BASE64
+    case TS_T_BYTES: {
+        struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)data;
+        size_t strlen;
+        int err = base64_encode((uint8_t *)buf + 1, size - 4, &strlen,
+                                bytes_buf->bytes, bytes_buf->num_bytes);
+        if (err == 0) {
+            buf[0] = '\"';
+            buf[strlen + 1] = '\"';
+            buf[strlen + 2] = ',';
+            buf[strlen + 3] = '\0';
+            return strlen + 3;
+        }
+        else {
+            return snprintf(buf, size, "null,");
+        }
+    }
+#endif
     }
     return 0;
 }
@@ -520,6 +543,25 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
                 ((char*)object->data)[len] = '\0';
             }
             break;
+        case TS_T_BYTES:
+#ifdef CONFIG_BASE64
+            if (type != JSMN_STRING || (unsigned int)object->detail < len / 4 * 3) {
+                return 0;
+            }
+            else if (object->id != 0) {     // dummy object has id = 0
+                struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)object->data;
+                size_t byteslen;
+                int err = base64_decode(bytes_buf->bytes, object->detail, &byteslen,
+                                        (uint8_t *)buf, len);
+                bytes_buf->num_bytes = byteslen;
+                if (err != 0) {
+                    return 0;
+                }
+            }
+            break;
+#else
+            return 0;
+#endif
     }
 
     if (errno == ERANGE) {
@@ -590,6 +632,20 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
             else {
                 return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
             }
+        }
+        else if (object->type == TS_T_BYTES) {
+#ifdef CONFIG_BASE64
+            if (value_len / 4 * 3 <= (size_t)object->detail) {
+                // decoded base64-encoded string fits into data object buffer
+                tok += 1;
+                continue;
+            }
+            else {
+                return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
+            }
+#else
+            return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
+#endif
         }
         else if (value_len >= sizeof(value_buf)) {
             return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);

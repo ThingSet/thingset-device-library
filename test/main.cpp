@@ -57,6 +57,7 @@ void tests_text_mode()
     // PATCH request
     RUN_TEST(test_txt_patch_wrong_data_structure);
     RUN_TEST(test_txt_patch_array);
+    RUN_TEST(test_txt_patch_bytes_buffer);
     RUN_TEST(test_txt_patch_readonly);
     RUN_TEST(test_txt_patch_wrong_path);
     RUN_TEST(test_txt_patch_unknown_object);

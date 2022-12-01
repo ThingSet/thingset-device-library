@@ -123,6 +123,25 @@ void test_txt_patch_array(void)
     TEST_ASSERT_EQUAL_INT32(50, i32);
 }
 
+#ifdef CONFIG_BASE64
+
+void test_txt_patch_bytes_buffer(void)
+{
+    TEST_ASSERT_TXT_REQ("=Conf {\"bytesbuf\":\"QUJDREVGRw==\"}", ":84 Changed.");
+
+    TEST_ASSERT_EQUAL(7, bytes_buf.num_bytes);
+}
+
+#else
+
+void test_txt_patch_bytes_buffer(void)
+{
+    TEST_ASSERT_TXT_REQ("=Conf {\"bytesbuf\":\"QUJDREVGRw==\"}",
+        ":AF Unsupported Content-Format.");
+}
+
+#endif
+
 void test_txt_patch_readonly(void)
 {
     TEST_ASSERT_TXT_REQ("=Test {\"i32_readonly\" : 52}", ":A3 Forbidden.");

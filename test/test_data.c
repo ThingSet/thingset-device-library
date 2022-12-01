@@ -71,7 +71,7 @@ struct ts_array int32_array = {A, ARRAY_SIZE(A), 4, TS_T_INT32, sizeof(int32_t)}
 float B[100] = {2.27, 3.44};
 struct ts_array float32_array = {B, ARRAY_SIZE(B), 2, TS_T_FLOAT32, sizeof(float)};
 
-uint8_t bytes[300] = {};
+uint8_t bytes[18] = {};
 struct ts_bytes_buffer bytes_buf = { bytes, 0 };
 
 struct test_struct {
