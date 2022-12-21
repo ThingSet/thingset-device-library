@@ -1060,7 +1060,15 @@ static int ts_serialize_statement(struct ts_context *ts, char *buf, size_t buf_s
         buf[len] = '\0';
     }
     else {
-        return 0;
+        int len_value = ts_json_serialize_value(ts, &buf[len], buf_size - len, object);
+        if (len_value <= 0) {
+            return 0;
+        }
+        len+=len_value;
+        if (len >= buf_size - 1) {
+            return 0;
+        }
+        buf[--len] = '\0';     // overwrite comma   
     }
 
     return len;
