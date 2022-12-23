@@ -118,6 +118,8 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
         return snprintf(buf, size, "%" PRIu8 ",", *((uint8_t *)data));
     case TS_T_INT8:
         return snprintf(buf, size, "%" PRIi8 ",", *((int8_t *)data));
+    case TS_T_BOOL:
+        return snprintf(buf,size, *((bool *)data)?"true":"false");
     case TS_T_FLOAT32: {
         float value = *((float *)data);
         if (isnan(value) || isinf(value)) {
@@ -1060,15 +1062,11 @@ static int ts_serialize_statement(struct ts_context *ts, char *buf, size_t buf_s
         buf[len] = '\0';
     }
     else {
-        int len_value = ts_json_serialize_value(ts, &buf[len], buf_size - len, object);
-        if (len_value <= 0) {
-            return 0;
-        }
-        len+=len_value;
+        len += ts_json_serialize_value(ts, &buf[len], buf_size - len, object);
         if (len >= buf_size - 1) {
             return 0;
         }
-        buf[--len] = '\0';     // overwrite comma   
+        buf[--len] = '\0';     // overwrite comma
     }
 
     return len;

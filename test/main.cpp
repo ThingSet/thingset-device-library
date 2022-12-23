@@ -71,6 +71,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_statement_subset);
     RUN_TEST(test_txt_statement_group);
     RUN_TEST(test_txt_statement_record);
+    RUN_TEST(test_txt_statement_item);
     RUN_TEST(test_txt_pub_list_channels);
     RUN_TEST(test_txt_pub_enable);
     RUN_TEST(test_txt_pub_delete_append_object);

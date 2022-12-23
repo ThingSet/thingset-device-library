@@ -38,6 +38,21 @@ bool pub_report_enable = false;
 uint16_t pub_report_interval = 1000;
 bool pub_info_enable = true;
 
+// txt_statement
+static float txt_st_float_pos = 12.53;
+static float txt_st_float_neg = -2.3;
+static int8_t txt_st_int8_pos = 120;
+static int8_t txt_st_int8_neg = -123;
+static int16_t txt_st_int16_pos = 32760;
+static int16_t txt_st_int16_neg = -32750;
+static int32_t txt_st_int32_pos = 2147483568;
+static int32_t txt_st_int32_neg = -2147483450;
+static uint8_t txt_st_uint8 = 254;
+static uint16_t txt_st_uint16 = 64050;
+static uint32_t txt_st_uint32 = 3399612978;
+static bool txt_st_bool_true = true;
+static bool txt_st_bool_false = false;
+
 // exec
 void reset_function(void);
 void auth_function(void);
@@ -239,6 +254,52 @@ struct ts_data_object data_objects[] = {
 
     TS_ITEM_BOOL(0xF6, "wOnChange", &pub_info_enable,
         0xF5, TS_ANY_RW, 0),
+
+
+    // TXT STATEMTENT DATA ///////////////////////////////////////////////////////
+
+    TS_GROUP(ID_TXT,"TXT",TS_NO_CALLBACK,ID_ROOT),
+
+    TS_ITEM_FLOAT(0x101, "rFloatPos", &txt_st_float_pos, 2,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_FLOAT(0x102, "rFloatNeg", &txt_st_float_neg, 2,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT8(0x103, "rInt8Pos", &txt_st_int8_pos,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT8(0x104, "rInt8Neg", &txt_st_int8_neg,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT16(0x105, "rInt16Pos", &txt_st_int16_pos,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT16(0x106, "rInt16Neg", &txt_st_int16_neg,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT32(0x107, "rInt32Pos", &txt_st_int32_pos,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_INT32(0x108, "rInt32Neg", &txt_st_int32_neg,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_UINT8(0x109, "rUint8", &txt_st_uint8,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_UINT16(0x10A, "rUint16", &txt_st_uint16,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_UINT32(0x10B, "rUint32", &txt_st_uint32,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+    TS_ITEM_BOOL(0x10C, "rBoolTrue", &txt_st_bool_true,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+    
+    TS_ITEM_BOOL(0x10D, "rBoolFalse", &txt_st_bool_false,
+        ID_TXT, TS_ANY_R, SUBSET_REPORT),
+
+
 
     // UNIT TEST DATA /////////////////////////////////////////////////////////
     // using IDs >= 0x1000
