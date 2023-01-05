@@ -48,7 +48,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_fetch_record, setup, teardown),
         /* Text mode: PATCH request */
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_data_structure, setup, teardown),
-        ztest_unit_test_setup_teardown(test_txt_patch_array, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_patch_whitespaces, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_bytes_buffer, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_readonly, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_patch_wrong_path, setup, teardown),

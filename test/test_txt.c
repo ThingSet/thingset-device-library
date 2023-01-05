@@ -115,7 +115,7 @@ void test_txt_patch_wrong_data_structure(void)
     TEST_ASSERT_TXT_REQ("!Conf{\"f32\":54.3}", ":A4 Not Found.");
 }
 
-void test_txt_patch_array(void)
+void test_txt_patch_whitespaces(void)
 {
     TEST_ASSERT_TXT_REQ("=Conf {    \"f32\" : 52.8,\"i32\":50.6}", ":84 Changed.");
 

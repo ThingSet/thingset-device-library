@@ -152,7 +152,7 @@ void test_txt_fetch_float_array(void);
 void test_txt_fetch_num_records(void);
 void test_txt_fetch_record(void);
 void test_txt_patch_wrong_data_structure(void);
-void test_txt_patch_array(void);
+void test_txt_patch_whitespaces(void);
 void test_txt_patch_bytes_buffer(void);
 void test_txt_patch_readonly(void);
 void test_txt_patch_wrong_path(void);
