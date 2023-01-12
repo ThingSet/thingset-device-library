@@ -118,8 +118,6 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
         return snprintf(buf, size, "%" PRIu8 ",", *((uint8_t *)data));
     case TS_T_INT8:
         return snprintf(buf, size, "%" PRIi8 ",", *((int8_t *)data));
-    case TS_T_BOOL:
-        return snprintf(buf,size, *((bool *)data)?"true":"false");
     case TS_T_FLOAT32: {
         float value = *((float *)data);
         if (isnan(value) || isinf(value)) {
