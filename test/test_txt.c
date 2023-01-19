@@ -237,6 +237,40 @@ void test_txt_statement_record(void)
     TEST_ASSERT_TXT_RESP(resp_len, expected);
 }
 
+
+
+void test_txt_statement_item(void)
+{
+
+    const struct {
+        const char* path;
+        const char* value;
+    } tests[] ={
+        {"TXT/rFloatPos","12.53"},
+        {"TXT/rFloatNeg","-2.30"},
+        {"TXT/rInt8Pos","120"},
+        {"TXT/rInt8Neg","-123"},
+        {"TXT/rInt16Pos","32760"},
+        {"TXT/rInt16Pos","-32750"},
+        {"TXT/rInt32Pos","2147483568"},
+        {"TXT/rInt32Pos","-2147483450"},
+        {"TXT/rUint8","254"},
+        {"TXT/rUint16","64050"},
+        {"TXT/rUint32","3399612978"},
+        {"TXT/rBoolTrue","true"},
+        {"TXT/rBoolFalse","false"},
+    };
+
+    for (size_t i=0;i<ARRAY_SIZE(tests);i++){
+        char expected[90];
+        const char* path = tests[i].path;
+        const char* value = tests[i].value;
+        snprintf(expected,sizeof(expected),"#%s %s",path,value);
+        int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, path);
+        TEST_ASSERT_TXT_RESP(resp_len, expected);
+    }
+}
+
 void test_txt_pub_list_channels(void)
 {
     TEST_ASSERT_TXT_REQ("?_pub/", ":85 Content. [\"mReport\",\"Info\"]");

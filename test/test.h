@@ -34,6 +34,7 @@ extern "C" {
 #define ID_DFU      0x0D        // device firmware upgrade
 #define ID_RPC      0x0E        // remote procedure calls
 #define ID_PUB      0x0F        // publication setup
+#define ID_TXT      0x10        // txt statement test
 
 #define SUBSET_REPORT  (1U << 0)   // report subset of data items for publication
 #define SUBSET_CAN     (1U << 1)   // data nodes used for CAN bus publication messages
@@ -163,6 +164,7 @@ void test_txt_fn_int32(void);
 void test_txt_statement_subset(void);
 void test_txt_statement_group(void);
 void test_txt_statement_record(void);
+void test_txt_statement_item(void);
 void test_txt_pub_list_channels(void);
 void test_txt_pub_enable(void);
 void test_txt_pub_delete_append_object(void);

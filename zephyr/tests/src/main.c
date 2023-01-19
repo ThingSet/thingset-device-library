@@ -61,6 +61,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_txt_statement_subset, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_statement_group, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_statement_record, setup, teardown),
+        ztest_unit_test_setup_teardown(test_txt_statement_item, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_list_channels, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_enable, setup, teardown),
         ztest_unit_test_setup_teardown(test_txt_pub_delete_append_object, setup, teardown),
