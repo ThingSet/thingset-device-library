@@ -1,0 +1,4 @@
+# keep format of library files
+
+DisableFormat: true
+SortIncludes: Never

@@ -19,6 +19,7 @@ extern "C" {
 #include <stdint.h>
 
 #include "cbor.h"
+#define JSMN_HEADER
 #include "jsmn.h"
 
 /*

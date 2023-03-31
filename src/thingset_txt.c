@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "thingset_priv.h"
-
+/* this must be included before thingset.h */
 #include "jsmn.h"
+
+#include "thingset_priv.h"
 
 #include <errno.h>
 #include <inttypes.h>

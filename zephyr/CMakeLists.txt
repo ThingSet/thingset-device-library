@@ -18,6 +18,7 @@ get_filename_component(THINGSET_BASE ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 zephyr_library_named("ts")
 
 zephyr_include_directories(${THINGSET_BASE}/src)
+zephyr_include_directories(${THINGSET_BASE}/lib)
 
 if(DEFINED CONFIG_THINGSET_ITERABLE_SECTIONS)
     # linker files required for auto-generation of ts_data_objects array
