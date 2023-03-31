@@ -13,7 +13,7 @@
 /* Logging */
 #ifndef LOG_MODULE_NAME
 #define LOG_MODULE_NAME thingset
-#define LOG_LEVEL CONFIG_THINGSET_LOG_LEVEL
+#define LOG_LEVEL       CONFIG_THINGSET_LOG_LEVEL
 #endif
 
 #include <version.h>
@@ -22,8 +22,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #else
-#include <zephyr.h>
 #include <logging/log.h>
+#include <zephyr.h>
 #endif
 
 #ifdef THINGSET_MAIN
@@ -37,10 +37,10 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
  * Zephyr's minimal libc is missing some functions.
  * Provide !!sufficient!! replacements here.
  */
-#include <stdbool.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define isnan(value) __builtin_isnan(value)
 #define isinf(value) __builtin_isinf(value)
@@ -49,8 +49,8 @@ long int lroundf(float x);
 
 long long int llroundf(float x);
 
-double ts_strtod(const char * string, char **endPtr);
-inline double strtod(const char * string, char **endPtr)
+double ts_strtod(const char *string, char **endPtr);
+inline double strtod(const char *string, char **endPtr)
 {
     return ts_strtod(string, endPtr);
 };

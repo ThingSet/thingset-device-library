@@ -11,19 +11,21 @@
 void test_txt_get_root()
 {
 #if TS_NESTED_JSON
-    TEST_ASSERT_TXT_REQ("?", ":85 Content. "
+    TEST_ASSERT_TXT_REQ(
+        "?",
+        ":85 Content. "
         "{\"t_s\":12345678,\"Info\":null,\"Conf\":null,\"Input\":null,\"Meas\":null,"
         "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":2,"
         "\"mReport\":[\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"],"
-        "\"_pub\":null,\"Test\":null}"
-    );
+        "\"_pub\":null,\"Test\":null}");
 #else
-    TEST_ASSERT_TXT_REQ("?", ":85 Content. "
+    TEST_ASSERT_TXT_REQ(
+        "?",
+        ":85 Content. "
         "{\"t_s\":12345678,\"Info\":null,\"Conf\":null,\"Input\":null,\"Meas\":null,"
         "\"Nested\":null,\"Rec\":null,\"RPC\":null,\"Log\":2,"
         "\"mReport\":[\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"],"
-        "\"_pub\":null,\"Test\":null}"
-    );
+        "\"_pub\":null,\"Test\":null}");
 #endif
 }
 
@@ -34,7 +36,8 @@ void test_txt_get_meas_names()
 
 void test_txt_get_meas_names_values()
 {
-    TEST_ASSERT_TXT_REQ("?Meas", ":85 Content. {\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
+    TEST_ASSERT_TXT_REQ("?Meas",
+                        ":85 Content. {\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 }
 
 void test_txt_get_single_value()
@@ -44,13 +47,15 @@ void test_txt_get_single_value()
 
 void test_txt_get_nested()
 {
-    TEST_ASSERT_TXT_REQ("?Nested",
+    TEST_ASSERT_TXT_REQ(
+        "?Nested",
         ":85 Content. {\"Bat1\":null,\"rDummy_degC\":22,\"Bat2\":null,\"rAmbient_degC\":22}");
 }
 
 void test_txt_get_rpc()
 {
-    TEST_ASSERT_TXT_REQ("?RPC",
+    TEST_ASSERT_TXT_REQ(
+        "?RPC",
         ":85 Content. {\"xReset\":[],\"xAuth\":[\"uPassword\"],\"xIntFunction\":[],\"xDummy\":[]}");
 }
 
@@ -73,7 +78,7 @@ void test_txt_fetch_rounded()
 void test_txt_fetch_nan()
 {
     int nan = 0x7F800001;
-    f32 = *(float*)&nan;
+    f32 = *(float *)&nan;
 
     TEST_ASSERT_TRUE(isnan(f32));
 
@@ -83,7 +88,7 @@ void test_txt_fetch_nan()
 void test_txt_fetch_inf(void)
 {
     int inf = 0x7F800000;
-    f32 = *(float*)&inf;
+    f32 = *(float *)&inf;
 
     TEST_ASSERT_TXT_REQ("?Conf \"f32\"", ":85 Content. null");
 }
@@ -136,8 +141,7 @@ void test_txt_patch_bytes_buffer(void)
 
 void test_txt_patch_bytes_buffer(void)
 {
-    TEST_ASSERT_TXT_REQ("=Conf {\"bytesbuf\":\"QUJDREVGRw==\"}",
-        ":AF Unsupported Content-Format.");
+    TEST_ASSERT_TXT_REQ("=Conf {\"bytesbuf\":\"QUJDREVGRw==\"}", ":AF Unsupported Content-Format.");
 }
 
 #endif
@@ -184,7 +188,8 @@ void test_txt_fn_int32(void)
 
 void test_txt_statement_subset(void)
 {
-    const char expected[] = "#mReport {\"t_s\":12345678,"
+    const char expected[] =
+        "#mReport {\"t_s\":12345678,"
         "\"Meas\":{\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}}";
 
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "mReport");
@@ -202,11 +207,15 @@ void test_txt_statement_subset(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "mReport");
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#mReport {\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(
+        resp_len,
+        "#mReport {\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 
     resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_REPORT);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#mReport {\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(
+        resp_len,
+        "#mReport {\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 }
 
 #endif /* TS_NESTED_JSON */
@@ -215,11 +224,13 @@ void test_txt_statement_group(void)
 {
     int resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "Info");
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#Info {\"cManufacturer\":\"Libre Solar\",\"cNodeID\":\"ABCD1234\"}");
+    TEST_ASSERT_TXT_RESP(resp_len,
+                         "#Info {\"cManufacturer\":\"Libre Solar\",\"cNodeID\":\"ABCD1234\"}");
 
     resp_len = ts_txt_statement_by_id(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, ID_INFO);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "#Info {\"cManufacturer\":\"Libre Solar\",\"cNodeID\":\"ABCD1234\"}");
+    TEST_ASSERT_TXT_RESP(resp_len,
+                         "#Info {\"cManufacturer\":\"Libre Solar\",\"cNodeID\":\"ABCD1234\"}");
 
     resp_len = ts_txt_statement_by_path(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, "Nested/Bat1");
 
@@ -256,7 +267,9 @@ void test_txt_pub_enable(void)
 void test_txt_pub_delete_append_object(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?mReport", ":85 Content. [\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"]");
+    TEST_ASSERT_TXT_REQ(
+        "?mReport",
+        ":85 Content. [\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"]");
     /* delete "rAmbient_degC" */
     TEST_ASSERT_TXT_REQ("-mReport \"Meas/rAmbient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
@@ -264,7 +277,9 @@ void test_txt_pub_delete_append_object(void)
     /* append "rAmbient_degC" again */
     TEST_ASSERT_TXT_REQ("+mReport \"Meas/rAmbient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?mReport", ":85 Content. [\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"]");
+    TEST_ASSERT_TXT_REQ(
+        "?mReport",
+        ":85 Content. [\"t_s\",\"Meas/rBat_V\",\"Meas/rBat_A\",\"Meas/rAmbient_degC\"]");
 }
 
 #else
@@ -272,7 +287,8 @@ void test_txt_pub_delete_append_object(void)
 void test_txt_pub_delete_append_object(void)
 {
     /* before change */
-    TEST_ASSERT_TXT_REQ("?mReport", ":85 Content. [\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?mReport",
+                        ":85 Content. [\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");
     /* delete "rAmbient_degC" */
     TEST_ASSERT_TXT_REQ("-mReport \"rAmbient_degC\"", ":82 Deleted.");
     /* check if it was deleted */
@@ -280,7 +296,8 @@ void test_txt_pub_delete_append_object(void)
     /* append "rAmbient_degC" again */
     TEST_ASSERT_TXT_REQ("+mReport \"rAmbient_degC\"", ":81 Created.");
     /* check if it was appended */
-    TEST_ASSERT_TXT_REQ("?mReport", ":85 Content. [\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");
+    TEST_ASSERT_TXT_REQ("?mReport",
+                        ":85 Content. [\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");
 }
 
 #endif /* TS_NESTED_JSON */
@@ -307,7 +324,8 @@ void test_txt_auth_root(void)
 
 void test_txt_auth_long_password(void)
 {
-    TEST_ASSERT_TXT_REQ("!RPC/xAuth \"012345678901234567890123456789\"", ":AF Unsupported Content-Format.");
+    TEST_ASSERT_TXT_REQ("!RPC/xAuth \"012345678901234567890123456789\"",
+                        ":AF Unsupported Content-Format.");
 }
 
 void test_txt_auth_failure(void)
@@ -368,9 +386,9 @@ void test_txt_export(void)
 
     expected =
         "{\"Nested\":{"
-            "\"Bat1\":{\"r_V\":14.10,\"r_A\":5.13},"
-            "\"Bat2\":{\"r_V\":14.10,\"r_A\":5.13},"
-            "\"rAmbient_degC\":22}"
+        "\"Bat1\":{\"r_V\":14.10,\"r_A\":5.13},"
+        "\"Bat2\":{\"r_V\":14.10,\"r_A\":5.13},"
+        "\"rAmbient_degC\":22}"
         "}";
 
     resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_NESTED);
@@ -385,7 +403,8 @@ void test_txt_export(void)
 {
     int resp_len = ts_txt_export(&ts, (char *)resp_buf, TS_RESP_BUFFER_LEN, SUBSET_REPORT);
 
-    TEST_ASSERT_TXT_RESP(resp_len, "{\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
+    TEST_ASSERT_TXT_RESP(
+        resp_len, "{\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 }
 
 #endif /* TS_NESTED_JSON */

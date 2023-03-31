@@ -9,44 +9,44 @@
 
 #include "cbor.h"
 
-#include <string.h>
+#include <math.h> // for rounding of floats
 #include <stdio.h>
-#include <sys/types.h>  // for definition of endianness
-#include <math.h>       // for rounding of floats
+#include <string.h>
+#include <sys/types.h> // for definition of endianness
 
 static int cbor_deserialize_simple_value(const uint8_t *buf, void *data, int type, int detail)
 {
     switch (type) {
 #if TS_64BIT_TYPES_SUPPORT
-    case TS_T_UINT64:
-        return cbor_deserialize_uint64(buf, (uint64_t *)data);
-    case TS_T_INT64:
-        return cbor_deserialize_int64(buf, (int64_t *)data);
+        case TS_T_UINT64:
+            return cbor_deserialize_uint64(buf, (uint64_t *)data);
+        case TS_T_INT64:
+            return cbor_deserialize_int64(buf, (int64_t *)data);
 #endif
-    case TS_T_UINT32:
-        return cbor_deserialize_uint32(buf, (uint32_t *)data);
-    case TS_T_INT32:
-        return cbor_deserialize_int32(buf, (int32_t *)data);
-    case TS_T_UINT16:
-        return cbor_deserialize_uint16(buf, (uint16_t *)data);
-    case TS_T_INT16:
-        return cbor_deserialize_int16(buf, (int16_t *)data);
-    case TS_T_UINT8:
-        return cbor_deserialize_uint8(buf, (uint8_t *)data);
-    case TS_T_INT8:
-        return cbor_deserialize_int8(buf, (int8_t *)data);
-    case TS_T_FLOAT32:
-        return cbor_deserialize_float(buf, (float *)data);
+        case TS_T_UINT32:
+            return cbor_deserialize_uint32(buf, (uint32_t *)data);
+        case TS_T_INT32:
+            return cbor_deserialize_int32(buf, (int32_t *)data);
+        case TS_T_UINT16:
+            return cbor_deserialize_uint16(buf, (uint16_t *)data);
+        case TS_T_INT16:
+            return cbor_deserialize_int16(buf, (int16_t *)data);
+        case TS_T_UINT8:
+            return cbor_deserialize_uint8(buf, (uint8_t *)data);
+        case TS_T_INT8:
+            return cbor_deserialize_int8(buf, (int8_t *)data);
+        case TS_T_FLOAT32:
+            return cbor_deserialize_float(buf, (float *)data);
 #if TS_DECFRAC_TYPE_SUPPORT
-    case TS_T_DECFRAC:
-        return cbor_deserialize_decfrac(buf, (int32_t *)data, detail);
+        case TS_T_DECFRAC:
+            return cbor_deserialize_decfrac(buf, (int32_t *)data, detail);
 #endif
-    case TS_T_BOOL:
-        return cbor_deserialize_bool(buf, (bool *)data);
-    case TS_T_STRING:
-        return cbor_deserialize_string(buf, (char *)data, detail);
-    default:
-        return 0;
+        case TS_T_BOOL:
+            return cbor_deserialize_bool(buf, (bool *)data);
+        case TS_T_STRING:
+            return cbor_deserialize_string(buf, (char *)data, detail);
+        default:
+            return 0;
     }
 }
 
@@ -59,31 +59,32 @@ static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_ob
 
     switch (object->type) {
 #if TS_BYTE_STRING_TYPE_SUPPORT
-    case TS_T_BYTES:
-        return cbor_deserialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
-            object->detail, &(((struct ts_bytes_buffer *)object->data)->num_bytes));
+        case TS_T_BYTES:
+            return cbor_deserialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
+                                          object->detail,
+                                          &(((struct ts_bytes_buffer *)object->data)->num_bytes));
 #endif
-    case TS_T_ARRAY: {
-        struct ts_array *array = (struct ts_array *)object->data;
-        if (!array) {
-            return 0;
-        }
+        case TS_T_ARRAY: {
+            struct ts_array *array = (struct ts_array *)object->data;
+            if (!array) {
+                return 0;
+            }
 
-        // Deserialize the buffer length, and calculate the actual number of array elements
-        uint16_t num_elements;
-        pos = cbor_num_elements(buf, &num_elements);
-        if (num_elements > array->max_elements) {
-            return 0;
-        }
+            // Deserialize the buffer length, and calculate the actual number of array elements
+            uint16_t num_elements;
+            pos = cbor_num_elements(buf, &num_elements);
+            if (num_elements > array->max_elements) {
+                return 0;
+            }
 
-        for (int i = 0; i < num_elements; i++) {
-            void *data = (uint8_t *)array->elements + i * array->type_size;
-            pos += cbor_deserialize_simple_value(buf + pos, data, array->type, object->detail);
+            for (int i = 0; i < num_elements; i++) {
+                void *data = (uint8_t *)array->elements + i * array->type_size;
+                pos += cbor_deserialize_simple_value(buf + pos, data, array->type, object->detail);
+            }
+            return pos;
         }
-        return pos;
-    }
-    default:
-        return 0;
+        default:
+            return 0;
     }
 }
 
@@ -91,44 +92,44 @@ static int cbor_serialize_simple_value(uint8_t *buf, size_t size, void *data, in
 {
     switch (type) {
 #if TS_64BIT_TYPES_SUPPORT
-    case TS_T_UINT64:
-        return cbor_serialize_uint(buf, *((uint64_t *)data), size);
-    case TS_T_INT64:
-        return cbor_serialize_int(buf, *((int64_t *)data), size);
+        case TS_T_UINT64:
+            return cbor_serialize_uint(buf, *((uint64_t *)data), size);
+        case TS_T_INT64:
+            return cbor_serialize_int(buf, *((int64_t *)data), size);
 #endif
-    case TS_T_UINT32:
-        return cbor_serialize_uint(buf, *((uint32_t *)data), size);
-    case TS_T_INT32:
-        return cbor_serialize_int(buf, *((int32_t *)data), size);
-    case TS_T_UINT16:
-        return cbor_serialize_uint(buf, *((uint16_t *)data), size);
-    case TS_T_INT16:
-        return cbor_serialize_int(buf, *((int16_t *)data), size);
-    case TS_T_UINT8:
-        return cbor_serialize_uint(buf, *((uint8_t *)data), size);
-    case TS_T_INT8:
-        return cbor_serialize_int(buf, *((int8_t *)data), size);
-    case TS_T_FLOAT32:
-        if (detail == 0) { // round to 0 digits: use int
+        case TS_T_UINT32:
+            return cbor_serialize_uint(buf, *((uint32_t *)data), size);
+        case TS_T_INT32:
+            return cbor_serialize_int(buf, *((int32_t *)data), size);
+        case TS_T_UINT16:
+            return cbor_serialize_uint(buf, *((uint16_t *)data), size);
+        case TS_T_INT16:
+            return cbor_serialize_int(buf, *((int16_t *)data), size);
+        case TS_T_UINT8:
+            return cbor_serialize_uint(buf, *((uint8_t *)data), size);
+        case TS_T_INT8:
+            return cbor_serialize_int(buf, *((int8_t *)data), size);
+        case TS_T_FLOAT32:
+            if (detail == 0) { // round to 0 digits: use int
 #if TS_64BIT_TYPES_SUPPORT
-            return cbor_serialize_int(buf, llroundf(*((float *)data)), size);
+                return cbor_serialize_int(buf, llroundf(*((float *)data)), size);
 #else
-            return cbor_serialize_int(buf, lroundf(*((float *)data)), size);
+                return cbor_serialize_int(buf, lroundf(*((float *)data)), size);
 #endif
-        }
-        else {
-            return cbor_serialize_float(buf, *((float *)data), size);
-        }
+            }
+            else {
+                return cbor_serialize_float(buf, *((float *)data), size);
+            }
 #if TS_DECFRAC_TYPE_SUPPORT
-    case TS_T_DECFRAC:
-        return cbor_serialize_decfrac(buf, *((int32_t *)data), detail, size);
+        case TS_T_DECFRAC:
+            return cbor_serialize_decfrac(buf, *((int32_t *)data), detail, size);
 #endif
-    case TS_T_BOOL:
-        return cbor_serialize_bool(buf, *((bool *)data), size);
-    case TS_T_STRING:
-        return cbor_serialize_string(buf, (char *)data, size);
-    default:
-        return 0;
+        case TS_T_BOOL:
+            return cbor_serialize_bool(buf, *((bool *)data), size);
+        case TS_T_STRING:
+            return cbor_serialize_string(buf, (char *)data, size);
+        default:
+            return 0;
     }
 }
 
@@ -141,27 +142,28 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
 
     switch (object->type) {
 #if TS_BYTE_STRING_TYPE_SUPPORT
-    case TS_T_BYTES:
-        return cbor_serialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
-            ((struct ts_bytes_buffer *)object->data)->num_bytes, size);
+        case TS_T_BYTES:
+            return cbor_serialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
+                                        ((struct ts_bytes_buffer *)object->data)->num_bytes, size);
 #endif
-    case TS_T_ARRAY: {
-        struct ts_array *array = (struct ts_array *)object->data;
-        if (!array) {
-            return 0;
-        }
-        // Add the length field to the beginning of the CBOR buffer and update the CBOR buffer index
-        pos = cbor_serialize_array(buf, array->num_elements, size);
+        case TS_T_ARRAY: {
+            struct ts_array *array = (struct ts_array *)object->data;
+            if (!array) {
+                return 0;
+            }
+            // Add the length field to the beginning of the CBOR buffer and update the CBOR buffer
+            // index
+            pos = cbor_serialize_array(buf, array->num_elements, size);
 
-        for (int i = 0; i < array->num_elements; i++) {
-            void *data = (uint8_t *)array->elements + i * array->type_size;
-            pos += cbor_serialize_simple_value(buf + pos, size - pos,
-                data, array->type, object->detail);
+            for (int i = 0; i < array->num_elements; i++) {
+                void *data = (uint8_t *)array->elements + i * array->type_size;
+                pos += cbor_serialize_simple_value(buf + pos, size - pos, data, array->type,
+                                                   object->detail);
+            }
+            return pos;
         }
-        return pos;
-    }
-    default:
-        return 0;
+        default:
+            return 0;
     }
 }
 
@@ -178,7 +180,7 @@ int ts_bin_response(struct ts_context *ts, uint8_t code)
 
 int ts_bin_process(struct ts_context *ts)
 {
-    int pos = 1;    // current position during data processing
+    int pos = 1; // current position during data processing
     uint32_t ret_type = 0;
 
     // get endpoint (first parameter of the request)
@@ -241,7 +243,7 @@ int ts_bin_process(struct ts_context *ts)
         // check if endpoint has a callback assigned
         if (endpoint->data != NULL && ts->resp[0] == TS_STATUS_CHANGED) {
             // create function pointer and call function
-            void (*fun)(void) = (void(*)(void))endpoint->data;
+            void (*fun)(void) = (void (*)(void))endpoint->data;
             fun();
         }
         return response;
@@ -263,25 +265,25 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
         return ts_bin_get(ts, endpoint, ret_type, 0);
     }
 
-    pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
+    pos_resp += ts_bin_response(ts, TS_STATUS_CONTENT); // init response buffer
 
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
     if (num_elements != 1 && (ts->req[pos_payload] & CBOR_TYPE_MASK) != CBOR_ARRAY) {
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
 
-    //printf("fetch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
-    //    ts->req[pos_req], ts->req[pos_req+1], ts->req[pos_req+2], ts->req[pos_req+3],
-    //    ts->req[pos_req+4], ts->req[pos_req+5], ts->req[pos_req+6], ts->req[pos_req+7]);
+    // printf("fetch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //     ts->req[pos_req], ts->req[pos_req+1], ts->req[pos_req+2], ts->req[pos_req+3],
+    //     ts->req[pos_req+4], ts->req[pos_req+5], ts->req[pos_req+6], ts->req[pos_req+7]);
 
     if (num_elements > 1) {
-        pos_resp += cbor_serialize_array(&ts->resp[pos_resp], num_elements,
-            ts->resp_size - pos_resp);
+        pos_resp +=
+            cbor_serialize_array(&ts->resp[pos_resp], num_elements, ts->resp_size - pos_resp);
     }
 
     while (pos_req < ts->req_len && element < num_elements) {
 
-        const struct ts_data_object* data_obj = NULL;
+        const struct ts_data_object *data_obj = NULL;
         if ((ts->req[pos_req] & CBOR_TYPE_MASK) == CBOR_TEXT) {
             char *str_start = "";
             uint16_t str_len;
@@ -322,8 +324,8 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
         size_t num_bytes = 0; // temporary storage of cbor data length in response
         if ((ret_type & TS_RET_DISCOVERY) == 0) {
             // "normal" request to fetch values
-            num_bytes = cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp,
-                data_obj);
+            num_bytes =
+                cbor_serialize_data_obj(&ts->resp[pos_resp], ts->resp_size - pos_resp, data_obj);
         }
         else if (ret_type & TS_RET_PATHS) {
             // request to determine paths from IDs
@@ -358,7 +360,7 @@ int ts_bin_fetch(struct ts_context *ts, const struct ts_data_object *endpoint, u
 int ts_bin_import(struct ts_context *ts, const uint8_t *data, size_t len, uint8_t auth_flags,
                   uint16_t subsets)
 {
-    uint8_t resp_tmp[1] = {};   // only one character as response expected
+    uint8_t resp_tmp[1] = {}; // only one character as response expected
     ts->req = data;
     ts->req_len = len;
     ts->resp = resp_tmp;
@@ -367,11 +369,10 @@ int ts_bin_import(struct ts_context *ts, const uint8_t *data, size_t len, uint8_
     return ts->resp[0];
 }
 
-int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len,
-                         uint8_t auth_flags, uint16_t subsets,
-                         struct ts_data_object *object, int record_index)
+int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len, uint8_t auth_flags,
+                         uint16_t subsets, struct ts_data_object *object, int record_index)
 {
-    uint8_t resp_tmp[1] = {};   // only one character as response expected
+    uint8_t resp_tmp[1] = {}; // only one character as response expected
     ts->req = data;
     ts->req_len = len;
     ts->resp = resp_tmp;
@@ -392,13 +393,13 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
     }
     pos_req += cbor_num_elements(&ts->req[pos_req], &num_elements);
 
-    //printf("patch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
-    //    ts->req[pos_req], ts->req[pos_req+1], ts->req[pos_req+2], ts->req[pos_req+3],
-    //    ts->req[pos_req+4], ts->req[pos_req+5], ts->req[pos_req+6], ts->req[pos_req+7]);
+    // printf("patch request, elements: %d, hex data: %x %x %x %x %x %x %x %x\n", num_elements,
+    //     ts->req[pos_req], ts->req[pos_req+1], ts->req[pos_req+2], ts->req[pos_req+3],
+    //     ts->req[pos_req+4], ts->req[pos_req+5], ts->req[pos_req+6], ts->req[pos_req+7]);
 
     while (pos_req < ts->req_len && element < num_elements) {
 
-        size_t num_bytes = 0;       // temporary storage of cbor data length (req and resp)
+        size_t num_bytes = 0; // temporary storage of cbor data length (req and resp)
 
         ts_object_id_t id;
         num_bytes = cbor_deserialize_uint16(&ts->req[pos_req], &id);
@@ -407,10 +408,10 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
         }
         pos_req += num_bytes;
 
-        const struct ts_data_object* object = ts_get_object_by_id(ts, id);
+        const struct ts_data_object *object = ts_get_object_by_id(ts, id);
         if (object) {
-            uint8_t access = (endpoint && endpoint->type == TS_T_RECORDS) ? endpoint->access :
-                object->access;
+            uint8_t access =
+                (endpoint && endpoint->type == TS_T_RECORDS) ? endpoint->access : object->access;
             if ((access & TS_WRITE_MASK & auth_flags) == 0) {
                 if (access & TS_WRITE_MASK) {
                     return ts_bin_response(ts, TS_STATUS_UNAUTHORIZED);
@@ -430,14 +431,12 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
                 // actually deserialize the data and update object
                 if (endpoint && endpoint->type == TS_T_RECORDS) {
                     struct ts_records *records = (struct ts_records *)endpoint->data;
-                    void *data = (uint8_t *)records->data + record_index * records->record_size +
-                        (ptrdiff_t)object->data;
+                    void *data = (uint8_t *)records->data + record_index * records->record_size
+                                 + (ptrdiff_t)object->data;
 
-                    struct ts_data_object obj_tmp = {
-                        .data = data,
-                        .type = object->type,
-                        .detail = object->detail
-                    };
+                    struct ts_data_object obj_tmp = { .data = data,
+                                                      .type = object->type,
+                                                      .detail = object->detail };
 
                     num_bytes = cbor_deserialize_data_obj(&ts->req[pos_req], &obj_tmp);
                 }
@@ -474,7 +473,8 @@ int ts_bin_patch(struct ts_context *ts, const struct ts_data_object *endpoint,
             ts->update_cb();
         }
         return ts_bin_response(ts, TS_STATUS_CHANGED);
-    } else {
+    }
+    else {
         printf("oops, elem = %d, num_elem = %d\n", element, num_elements);
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
     }
@@ -523,7 +523,7 @@ int ts_bin_exec(struct ts_context *ts, const struct ts_data_object *object,
     }
 
     // if we got here, finally create function pointer and call function
-    void (*fun)(void) = (void(*)(void))object->data;
+    void (*fun)(void) = (void (*)(void))object->data;
     fun();
 
     return ts_bin_response(ts, TS_STATUS_VALID);
@@ -558,8 +558,8 @@ int ts_bin_statement(struct ts_context *ts, uint8_t *buf, size_t buf_size,
 
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].subsets & subsets) {
-                size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
-                    &ts->data_objects[i]);
+                size_t num_bytes =
+                    cbor_serialize_data_obj(&buf[len], buf_size - len, &ts->data_objects[i]);
                 if (num_bytes == 0) {
                     return 0;
                 }
@@ -582,8 +582,8 @@ int ts_bin_statement(struct ts_context *ts, uint8_t *buf, size_t buf_size,
 
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].parent == object->id) {
-                size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
-                    &ts->data_objects[i]);
+                size_t num_bytes =
+                    cbor_serialize_data_obj(&buf[len], buf_size - len, &ts->data_objects[i]);
                 if (num_bytes == 0) {
                     return 0;
                 }
@@ -625,8 +625,8 @@ int ts_bin_export(struct ts_context *ts, uint8_t *buf, size_t buf_size, uint16_t
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subsets) {
             len += cbor_serialize_uint(&buf[len], ts->data_objects[i].id, buf_size - len);
-            size_t num_bytes = cbor_serialize_data_obj(&buf[len], buf_size - len,
-                &ts->data_objects[i]);
+            size_t num_bytes =
+                cbor_serialize_data_obj(&buf[len], buf_size - len, &ts->data_objects[i]);
             if (num_bytes == 0) {
                 return 0;
             }
@@ -647,8 +647,7 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
     for (unsigned int i = *start_pos; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subset) {
             *msg_id = TS_CAN_TYPE_PUBSUB | TS_CAN_PRIO_PUBSUB_LOW
-                | TS_CAN_DATA_ID_SET(ts->data_objects[i].id)
-                | TS_CAN_SOURCE_SET(can_dev_id);
+                      | TS_CAN_DATA_ID_SET(ts->data_objects[i].id) | TS_CAN_SOURCE_SET(can_dev_id);
 
             msg_len = cbor_serialize_data_obj(msg_data, 8, &ts->data_objects[i]);
 
@@ -672,8 +671,8 @@ int ts_bin_pub_can(struct ts_context *ts, int *start_pos, uint16_t subset, uint8
 int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uint32_t ret_type,
                int record_index)
 {
-    unsigned int len = 0;       // current length of response
-    len += ts_bin_response(ts, TS_STATUS_CONTENT);   // init response buffer
+    unsigned int len = 0;                          // current length of response
+    len += ts_bin_response(ts, TS_STATUS_CONTENT); // init response buffer
 
     if (endpoint == NULL) {
         return ts_bin_response(ts, TS_STATUS_BAD_REQUEST);
@@ -685,7 +684,8 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
         case TS_T_RECORDS:
             if (!(ret_type & TS_RET_VALUES)) {
                 struct ts_records *records = (struct ts_records *)endpoint->data;
-                len += cbor_serialize_uint(&ts->resp[len], records->num_records, ts->resp_size - len);
+                len +=
+                    cbor_serialize_uint(&ts->resp[len], records->num_records, ts->resp_size - len);
                 return len;
             }
             break;
@@ -698,8 +698,8 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     // find out number of elements
     int num_elements = 0;
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        uint8_t access = endpoint->type == TS_T_RECORDS ? endpoint->access :
-            ts->data_objects[i].access;
+        uint8_t access =
+            endpoint->type == TS_T_RECORDS ? endpoint->access : ts->data_objects[i].access;
         if (access & TS_READ_MASK && (ts->data_objects[i].parent == endpoint->id)) {
             num_elements++;
         }
@@ -713,38 +713,39 @@ int ts_bin_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     }
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
-        uint8_t access = endpoint->type == TS_T_RECORDS ? endpoint->access :
-            ts->data_objects[i].access;
+        uint8_t access =
+            endpoint->type == TS_T_RECORDS ? endpoint->access : ts->data_objects[i].access;
         if (access & TS_READ_MASK && (ts->data_objects[i].parent == endpoint->id)) {
             int num_bytes = 0;
             if (ret_type & TS_RET_IDS) {
                 num_bytes = cbor_serialize_uint(&ts->resp[len], ts->data_objects[i].id,
-                    ts->resp_size - len);
+                                                ts->resp_size - len);
             }
             else if (ret_type & TS_RET_NAMES) {
                 num_bytes = cbor_serialize_string(&ts->resp[len], ts->data_objects[i].name,
-                    ts->resp_size - len);
+                                                  ts->resp_size - len);
             }
 
             if (ret_type & TS_RET_VALUES) {
                 if (endpoint->type == TS_T_RECORDS) {
                     struct ts_records *records = (struct ts_records *)endpoint->data;
-                    void *data = (uint8_t *)records->data + record_index * records->record_size +
-                        (size_t)ts->data_objects[i].data;
+                    void *data = (uint8_t *)records->data + record_index * records->record_size
+                                 + (size_t)ts->data_objects[i].data;
                     // create temporary data object with data from struct
                     struct ts_data_object obj = {
                         .id = ts->data_objects[i].id,
                         .name = ts->data_objects[i].name,
                         .data = data,
                         .type = ts->data_objects[i].type,
-                        .detail = ts->data_objects[i].detail
+                        .detail = ts->data_objects[i].detail,
                     };
                     num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
-                        ts->resp_size - len - num_bytes, &obj);
+                                                         ts->resp_size - len - num_bytes, &obj);
                 }
                 else {
                     num_bytes += cbor_serialize_data_obj(&ts->resp[len + num_bytes],
-                        ts->resp_size - len - num_bytes, &ts->data_objects[i]);
+                                                         ts->resp_size - len - num_bytes,
+                                                         &ts->data_objects[i]);
                 }
             }
 

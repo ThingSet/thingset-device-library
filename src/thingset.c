@@ -59,8 +59,8 @@ int ts_init_global(struct ts_context *ts)
 
 #endif
 
-int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len,
-               uint8_t *response, size_t response_size)
+int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len, uint8_t *response,
+               size_t response_size)
 {
     // check if proper request was set before asking for a response
     if (request == NULL || request_len < 1) {
@@ -77,8 +77,9 @@ int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len
         // binary mode request
         return ts_bin_process(ts);
     }
-    else if (ts->req[0] == '?' || ts->req[0] == '=' || ts->req[0] == '+'
-               || ts->req[0] == '-' || ts->req[0] == '!') {
+    else if (ts->req[0] == '?' || ts->req[0] == '=' || ts->req[0] == '+' || ts->req[0] == '-'
+             || ts->req[0] == '!')
+    {
         // text mode request
         return ts_txt_process(ts);
     }
@@ -100,16 +101,16 @@ void ts_set_update_callback(struct ts_context *ts, const uint16_t subsets, void 
     ts->update_cb = update_cb;
 }
 
-struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name,
-                                             size_t len, int32_t parent)
+struct ts_data_object *ts_get_object_by_name(struct ts_context *ts, const char *name, size_t len,
+                                             int32_t parent)
 {
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (parent != -1 && ts->data_objects[i].parent != parent) {
             continue;
         }
         else if (strncmp(ts->data_objects[i].name, name, len) == 0
-            // without length check foo and fooBar would be recognized as equal
-            && strlen(ts->data_objects[i].name) == len)
+                 // without length check foo and fooBar would be recognized as equal
+                 && strlen(ts->data_objects[i].name) == len)
         {
             return &(ts->data_objects[i]);
         }
@@ -128,7 +129,7 @@ struct ts_data_object *ts_get_object_by_id(struct ts_context *ts, ts_object_id_t
 }
 
 struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char *path, size_t len,
-    int *index)
+                                               int *index)
 {
     struct ts_data_object *object = NULL;
     const char *start = path;
@@ -140,8 +141,8 @@ struct ts_data_object *ts_get_endpoint_by_path(struct ts_context *ts, const char
         end = strchr(start, '/');
         if (end == NULL || end >= path + len) {
             // we are at the end of the path
-            if (object != NULL && object->type == TS_T_RECORDS &&
-                start[0] >= '0' && start[0] <= '9')
+            if (object != NULL && object->type == TS_T_RECORDS && start[0] >= '0'
+                && start[0] <= '9')
             {
                 // numeric ID, only valid to select index in an array of records
                 if (index != NULL) {

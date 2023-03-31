@@ -13,46 +13,46 @@ extern "C" {
 
 #include "ts_config.h"
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
-#define CBOR_TYPE_MASK          0xE0    /**< most-significant 3 bits */
-#define CBOR_INFO_MASK          0x1F    /**< least-significant 5 bits */
+#define CBOR_TYPE_MASK 0xE0 /**< most-significant 3 bits */
+#define CBOR_INFO_MASK 0x1F /**< least-significant 5 bits */
 
-#define CBOR_UINT       0x00            /**< Major type 0: Unsigned integers */
-#define CBOR_NEGINT     0x20            /**< Major type 1: Negative integers */
-#define CBOR_BYTES      0x40            /**< Major type 2: Bytes (binary) */
-#define CBOR_TEXT       0x60            /**< Major type 3: Text (UTF-8) */
-#define CBOR_ARRAY      0x80            /**< Major type 4: Array */
-#define CBOR_MAP        0xA0            /**< Major type 5: Map / Object */
-#define CBOR_TAG        0xC0            /**< Major type 6: Tag (for extension) */
-#define CBOR_MISC       0xE0            /**< Major type 7: Simple values and float */
+#define CBOR_UINT   0x00 /**< Major type 0: Unsigned integers */
+#define CBOR_NEGINT 0x20 /**< Major type 1: Negative integers */
+#define CBOR_BYTES  0x40 /**< Major type 2: Bytes (binary) */
+#define CBOR_TEXT   0x60 /**< Major type 3: Text (UTF-8) */
+#define CBOR_ARRAY  0x80 /**< Major type 4: Array */
+#define CBOR_MAP    0xA0 /**< Major type 5: Map / Object */
+#define CBOR_TAG    0xC0 /**< Major type 6: Tag (for extension) */
+#define CBOR_MISC   0xE0 /**< Major type 7: Simple values and float */
 
-#define CBOR_NUM_MAX            23      /**< Maximum number that can be directly encoded */
+#define CBOR_NUM_MAX 23 /**< Maximum number that can be directly encoded */
 
-#define CBOR_UINT8_FOLLOWS      24      /**< Length specifier uint8 (0x18) */
-#define CBOR_UINT16_FOLLOWS     25      /**< Length specifier uint16 (0x19) */
-#define CBOR_UINT32_FOLLOWS     26      /**< Length specifier uint32 (0x1a) */
-#define CBOR_UINT64_FOLLOWS     27      /**< Length specifier uint64 (0x1b) */
+#define CBOR_UINT8_FOLLOWS  24 /**< Length specifier uint8 (0x18) */
+#define CBOR_UINT16_FOLLOWS 25 /**< Length specifier uint16 (0x19) */
+#define CBOR_UINT32_FOLLOWS 26 /**< Length specifier uint32 (0x1a) */
+#define CBOR_UINT64_FOLLOWS 27 /**< Length specifier uint64 (0x1b) */
 
-#define CBOR_VAR_FOLLOWS        31      /**< Indefinite length specifier (0x1f) */
+#define CBOR_VAR_FOLLOWS 31 /**< Indefinite length specifier (0x1f) */
 
 /* Major type 6: Tags */
-#define CBOR_DATETIME_STRING_FOLLOWS        0   /**< Datetime string */
-#define CBOR_DATETIME_EPOCH_FOLLOWS         1   /**< Datetime epoch */
-#define CBOR_DECFRAC_ARRAY_FOLLOWS          4   /**< Decimal fraction */
+#define CBOR_DATETIME_STRING_FOLLOWS 0 /**< Datetime string */
+#define CBOR_DATETIME_EPOCH_FOLLOWS  1 /**< Datetime epoch */
+#define CBOR_DECFRAC_ARRAY_FOLLOWS   4 /**< Decimal fraction */
 
 /* Major type 7: Simple values and float */
-#define CBOR_FALSE      (CBOR_MISC | 20)   /**< Simple value: false */
-#define CBOR_TRUE       (CBOR_MISC | 21)   /**< Simple value: true */
-#define CBOR_NULL       (CBOR_MISC | 22)   /**< Simple value: null */
-#define CBOR_UNDEFINED  (CBOR_MISC | 23)   /**< Simple value: undefined */
-#define CBOR_SIMPLE     (CBOR_MISC | 24)   /**< Simple value: uint8 follows */
-#define CBOR_FLOAT16    (CBOR_MISC | 25)   /**< Half-precision float follows */
-#define CBOR_FLOAT32    (CBOR_MISC | 26)   /**< Single-precision float follows */
-#define CBOR_FLOAT64    (CBOR_MISC | 27)   /**< Double-precision float follows */
-#define CBOR_BREAK      (CBOR_MISC | 31)   /**< Simple value: break */
+#define CBOR_FALSE     (CBOR_MISC | 20) /**< Simple value: false */
+#define CBOR_TRUE      (CBOR_MISC | 21) /**< Simple value: true */
+#define CBOR_NULL      (CBOR_MISC | 22) /**< Simple value: null */
+#define CBOR_UNDEFINED (CBOR_MISC | 23) /**< Simple value: undefined */
+#define CBOR_SIMPLE    (CBOR_MISC | 24) /**< Simple value: uint8 follows */
+#define CBOR_FLOAT16   (CBOR_MISC | 25) /**< Half-precision float follows */
+#define CBOR_FLOAT32   (CBOR_MISC | 26) /**< Single-precision float follows */
+#define CBOR_FLOAT64   (CBOR_MISC | 27) /**< Double-precision float follows */
+#define CBOR_BREAK     (CBOR_MISC | 31) /**< Simple value: break */
 
 /**
  * Serialize unsigned integer value

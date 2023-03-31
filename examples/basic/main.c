@@ -26,17 +26,13 @@ void reset(void)
 /* the ThingSet object definitions */
 static struct ts_data_object data_objects[] = {
 
-    TS_ITEM_STRING(0x1D, "cNodeID", node_id, sizeof(node_id),
-        TS_ID_ROOT, TS_ANY_R, 0),
+    TS_ITEM_STRING(0x1D, "cNodeID", node_id, sizeof(node_id), TS_ID_ROOT, TS_ANY_R, 0),
 
-    TS_ITEM_FLOAT(0x71, "rAmbient_degC", &ambient_temp, 1,
-        TS_ID_ROOT, TS_ANY_R, 0),
+    TS_ITEM_FLOAT(0x71, "rAmbient_degC", &ambient_temp, 1, TS_ID_ROOT, TS_ANY_R, 0),
 
-    TS_ITEM_BOOL(0x61, "wHeaterEnable", &enable_switch,
-        TS_ID_ROOT, TS_ANY_RW, 0),
+    TS_ITEM_BOOL(0x61, "wHeaterEnable", &enable_switch, TS_ID_ROOT, TS_ANY_RW, 0),
 
-    TS_FN_VOID(0xE1, "xReset", &reset,
-        TS_ID_ROOT, TS_ANY_RW),
+    TS_FN_VOID(0xE1, "xReset", &reset, TS_ID_ROOT, TS_ANY_RW),
 };
 
 int main(void)

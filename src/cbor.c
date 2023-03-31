@@ -6,9 +6,9 @@
 
 #include "cbor.h"
 
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #if TS_64BIT_TYPES_SUPPORT
@@ -18,24 +18,27 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
 #endif
 {
     if (max_len < 1) {
-        return 0;   // error
+        return 0; // error
     }
     else if (value <= CBOR_NUM_MAX) {
         data[0] = CBOR_UINT | (uint8_t)value;
-        //printf("serialize: value = %.2X <= CBOR_NUM_MAX, data: %.2X\n", (uint32_t)value, data[0]);
+        // printf("serialize: value = %.2X <= CBOR_NUM_MAX, data: %.2X\n", (uint32_t)value,
+        // data[0]);
         return 1;
     }
     else if (value <= UINT8_MAX && max_len >= 2) {
         data[0] = CBOR_UINT | CBOR_UINT8_FOLLOWS;
         data[1] = value;
-        //printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0], data[1]);
+        // printf("serialize: value = 0x%.2X < 0xFF, data: %.2X %.2X\n", (uint32_t)value, data[0],
+        // data[1]);
         return 2;
     }
     else if (value <= UINT16_MAX && max_len >= 3) {
         data[0] = CBOR_UINT | CBOR_UINT16_FOLLOWS;
         data[1] = value >> 8;
         data[2] = value;
-        //printf("serialize: value = 0x%.4X <= 0xFFFF, data: %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2]);
+        // printf("serialize: value = 0x%.4X <= 0xFFFF, data: %.2X %.2X %.2X\n", (uint32_t)value,
+        // data[0], data[1], data[2]);
         return 3;
     }
     else if (value <= UINT32_MAX && max_len >= 5) {
@@ -44,7 +47,8 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
         data[2] = value >> 16;
         data[3] = value >> 8;
         data[4] = value;
-        //printf("serialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n", (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
+        // printf("serialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
+        // (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
         return 5;
     }
 #if TS_64BIT_TYPES_SUPPORT
@@ -78,9 +82,10 @@ int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len)
 
     if (value >= 0) {
         return cbor_serialize_uint(data, value, max_len);
-    } else {
+    }
+    else {
         int size = cbor_serialize_uint(data, -1 - value, max_len);
-        data[0] |= CBOR_NEGINT;    // set major type 1 for negative integer
+        data[0] |= CBOR_NEGINT; // set major type 1 for negative integer
         return size;
     }
 }
@@ -110,7 +115,11 @@ int cbor_serialize_float(uint8_t *data, float value, size_t max_len)
 
     data[0] = CBOR_FLOAT32;
 
-    union { float f; uint32_t ui; } f2ui;
+    union {
+        float f;
+        uint32_t ui;
+    } f2ui;
+
     f2ui.f = value;
     data[1] = f2ui.ui >> 24;
     data[2] = f2ui.ui >> 16;
@@ -133,27 +142,28 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
 {
     unsigned int len = strlen(value);
 
-    //printf("serialize string: \"%s\", len = %d, max_len = %d\n", value, len, max_len);
+    // printf("serialize string: \"%s\", len = %d, max_len = %d\n", value, len, max_len);
 
     if (len <= CBOR_NUM_MAX && len + 1 <= max_len) {
         data[0] = CBOR_TEXT | (uint8_t)len;
-        strcpy((char*)&data[1], value);
+        strcpy((char *)&data[1], value);
         return len + 1;
     }
     else if (len < UINT8_MAX && len + 2 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)len;
-        strcpy((char*)&data[2], value);
+        strcpy((char *)&data[2], value);
         return len + 2;
     }
     else if (len < UINT16_MAX && len + 3 <= max_len) {
         data[0] = CBOR_TEXT | CBOR_UINT16_FOLLOWS;
         data[1] = (uint16_t)len >> 8;
         data[2] = (uint16_t)len;
-        strcpy((char*)&data[3], value);
+        strcpy((char *)&data[3], value);
         return len + 3;
     }
-    else {    // string too long (more than 65535 characters)
+    else {
+        // string too long (more than 65535 characters)
         return 0;
     }
 }
@@ -169,17 +179,18 @@ int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, 
     else if (num_bytes < UINT8_MAX && num_bytes + 2 <= max_len) {
         data[0] = CBOR_BYTES | CBOR_UINT8_FOLLOWS;
         data[1] = (uint8_t)num_bytes;
-        memcpy((char*)&data[2], bytes, num_bytes);
+        memcpy((char *)&data[2], bytes, num_bytes);
         return num_bytes + 2;
     }
     else if (num_bytes < UINT16_MAX && num_bytes + 3 <= max_len) {
         data[0] = CBOR_BYTES | CBOR_UINT16_FOLLOWS;
         data[1] = (uint16_t)num_bytes >> 8;
         data[2] = (uint16_t)num_bytes;
-        memcpy((char*)&data[3], bytes, num_bytes);
+        memcpy((char *)&data[3], bytes, num_bytes);
         return num_bytes + 3;
     }
-    else {    // too many bytes (more than 65535)
+    else {
+        // too many bytes (more than 65535)
         return 0;
     }
 }
@@ -202,7 +213,8 @@ int _serialize_num_elements(uint8_t *data, size_t num_elements, size_t max_len)
         data[2] = (uint16_t)num_elements;
         return 3;
     }
-    else {    // too many elements (more than 65535)
+    else {
+        // too many elements (more than 65535)
         return 0;
     }
 }
@@ -227,7 +239,8 @@ int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
 {
     uint8_t info = data[0] & CBOR_INFO_MASK;
 
-    //printf("uint_data: %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
+    // printf("uint_data: %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", data[0], data[1],
+    // data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
 
     if (info <= CBOR_NUM_MAX) {
         *bytes = info;
@@ -243,14 +256,15 @@ int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
     }
 #if TS_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT32_FOLLOWS) {
-        *(uint64_t*)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16) |
-            ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
+        *(uint64_t *)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16)
+                             | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
         return 5;
     }
     else if (info == CBOR_UINT64_FOLLOWS) {
-        *(uint64_t*)bytes = ((uint64_t)data[1] << 56) | ((uint64_t)data[2] << 48) |
-            ((uint64_t)data[3] << 40) | ((uint64_t)data[4] << 32) | ((uint64_t)data[5] << 24) |
-            ((uint64_t)data[6] << 16) | ((uint64_t)data[7] << 8) | ((uint64_t)data[8]);
+        *(uint64_t *)bytes = ((uint64_t)data[1] << 56) | ((uint64_t)data[2] << 48)
+                             | ((uint64_t)data[3] << 40) | ((uint64_t)data[4] << 32)
+                             | ((uint64_t)data[5] << 24) | ((uint64_t)data[6] << 16)
+                             | ((uint64_t)data[7] << 8) | ((uint64_t)data[8]);
         return 9;
     }
 #else
@@ -296,8 +310,8 @@ int cbor_deserialize_int64(const uint8_t *data, int64_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT64_MAX) {
                 *value = (int64_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
-                //    (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                // printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X"
+                // " %.2X\n", (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -307,8 +321,8 @@ int cbor_deserialize_int64(const uint8_t *data, int64_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT64_MAX) {
                 *value = -1 - (uint64_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
-                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                // printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
+                //   *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -328,8 +342,8 @@ int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value)
     int size;
     uint8_t type = data[0] & CBOR_TYPE_MASK;
 
-    //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
-    //  (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
+    // printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
+    //   (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
 
     if (!value || type != CBOR_UINT)
         return 0;
@@ -360,8 +374,8 @@ int cbor_deserialize_int32(const uint8_t *data, int32_t *value)
         if (type == CBOR_UINT) {
             if (tmp <= INT32_MAX) {
                 *value = (int32_t)tmp;
-                //printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X %.2X\n",
-                //  (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                // printf("deserialize: value = 0x%.8X <= 0xFFFFFFFF, data: %.2X %.2X %.2X %.2X"
+                // " %.2X\n", (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -371,8 +385,8 @@ int cbor_deserialize_int32(const uint8_t *data, int32_t *value)
             // 1 + tmp <= INT32_MAX + 1
             if (tmp <= INT32_MAX) {
                 *value = -1 - (uint32_t)tmp;
-                //printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
-                //  *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
+                // printf("deserialize: value = %.8X, tmp = %.8X, data: %.2X %.2X %.2X %.2X %.2X\n",
+                //   *value, (uint32_t)tmp, data[0], data[1], data[2], data[3], data[4]);
                 return size;
             }
         }
@@ -435,9 +449,7 @@ int cbor_deserialize_decfrac(const uint8_t *data, int32_t *mantissa, const int16
     int pos = 0;
     uint8_t type = data[0] & CBOR_TYPE_MASK;
 
-    if (data[0] == (CBOR_TAG | CBOR_DECFRAC_ARRAY_FOLLOWS) &&
-        data[1] == (CBOR_ARRAY | 2U))
-    {
+    if (data[0] == (CBOR_TAG | CBOR_DECFRAC_ARRAY_FOLLOWS) && data[1] == (CBOR_ARRAY | 2U)) {
         int32_t mantissa_tmp;
         int16_t exponent_received;
         pos = 2;
@@ -515,7 +527,10 @@ int cbor_deserialize_float(const uint8_t *data, float *value)
 #endif
     }
     else if (data[0] == CBOR_FLOAT32) {
-        union { float f; uint32_t ui; } f2ui;
+        union {
+            float f;
+            uint32_t ui;
+        } f2ui;
         f2ui.ui = data[1] << 24 | data[2] << 16 | data[3] << 8 | data[4];
         *value = f2ui.f;
         return 5;
@@ -575,10 +590,10 @@ int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uin
     }
     else if (info == CBOR_UINT16_FOLLOWS) {
         *str_len = data[1] << 8 | data[2];
-        *str_start = (char*)&data[3];
+        *str_start = (char *)&data[3];
         return *str_len + 3;
     }
-    return 0;   // longer string not supported
+    return 0; // longer string not supported
 }
 
 #if TS_BYTE_STRING_TYPE_SUPPORT
@@ -616,7 +631,7 @@ int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_siz
             return len + 3;
         }
     }
-    return 0;   // more bytes not supported
+    return 0; // more bytes not supported
 }
 #endif
 
@@ -626,7 +641,7 @@ int cbor_num_elements(const uint8_t *data, uint16_t *num_elements)
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     uint8_t info = data[0] & CBOR_INFO_MASK;
 
-    //printf("type: %x, info: %x\n", type, info);
+    // printf("type: %x, info: %x\n", type, info);
 
     if (!num_elements)
         return 0;
@@ -649,7 +664,7 @@ int cbor_num_elements(const uint8_t *data, uint16_t *num_elements)
         *num_elements = data[1] << 8 | data[2];
         return 3;
     }
-    return 0;   // more map/array elements not supported
+    return 0; // more map/array elements not supported
 }
 
 // determines the size of a cbor data item starting at given pointer
@@ -662,14 +677,14 @@ int cbor_size(const uint8_t *data)
         if (info <= CBOR_NUM_MAX)
             return 1;
         switch (info) {
-        case CBOR_UINT8_FOLLOWS:
-            return 2;
-        case CBOR_UINT16_FOLLOWS:
-            return 3;
-        case CBOR_UINT32_FOLLOWS:
-            return 5;
-        case CBOR_UINT64_FOLLOWS:
-            return 9;
+            case CBOR_UINT8_FOLLOWS:
+                return 2;
+            case CBOR_UINT16_FOLLOWS:
+                return 3;
+            case CBOR_UINT32_FOLLOWS:
+                return 5;
+            case CBOR_UINT64_FOLLOWS:
+                return 9;
         }
     }
     else if (type == CBOR_BYTES || type == CBOR_TEXT) {
@@ -682,31 +697,31 @@ int cbor_size(const uint8_t *data)
             else if (info == CBOR_UINT16_FOLLOWS)
                 return 1 + (data[1] << 8 | data[2]);
             else
-                return 0;   // longer string / byte array not supported
+                return 0; // longer string / byte array not supported
         }
     }
 #if TS_DECFRAC_TYPE_SUPPORT
     else if (type == CBOR_TAG && info == CBOR_DECFRAC_ARRAY_FOLLOWS) {
         int pos = 2;
-        pos += cbor_size(&data[pos]);     // exponent
-        pos += cbor_size(&data[pos]);     // mantissa
+        pos += cbor_size(&data[pos]); // exponent
+        pos += cbor_size(&data[pos]); // mantissa
         return pos;
     }
 #endif
     else if (type == CBOR_MISC) {
         switch (data[0]) {
-        case CBOR_FALSE:
-        case CBOR_TRUE:
-            return 1;
-            break;
-        case CBOR_FLOAT32:
-            return 5;
-            break;
-        case CBOR_FLOAT64:
-            return 9;
-            break;
+            case CBOR_FALSE:
+            case CBOR_TRUE:
+                return 1;
+                break;
+            case CBOR_FLOAT32:
+                return 5;
+                break;
+            case CBOR_FLOAT64:
+                return 9;
+                break;
         }
     }
 
-    return 0;   // float16, arrays, maps, tagged types, etc. curently not supported
+    return 0; // float16, arrays, maps, tagged types, etc. curently not supported
 }

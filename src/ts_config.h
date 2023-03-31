@@ -49,7 +49,7 @@
  * performance
  */
 #if !defined(TS_64BIT_TYPES_SUPPORT) && !defined(CONFIG_THINGSET_64BIT_TYPES_SUPPORT)
-#define TS_64BIT_TYPES_SUPPORT 0        // default: no support
+#define TS_64BIT_TYPES_SUPPORT 0 // default: no support
 #elif !defined(TS_64BIT_TYPES_SUPPORT)
 #define TS_64BIT_TYPES_SUPPORT CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 #endif
@@ -60,7 +60,7 @@
  * of floating point numbers, while still communicating the SI base unit (volts).
  */
 #if !defined(TS_DECFRAC_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT)
-#define TS_DECFRAC_TYPE_SUPPORT 0        // default: no support
+#define TS_DECFRAC_TYPE_SUPPORT 0 // default: no support
 #elif !defined(TS_DECFRAC_TYPE_SUPPORT)
 #define TS_DECFRAC_TYPE_SUPPORT CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
 #endif
@@ -70,7 +70,7 @@
  * can be used e.g. for firmware upgrades. Byte strings are not supported by JSON.
  */
 #if !defined(TS_BYTE_STRING_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT)
-#define TS_BYTE_STRING_TYPE_SUPPORT 0        // default: no support
+#define TS_BYTE_STRING_TYPE_SUPPORT 0 // default: no support
 #elif !defined(TS_BYTE_STRING_TYPE_SUPPORT)
 #define TS_BYTE_STRING_TYPE_SUPPORT CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
 #endif
@@ -90,7 +90,7 @@
  * enabled by default in the future.
  */
 #if !defined(TS_NESTED_JSON) && !defined(CONFIG_THINGSET_NESTED_JSON)
-#define TS_NESTED_JSON 0        // default: no nested JSON for legacy code
+#define TS_NESTED_JSON 0 // default: no nested JSON for legacy code
 #elif !defined(TS_NESTED_JSON)
 #define TS_NESTED_JSON CONFIG_THINGSET_NESTED_JSON
 #endif

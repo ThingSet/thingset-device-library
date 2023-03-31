@@ -65,16 +65,17 @@ static int16_t i8;
 
 bool b;
 
-int32_t A[100] = {4, 2, 8, 4};
-struct ts_array int32_array = {A, ARRAY_SIZE(A), 4, TS_T_INT32, sizeof(int32_t)};
+int32_t A[100] = { 4, 2, 8, 4 };
+struct ts_array int32_array = { A, ARRAY_SIZE(A), 4, TS_T_INT32, sizeof(int32_t) };
 
-float B[100] = {2.27, 3.44};
-struct ts_array float32_array = {B, ARRAY_SIZE(B), 2, TS_T_FLOAT32, sizeof(float)};
+float B[100] = { 2.27, 3.44 };
+struct ts_array float32_array = { B, ARRAY_SIZE(B), 2, TS_T_FLOAT32, sizeof(float) };
 
 uint8_t bytes[18] = {};
 struct ts_bytes_buffer bytes_buf = { bytes, 0 };
 
-struct test_struct {
+struct test_struct
+{
     uint32_t timestamp;
     uint8_t unused_element;
     uint16_t error_flags;
@@ -87,12 +88,13 @@ struct test_struct objects[5] = {
         .unused_element = 0,
         .error_flags = 0,
         .battery_voltage = 12.5,
-    }, {
+    },
+    {
         .timestamp = 123,
         .unused_element = 0,
         .error_flags = 2,
         .battery_voltage = 14.5,
-    }
+    },
 };
 
 struct ts_records records = {
@@ -104,48 +106,43 @@ struct ts_records records = {
 
 struct ts_data_object data_objects[] = {
 
-    TS_ITEM_UINT32(0x10, "t_s", &timestamp,
-        ID_ROOT, TS_ANY_RW, SUBSET_REPORT),
+    TS_ITEM_UINT32(0x10, "t_s", &timestamp, ID_ROOT, TS_ANY_RW, SUBSET_REPORT),
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
 
     TS_GROUP(ID_INFO, "Info", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_STRING(0x19, "cManufacturer", manufacturer, 0,
-        ID_INFO, TS_ANY_R, 0),
+    TS_ITEM_STRING(0x19, "cManufacturer", manufacturer, 0, ID_INFO, TS_ANY_R, 0),
 
-    TS_ITEM_STRING(0x1B, "cNodeID", node_id, sizeof(node_id),
-        ID_INFO, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
+    TS_ITEM_STRING(0x1B, "cNodeID", node_id, sizeof(node_id), ID_INFO, TS_ANY_R | TS_MKR_W,
+                   SUBSET_NVM),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
 
     TS_GROUP(ID_CONF, "Conf", &group_callback, ID_ROOT),
 
-    TS_ITEM_FLOAT(0x31, "sBatCharging_V", &bat_charging_voltage, 2,
-        ID_CONF, TS_ANY_RW, SUBSET_NVM),
+    TS_ITEM_FLOAT(0x31, "sBatCharging_V", &bat_charging_voltage, 2, ID_CONF, TS_ANY_RW, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x32, "sLoadDisconnect_V", &load_disconnect_voltage, 2,
-        ID_CONF, TS_ANY_RW, SUBSET_NVM),
+    TS_ITEM_FLOAT(0x32, "sLoadDisconnect_V", &load_disconnect_voltage, 2, ID_CONF, TS_ANY_RW,
+                  SUBSET_NVM),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
 
     TS_GROUP(ID_INPUT, "Input", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_BOOL(0x61, "wEnableCharging", &enable_switch,
-        ID_INPUT, TS_ANY_RW, 0),
+    TS_ITEM_BOOL(0x61, "wEnableCharging", &enable_switch, ID_INPUT, TS_ANY_RW, 0),
 
     // MEASUREMENT DATA ///////////////////////////////////////////////////////
 
     TS_GROUP(ID_MEAS, "Meas", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_FLOAT(0x71, "rBat_V", &battery_voltage, 2,
-        ID_MEAS, TS_ANY_R, SUBSET_REPORT | SUBSET_CAN),
+    TS_ITEM_FLOAT(0x71, "rBat_V", &battery_voltage, 2, ID_MEAS, TS_ANY_R,
+                  SUBSET_REPORT | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x72, "rBat_A", &battery_current, 2,
-        ID_MEAS, TS_ANY_R, SUBSET_REPORT | SUBSET_CAN),
+    TS_ITEM_FLOAT(0x72, "rBat_A", &battery_current, 2, ID_MEAS, TS_ANY_R,
+                  SUBSET_REPORT | SUBSET_CAN),
 
-    TS_ITEM_INT16(0x73, "rAmbient_degC", &ambient_temp,
-        ID_MEAS, TS_ANY_R, SUBSET_REPORT),
+    TS_ITEM_INT16(0x73, "rAmbient_degC", &ambient_temp, ID_MEAS, TS_ANY_R, SUBSET_REPORT),
 
     // NESTED DATA ///////////////////////////////////////////////////////
 
@@ -153,68 +150,55 @@ struct ts_data_object data_objects[] = {
 
     TS_GROUP(0x90, "Bat1", TS_NO_CALLBACK, ID_NESTED),
 
-    TS_ITEM_FLOAT(0x91, "r_V", &battery_voltage, 2,
-        0x90, TS_ANY_R, SUBSET_NESTED),
+    TS_ITEM_FLOAT(0x91, "r_V", &battery_voltage, 2, 0x90, TS_ANY_R, SUBSET_NESTED),
 
-    TS_ITEM_FLOAT(0x92, "r_A", &battery_current, 2,
-        0x90, TS_ANY_R, SUBSET_NESTED),
+    TS_ITEM_FLOAT(0x92, "r_A", &battery_current, 2, 0x90, TS_ANY_R, SUBSET_NESTED),
 
-    TS_ITEM_INT16(0x93, "rDummy_degC", &ambient_temp,
-        ID_NESTED, TS_ANY_R, 0),
+    TS_ITEM_INT16(0x93, "rDummy_degC", &ambient_temp, ID_NESTED, TS_ANY_R, 0),
 
     TS_GROUP(0x94, "Bat2", TS_NO_CALLBACK, ID_NESTED),
 
-    TS_ITEM_FLOAT(0x95, "r_V", &battery_voltage, 2,
-        0x94, TS_ANY_R, SUBSET_NESTED),
+    TS_ITEM_FLOAT(0x95, "r_V", &battery_voltage, 2, 0x94, TS_ANY_R, SUBSET_NESTED),
 
-    TS_ITEM_FLOAT(0x96, "r_A", &battery_current, 2,
-        0x94, TS_ANY_R, SUBSET_NESTED),
+    TS_ITEM_FLOAT(0x96, "r_A", &battery_current, 2, 0x94, TS_ANY_R, SUBSET_NESTED),
 
-    TS_ITEM_INT16(0x97, "rAmbient_degC", &ambient_temp,
-        ID_NESTED, TS_ANY_R, SUBSET_NESTED),
+    TS_ITEM_INT16(0x97, "rAmbient_degC", &ambient_temp, ID_NESTED, TS_ANY_R, SUBSET_NESTED),
 
     // RECORDED DATA //////////////////////////////////////////////////////////
 
     TS_GROUP(ID_REC, "Rec", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_FLOAT(0xA1, "rBatHour_kWh", &bat_energy_hour, 2,
-        ID_REC, TS_ANY_R, 0),
+    TS_ITEM_FLOAT(0xA1, "rBatHour_kWh", &bat_energy_hour, 2, ID_REC, TS_ANY_R, 0),
 
-    TS_ITEM_FLOAT(0xA2, "rBatDay_kWh", &bat_energy_day, 2,
-        ID_REC, TS_ANY_R, 0),
+    TS_ITEM_FLOAT(0xA2, "rBatDay_kWh", &bat_energy_day, 2, ID_REC, TS_ANY_R, 0),
 
-    TS_ITEM_INT16(0xA3, "rAmbientMaxDay_degC", &ambient_temp_max_day,
-        ID_REC, TS_ANY_R, 0),
+    TS_ITEM_INT16(0xA3, "rAmbientMaxDay_degC", &ambient_temp_max_day, ID_REC, TS_ANY_R, 0),
 
     // REMOTE PROCEDURE CALLS /////////////////////////////////////////////////
 
     TS_GROUP(ID_RPC, "RPC", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_FN_VOID(0xE1, "xReset", &reset_function,
-        ID_RPC, TS_ANY_RW),
+    TS_FN_VOID(0xE1, "xReset", &reset_function, ID_RPC, TS_ANY_RW),
 
-    TS_FN_VOID(0xE2, "xAuth", &auth_function,
-        ID_RPC, TS_ANY_RW),
+    TS_FN_VOID(0xE2, "xAuth", &auth_function, ID_RPC, TS_ANY_RW),
 
-    TS_ITEM_STRING(0xE3, "uPassword", auth_password, sizeof(auth_password),
-        0xE2, TS_ANY_RW, 0),
+    TS_ITEM_STRING(0xE3, "uPassword", auth_password, sizeof(auth_password), 0xE2, TS_ANY_RW, 0),
 
-    TS_FN_INT32(0xE4, "xIntFunction", &int_function,
-        ID_RPC, TS_ANY_RW),
+    TS_FN_INT32(0xE4, "xIntFunction", &int_function, ID_RPC, TS_ANY_RW),
 
     // RECORDS used for logs //////////////////////////////////////////////////
 
     TS_RECORDS(0x7005, "Log", &records, ID_ROOT, TS_ANY_RW, 0),
 
     /*
-    * Record items definition.
-    *
-    * Note that:
-    * - not all struct elements need to be exposed (unused_element is missing)
-    * - the order of elements can be changed
-    *
-    * Important: All elements *must* be from the same struct.
-    */
+     * Record items definition.
+     *
+     * Note that:
+     * - not all struct elements need to be exposed (unused_element is missing)
+     * - the order of elements can be changed
+     *
+     * Important: All elements *must* be from the same struct.
+     */
     TS_RECORD_ITEM_UINT32(0x81, "t_s", struct test_struct, timestamp, 0x7005),
     TS_RECORD_ITEM_FLOAT(0x82, "rBat_V", struct test_struct, battery_voltage, 2, 0x7005),
     TS_RECORD_ITEM_UINT16(0x83, "sErrorFlags", struct test_struct, error_flags, 0x7005),
@@ -229,16 +213,13 @@ struct ts_data_object data_objects[] = {
 
     TS_GROUP(0xF1, "mReport", TS_NO_CALLBACK, ID_PUB),
 
-    TS_ITEM_BOOL(0xF2, "wEnable", &pub_report_enable,
-        0xF1, TS_ANY_RW, 0),
+    TS_ITEM_BOOL(0xF2, "wEnable", &pub_report_enable, 0xF1, TS_ANY_RW, 0),
 
-    TS_ITEM_UINT16(0xF3, "wInterval_ms", &pub_report_interval,
-        0xF1, TS_ANY_RW, 0),
+    TS_ITEM_UINT16(0xF3, "wInterval_ms", &pub_report_interval, 0xF1, TS_ANY_RW, 0),
 
     TS_GROUP(0xF5, "Info", TS_NO_CALLBACK, ID_PUB),
 
-    TS_ITEM_BOOL(0xF6, "wOnChange", &pub_info_enable,
-        0xF5, TS_ANY_RW, 0),
+    TS_ITEM_BOOL(0xF6, "wOnChange", &pub_info_enable, 0xF5, TS_ANY_RW, 0),
 
     // UNIT TEST DATA /////////////////////////////////////////////////////////
     // using IDs >= 0x1000

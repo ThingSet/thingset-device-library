@@ -9,12 +9,12 @@
 
 #include "jsmn.h"
 
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef CONFIG_BASE64
 /* base64-encoded binary strings only supported for Zephyr environments */
@@ -101,58 +101,58 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
 {
     switch (type) {
 #if TS_64BIT_TYPES_SUPPORT
-    case TS_T_UINT64:
-        return snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)data));
-    case TS_T_INT64:
-        return snprintf(buf, size, "%" PRIi64 ",", *((int64_t *)data));
+        case TS_T_UINT64:
+            return snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)data));
+        case TS_T_INT64:
+            return snprintf(buf, size, "%" PRIi64 ",", *((int64_t *)data));
 #endif
-    case TS_T_UINT32:
-        return snprintf(buf, size, "%" PRIu32 ",", *((uint32_t *)data));
-    case TS_T_INT32:
-        return snprintf(buf, size, "%" PRIi32 ",", *((int32_t *)data));
-    case TS_T_UINT16:
-        return snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)data));
-    case TS_T_INT16:
-        return snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)data));
-    case TS_T_UINT8:
-        return snprintf(buf, size, "%" PRIu8 ",", *((uint8_t *)data));
-    case TS_T_INT8:
-        return snprintf(buf, size, "%" PRIi8 ",", *((int8_t *)data));
-    case TS_T_FLOAT32: {
-        float value = *((float *)data);
-        if (isnan(value) || isinf(value)) {
-            /* JSON spec does not support NaN and Inf, so we need to use null instead */
-            return snprintf(buf, size, "null,");
+        case TS_T_UINT32:
+            return snprintf(buf, size, "%" PRIu32 ",", *((uint32_t *)data));
+        case TS_T_INT32:
+            return snprintf(buf, size, "%" PRIi32 ",", *((int32_t *)data));
+        case TS_T_UINT16:
+            return snprintf(buf, size, "%" PRIu16 ",", *((uint16_t *)data));
+        case TS_T_INT16:
+            return snprintf(buf, size, "%" PRIi16 ",", *((int16_t *)data));
+        case TS_T_UINT8:
+            return snprintf(buf, size, "%" PRIu8 ",", *((uint8_t *)data));
+        case TS_T_INT8:
+            return snprintf(buf, size, "%" PRIi8 ",", *((int8_t *)data));
+        case TS_T_FLOAT32: {
+            float value = *((float *)data);
+            if (isnan(value) || isinf(value)) {
+                /* JSON spec does not support NaN and Inf, so we need to use null instead */
+                return snprintf(buf, size, "null,");
+            }
+            else {
+                return snprintf(buf, size, "%.*f,", detail, value);
+            }
         }
-        else {
-            return snprintf(buf, size, "%.*f,", detail, value);
-        }
-    }
 #if TS_DECFRAC_TYPE_SUPPORT
-    case TS_T_DECFRAC:
-        return snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",", *((uint32_t *)data), detail);
+        case TS_T_DECFRAC:
+            return snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",", *((uint32_t *)data), detail);
 #endif
-    case TS_T_BOOL:
-        return snprintf(buf, size, "%s,", (*((bool *)data) == true ? "true" : "false"));
-    case TS_T_STRING:
-        return snprintf(buf, size, "\"%s\",", (char *)data);
+        case TS_T_BOOL:
+            return snprintf(buf, size, "%s,", (*((bool *)data) == true ? "true" : "false"));
+        case TS_T_STRING:
+            return snprintf(buf, size, "\"%s\",", (char *)data);
 #ifdef CONFIG_BASE64
-    case TS_T_BYTES: {
-        struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)data;
-        size_t strlen;
-        int err = base64_encode((uint8_t *)buf + 1, size - 4, &strlen,
-                                bytes_buf->bytes, bytes_buf->num_bytes);
-        if (err == 0) {
-            buf[0] = '\"';
-            buf[strlen + 1] = '\"';
-            buf[strlen + 2] = ',';
-            buf[strlen + 3] = '\0';
-            return strlen + 3;
+        case TS_T_BYTES: {
+            struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)data;
+            size_t strlen;
+            int err = base64_encode((uint8_t *)buf + 1, size - 4, &strlen, bytes_buf->bytes,
+                                    bytes_buf->num_bytes);
+            if (err == 0) {
+                buf[0] = '\"';
+                buf[strlen + 1] = '\"';
+                buf[strlen + 2] = ',';
+                buf[strlen + 3] = '\0';
+                return strlen + 3;
+            }
+            else {
+                return snprintf(buf, size, "null,");
+            }
         }
-        else {
-            return snprintf(buf, size, "null,");
-        }
-    }
 #endif
     }
     return 0;
@@ -189,8 +189,8 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
                         struct ts_data_object *parent_obj =
                             ts_get_object_by_id(ts, ts->data_objects[i].parent);
                         if (parent_obj != NULL) {
-                            pos += snprintf(buf + pos, size - pos, "\"%s/%s\",",
-                                            parent_obj->name, ts->data_objects[i].name);
+                            pos += snprintf(buf + pos, size - pos, "\"%s/%s\",", parent_obj->name,
+                                            ts->data_objects[i].name);
                         }
                     }
 #else
@@ -208,8 +208,8 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             pos += snprintf(buf + pos, size - pos, "[");
             for (int i = 0; i < array->num_elements; i++) {
                 void *data = (uint8_t *)array->elements + i * array->type_size;
-                pos += json_serialize_simple_value(buf + pos, size - pos,
-                    data, array->type, object->detail);
+                pos += json_serialize_simple_value(buf + pos, size - pos, data, array->type,
+                                                   object->detail);
             }
             if (array->num_elements > 0) {
                 pos--; // remove trailing comma
@@ -264,10 +264,10 @@ int ts_json_serialize_record(struct ts_context *ts, char *buf, size_t size,
             return 0;
         }
 
-        void *data = (uint8_t *)records->data + record_index * records->record_size +
-            (size_t)item->data;
+        void *data =
+            (uint8_t *)records->data + record_index * records->record_size + (size_t)item->data;
         int len_value = json_serialize_simple_value(buf + len + len_name, size - len - len_name,
-            data, item->type, item->detail);
+                                                    data, item->type, item->detail);
         if (len_value < 0) {
             return 0;
         }
@@ -305,9 +305,9 @@ void ts_dump_json(struct ts_context *ts, ts_object_id_t obj_id, int level)
             }
             else {
                 int pos = ts_json_serialize_name_value(ts, (char *)buf, sizeof(buf),
-                    &ts->data_objects[i]);
+                                                       &ts->data_objects[i]);
                 if (pos > 0) {
-                    buf[pos-1] = '\0';  // remove trailing comma
+                    buf[pos - 1] = '\0'; // remove trailing comma
                     LOG_DBG("%*s%s", 4 * (level + 1), "", (char *)buf);
                 }
             }
@@ -342,8 +342,8 @@ int ts_txt_process(struct ts_context *ts)
     jsmn_init(&parser);
 
     ts->json_str = (char *)ts->req + 1 + path_len;
-    ts->tok_count = jsmn_parse(&parser, ts->json_str, ts->req_len - path_len - 1,
-        ts->tokens, sizeof(ts->tokens));
+    ts->tok_count = jsmn_parse(&parser, ts->json_str, ts->req_len - path_len - 1, ts->tokens,
+                               sizeof(ts->tokens));
 
     if (ts->tok_count == JSMN_ERROR_NOMEM) {
         return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
@@ -356,8 +356,9 @@ int ts_txt_process(struct ts_context *ts)
         if (ts->req[0] == '?') {
             // no payload data
             if ((char)ts->req[path_len] == '/') {
-                if (endpoint && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_FN_VOID ||
-                    endpoint->type == TS_T_FN_INT32 || endpoint->type == TS_T_RECORDS))
+                if (endpoint
+                    && (endpoint->type == TS_T_GROUP || endpoint->type == TS_T_FN_VOID
+                        || endpoint->type == TS_T_FN_INT32 || endpoint->type == TS_T_RECORDS))
                 {
                     return ts_txt_get(ts, endpoint, TS_RET_NAMES, record_index);
                 }
@@ -384,13 +385,13 @@ int ts_txt_process(struct ts_context *ts)
             // check if endpoint has a callback assigned
             if (endpoint && endpoint->data != NULL && strncmp((char *)ts->resp, ":84", 3) == 0) {
                 // create function pointer and call function
-                void (*fun)(void) = (void(*)(void))endpoint->data;
+                void (*fun)(void) = (void (*)(void))endpoint->data;
                 fun();
             }
             return len;
         }
-        else if (ts->req[0] == '!' && endpoint && (endpoint->type == TS_T_FN_VOID ||
-                 endpoint->type == TS_T_FN_INT32))
+        else if (ts->req[0] == '!' && endpoint
+                 && (endpoint->type == TS_T_FN_VOID || endpoint->type == TS_T_FN_INT32))
         {
             return ts_txt_exec(ts, endpoint);
         }
@@ -407,7 +408,7 @@ int ts_txt_process(struct ts_context *ts)
 int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
 {
     int pos = 0;
-    int tok = 0;       // current token
+    int tok = 0; // current token
 
     ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
 
@@ -417,7 +418,8 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
     if (ts->tokens[0].type == JSMN_ARRAY) {
         pos += snprintf((char *)&ts->resp[pos], ts->resp_size - pos, " [");
         tok++;
-    } else {
+    }
+    else {
         pos += snprintf((char *)&ts->resp[pos], ts->resp_size - pos, " ");
     }
 
@@ -427,9 +429,9 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
             return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const struct ts_data_object *object = ts_get_object_by_name(ts,
-            ts->json_str + ts->tokens[tok].start,
-            ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
+        const struct ts_data_object *object =
+            ts_get_object_by_name(ts, ts->json_str + ts->tokens[tok].start,
+                                  ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         if (object == NULL) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -456,12 +458,13 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
         tok++;
     }
 
-    pos--;  // remove trailing comma
+    pos--; // remove trailing comma
     if (ts->tokens[0].type == JSMN_ARRAY) {
         // buffer will be long enough as we dropped last 2 characters --> sprintf allowed
         pos += sprintf((char *)&ts->resp[pos], "]");
-    } else {
-        ts->resp[pos] = '\0';    // terminate string
+    }
+    else {
+        ts->resp[pos] = '\0'; // terminate string
     }
 
     return pos;
@@ -481,7 +484,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
     errno = 0;
     switch (object->type) {
         case TS_T_FLOAT32:
-            *((float*)object->data) = strtod(buf, NULL);
+            *((float *)object->data) = strtod(buf, NULL);
             break;
 #if TS_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
@@ -494,53 +497,53 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             for (int16_t i = 0; i > object->detail; i--) {
                 tmp *= 10.0F;
             }
-            *((int32_t*)object->data) = (int32_t)tmp;
+            *((int32_t *)object->data) = (int32_t)tmp;
             break;
 #endif
 #if TS_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
-            *((uint64_t*)object->data) = strtoull(buf, NULL, 0);
+            *((uint64_t *)object->data) = strtoull(buf, NULL, 0);
             break;
         case TS_T_INT64:
-            *((int64_t*)object->data) = strtoll(buf, NULL, 0);
+            *((int64_t *)object->data) = strtoll(buf, NULL, 0);
             break;
 #endif
         case TS_T_UINT32:
-            *((uint32_t*)object->data) = strtoul(buf, NULL, 0);
+            *((uint32_t *)object->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT32:
-            *((int32_t*)object->data) = strtol(buf, NULL, 0);
+            *((int32_t *)object->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_UINT16:
-            *((uint16_t*)object->data) = strtoul(buf, NULL, 0);
+            *((uint16_t *)object->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT16:
-            *((uint16_t*)object->data) = strtol(buf, NULL, 0);
+            *((uint16_t *)object->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_UINT8:
-            *((uint8_t*)object->data) = strtoul(buf, NULL, 0);
+            *((uint8_t *)object->data) = strtoul(buf, NULL, 0);
             break;
         case TS_T_INT8:
-            *((uint8_t*)object->data) = strtol(buf, NULL, 0);
+            *((uint8_t *)object->data) = strtol(buf, NULL, 0);
             break;
         case TS_T_BOOL:
             if (buf[0] == 't' || buf[0] == '1') {
-                *((bool*)object->data) = true;
+                *((bool *)object->data) = true;
             }
             else if (buf[0] == 'f' || buf[0] == '0') {
-                *((bool*)object->data) = false;
+                *((bool *)object->data) = false;
             }
             else {
-                return 0;       // error
+                return 0; // error
             }
             break;
         case TS_T_STRING:
             if (type != JSMN_STRING || (unsigned int)object->detail <= len) {
                 return 0;
             }
-            else if (object->id != 0) {     // dummy object has id = 0
-                strncpy((char*)object->data, buf, len);
-                ((char*)object->data)[len] = '\0';
+            else if (object->id != 0) { // dummy object has id = 0
+                strncpy((char *)object->data, buf, len);
+                ((char *)object->data)[len] = '\0';
             }
             break;
         case TS_T_BYTES:
@@ -548,11 +551,11 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             if (type != JSMN_STRING || (unsigned int)object->detail < len / 4 * 3) {
                 return 0;
             }
-            else if (object->id != 0) {     // dummy object has id = 0
+            else if (object->id != 0) { // dummy object has id = 0
                 struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)object->data;
                 size_t byteslen;
-                int err = base64_decode(bytes_buf->bytes, object->detail, &byteslen,
-                                        (uint8_t *)buf, len);
+                int err =
+                    base64_decode(bytes_buf->bytes, object->detail, &byteslen, (uint8_t *)buf, len);
                 bytes_buf->num_bytes = byteslen;
                 if (err != 0) {
                     return 0;
@@ -568,43 +571,46 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
         return 0;
     }
 
-    return 1;   // value always contained in one token (arrays not yet supported)
+    return 1; // value always contained in one token (arrays not yet supported)
 }
 
 int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
 {
-    int tok = 0;       // current token
+    int tok = 0; // current token
     bool updated = false;
 
     // buffer for data object value (largest negative 64bit integer has 20 digits)
     char value_buf[21];
-    size_t value_len;   // length of value in buffer
+    size_t value_len; // length of value in buffer
 
     ts_object_id_t endpoint_id = (endpoint == NULL) ? 0 : endpoint->id;
 
     if (ts->tok_count < 2) {
         if (ts->tok_count == JSMN_ERROR_NOMEM) {
             return ts_txt_response(ts, TS_STATUS_REQUEST_TOO_LARGE);
-        } else {
+        }
+        else {
             return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
     }
 
-    if (ts->tokens[0].type == JSMN_OBJECT) {    // object = map
+    if (ts->tokens[0].type == JSMN_OBJECT) { // object = map
         tok++;
     }
 
     // loop through all elements to check if request is valid
     while (tok + 1 < ts->tok_count) {
 
-        if (ts->tokens[tok].type != JSMN_STRING ||
-            (ts->tokens[tok+1].type != JSMN_PRIMITIVE && ts->tokens[tok+1].type != JSMN_STRING)) {
+        if (ts->tokens[tok].type != JSMN_STRING
+            || (ts->tokens[tok + 1].type != JSMN_PRIMITIVE
+                && ts->tokens[tok + 1].type != JSMN_STRING))
+        {
             return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
         }
 
-        const struct ts_data_object* object = ts_get_object_by_name(ts,
-            ts->json_str + ts->tokens[tok].start,
-            ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
+        const struct ts_data_object *object =
+            ts_get_object_by_name(ts, ts->json_str + ts->tokens[tok].start,
+                                  ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         if (object == NULL) {
             return ts_txt_response(ts, TS_STATUS_NOT_FOUND);
@@ -656,12 +662,13 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
         }
 
         // create dummy object to test formats
-        uint8_t dummy_data[8];          // enough to fit also 64-bit values
-        struct ts_data_object dummy_object = {0, 0, "Dummy", (void *)dummy_data, object->type,
-            object->detail};
+        uint8_t dummy_data[8]; // enough to fit also 64-bit values
+        struct ts_data_object dummy_object = {
+            0, 0, "Dummy", (void *)dummy_data, object->type, object->detail
+        };
 
         int res = ts_json_deserialize_value(ts, value_buf, value_len, ts->tokens[tok].type,
-            &dummy_object);
+                                            &dummy_object);
         if (res == 0) {
             return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
         }
@@ -680,7 +687,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
 
         const struct ts_data_object *object =
             ts_get_object_by_name(ts, ts->json_str + ts->tokens[tok].start,
-                ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
+                                  ts->tokens[tok].end - ts->tokens[tok].start, endpoint_id);
 
         tok++;
 
@@ -692,7 +699,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
         }
 
         tok += ts_json_deserialize_value(ts, &ts->json_str[ts->tokens[tok].start], value_len,
-            ts->tokens[tok].type, object);
+                                         ts->tokens[tok].type, object);
 
         if (ts->_update_subsets & object->subsets) {
             updated = true;
@@ -731,7 +738,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
                 if (ret_type == TS_RET_NAMES || record_index == RECORD_INDEX_NONE) {
                     struct ts_records *records = (struct ts_records *)endpoint->data;
                     len += snprintf((char *)&ts->resp[len], ts->resp_size - len, " %d",
-                        records->num_records);
+                                    records->num_records);
                     return len;
                 }
                 break;
@@ -739,7 +746,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
                 // get value of data object
                 ts->resp[len++] = ' ';
                 len += ts_json_serialize_value(ts, (char *)&ts->resp[len], ts->resp_size - len,
-                    endpoint);
+                                               endpoint);
                 ts->resp[--len] = '\0'; // remove trailing comma again
                 return len;
         }
@@ -760,12 +767,12 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     }
     else {
         for (unsigned int i = 0; i < ts->num_objects; i++) {
-            if ((ts->data_objects[i].access & TS_READ_MASK) &&
-                (ts->data_objects[i].parent == endpoint_id))
+            if ((ts->data_objects[i].access & TS_READ_MASK)
+                && (ts->data_objects[i].parent == endpoint_id))
             {
                 if (include_values) {
-                    int ret = ts_json_serialize_name_value(ts, (char *)&ts->resp[len],
-                        ts->resp_size - len, &ts->data_objects[i]);
+                    int ret = ts_json_serialize_name_value(
+                        ts, (char *)&ts->resp[len], ts->resp_size - len, &ts->data_objects[i]);
                     if (ret > 0) {
                         len += ret;
                     }
@@ -774,9 +781,8 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
                     }
                 }
                 else {
-                    len += snprintf((char *)&ts->resp[len],
-                        ts->resp_size - len,
-                        "\"%s\",", ts->data_objects[i].name);
+                    len += snprintf((char *)&ts->resp[len], ts->resp_size - len, "\"%s\",",
+                                    ts->data_objects[i].name);
                 }
                 objects_found++;
 
@@ -791,7 +797,7 @@ int ts_txt_get(struct ts_context *ts, const struct ts_data_object *endpoint, uin
     if (objects_found == 0) {
         len++;
     }
-    ts->resp[len-1] = include_values ? '}' : ']';
+    ts->resp[len - 1] = include_values ? '}' : ']';
     ts->resp[len] = '\0';
 
     return len;
@@ -812,11 +818,12 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
 #if TS_NESTED_JSON
-            struct ts_data_object *add_object = ts_get_object_by_path(ts, ts->json_str +
-                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
+            struct ts_data_object *add_object = ts_get_object_by_path(
+                ts, ts->json_str + ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
 #else
-            struct ts_data_object *add_object = ts_get_object_by_name(ts, ts->json_str +
-                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
+            struct ts_data_object *add_object =
+                ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
+                                      ts->tokens[0].end - ts->tokens[0].start, -1);
 #endif
             if (add_object != NULL) {
                 add_object->subsets |= (uint16_t)object->detail;
@@ -845,11 +852,12 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
 #if TS_NESTED_JSON
-            struct ts_data_object *del_object = ts_get_object_by_path(ts, ts->json_str +
-                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
+            struct ts_data_object *del_object = ts_get_object_by_path(
+                ts, ts->json_str + ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
 #else
-            struct ts_data_object *del_object = ts_get_object_by_name(ts, ts->json_str +
-                ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start, -1);
+            struct ts_data_object *del_object =
+                ts_get_object_by_name(ts, ts->json_str + ts->tokens[0].start,
+                                      ts->tokens[0].end - ts->tokens[0].start, -1);
 #endif
             if (del_object != NULL) {
                 del_object->subsets &= ~((uint16_t)object->detail);
@@ -866,15 +874,15 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
 int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
 {
     int len;
-    int tok = 0;            // current token
-    int objects_found = 0;    // number of child objects found
+    int tok = 0;           // current token
+    int objects_found = 0; // number of child objects found
 
     if (ts->tok_count > 0 && ts->tokens[tok].type == JSMN_ARRAY) {
-        tok++;      // go to first element of array
+        tok++; // go to first element of array
     }
 
-    if ((object->access & TS_WRITE_MASK) && (object->type == TS_T_FN_VOID ||
-        object->type == TS_T_FN_INT32))
+    if ((object->access & TS_WRITE_MASK)
+        && (object->type == TS_T_FN_VOID || object->type == TS_T_FN_INT32))
     {
         // object is generally executable, but are we authorized?
         if ((object->access & TS_WRITE_MASK & ts->_auth_flags) == 0) {
@@ -892,8 +900,8 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
                 return ts_txt_response(ts, TS_STATUS_BAD_REQUEST);
             }
             int res = ts_json_deserialize_value(ts, ts->json_str + ts->tokens[tok].start,
-                ts->tokens[tok].end - ts->tokens[tok].start, ts->tokens[tok].type,
-                &ts->data_objects[i]);
+                                                ts->tokens[tok].end - ts->tokens[tok].start,
+                                                ts->tokens[tok].type, &ts->data_objects[i]);
             if (res == 0) {
                 // deserializing the value was not successful
                 return ts_txt_response(ts, TS_STATUS_UNSUPPORTED_FORMAT);
@@ -915,11 +923,12 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
         int32_t (*fun)(void) = (int32_t(*)(void))object->data;
         int32_t ret = fun();
         ts->resp[len++] = ' ';
-        len += json_serialize_simple_value(&ts->resp[len], ts->resp_size - len, &ret, TS_T_INT32, 0);
+        len +=
+            json_serialize_simple_value(&ts->resp[len], ts->resp_size - len, &ret, TS_T_INT32, 0);
         ts->resp[--len] = '\0'; // remove trailing comma again
     }
     else {
-        void (*fun)(void) = (void(*)(void))object->data;
+        void (*fun)(void) = (void (*)(void))object->data;
         fun();
     }
 
@@ -941,7 +950,7 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
             const uint16_t parent_id = ts->data_objects[i].parent;
             if (depth > 0 && parent_id != ancestors[depth - 1]->id) {
                 // close object of previous parent
-                buf[len-1] = '}';    // overwrite comma
+                buf[len - 1] = '}'; // overwrite comma
                 buf[len++] = ',';
                 depth--;
             }
@@ -950,11 +959,11 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
                 struct ts_data_object *parent = ts_get_object_by_id(ts, parent_id);
                 if (parent != NULL) {
                     if (parent->parent != 0) {
-                        struct ts_data_object *grandparent = ts_get_object_by_id(ts,
-                            parent->parent);
+                        struct ts_data_object *grandparent =
+                            ts_get_object_by_id(ts, parent->parent);
                         if (grandparent != NULL) {
-                            len += snprintf(&buf[len], buf_size - len, "\"%s\":{",
-                                grandparent->name);
+                            len +=
+                                snprintf(&buf[len], buf_size - len, "\"%s\":{", grandparent->name);
                             ancestors[depth++] = grandparent;
                         }
                     }
@@ -968,10 +977,9 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
                     len += snprintf(&buf[len], buf_size - len, "\"%s\":{", parent->name);
                     ancestors[depth++] = parent;
                 }
-
             }
-            len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len,
-                &ts->data_objects[i]);
+            len +=
+                ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
         }
         if (len >= buf_size - 1 - depth) {
             return 0;
@@ -998,15 +1006,15 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
 
     for (unsigned int i = 0; i < ts->num_objects; i++) {
         if (ts->data_objects[i].subsets & subsets) {
-            len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len,
-                &ts->data_objects[i]);
+            len +=
+                ts_json_serialize_name_value(ts, &buf[len], buf_size - len, &ts->data_objects[i]);
         }
         if (len >= buf_size - 1) {
             return 0;
         }
     }
 
-    buf[len-1] = '}';    // overwrite comma
+    buf[len - 1] = '}'; // overwrite comma
     buf[len] = '\0';
 
     return len;
@@ -1044,19 +1052,19 @@ static int ts_serialize_statement(struct ts_context *ts, char *buf, size_t buf_s
         for (unsigned int i = 0; i < ts->num_objects; i++) {
             if (ts->data_objects[i].parent == object->id) {
                 len += ts_json_serialize_name_value(ts, &buf[len], buf_size - len,
-                    &ts->data_objects[i]);
+                                                    &ts->data_objects[i]);
             }
             if (len >= buf_size - 1) {
                 return 0;
             }
         }
-        buf[len-1] = '}';    // overwrite comma
+        buf[len - 1] = '}'; // overwrite comma
         buf[len] = '\0';
     }
     else if (object->type == TS_T_RECORDS) {
         buf[len++] = '{';
         len += ts_json_serialize_record(ts, buf + len, buf_size - len, object, record_index, NULL);
-        buf[len-1] = '}';    // overwrite comma
+        buf[len - 1] = '}'; // overwrite comma
         buf[len] = '\0';
     }
     else {

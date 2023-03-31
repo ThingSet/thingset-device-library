@@ -14,12 +14,12 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "jsmn.h"
 #include "cbor.h"
+#include "jsmn.h"
 
 /*
  * Protocol function codes (same as CoAP)
@@ -36,39 +36,39 @@ extern "C" {
  */
 
 // success
-#define TS_STATUS_CREATED               0x81 /**< Success status 0x81: Created */
-#define TS_STATUS_DELETED               0x82 /**< Success status 0x82: Deleted */
-#define TS_STATUS_VALID                 0x83 /**< Success status 0x83: Valid */
-#define TS_STATUS_CHANGED               0x84 /**< Success status 0x84: Changed */
-#define TS_STATUS_CONTENT               0x85 /**< Success status 0x85: Content */
+#define TS_STATUS_CREATED 0x81 /**< Success status 0x81: Created */
+#define TS_STATUS_DELETED 0x82 /**< Success status 0x82: Deleted */
+#define TS_STATUS_VALID   0x83 /**< Success status 0x83: Valid */
+#define TS_STATUS_CHANGED 0x84 /**< Success status 0x84: Changed */
+#define TS_STATUS_CONTENT 0x85 /**< Success status 0x85: Content */
 
 // client errors
-#define TS_STATUS_BAD_REQUEST           0xA0 /**< Client error 0xA0: Bad Request */
-#define TS_STATUS_UNAUTHORIZED          0xA1 /**< Client error 0xA1: Authentication required */
-#define TS_STATUS_FORBIDDEN             0xA3 /**< Client error 0xA3: Forbidden to write read-only value */
-#define TS_STATUS_NOT_FOUND             0xA4 /**< Client error 0xA4: Not found */
-#define TS_STATUS_METHOD_NOT_ALLOWED    0xA5 /**< Client error 0xA5: Method not allowed */
-#define TS_STATUS_REQUEST_INCOMPLETE    0xA8 /**< Client error 0xA8: Request incomplete */
-#define TS_STATUS_CONFLICT              0xA9 /**< Client error 0xA9: Conflict */
-#define TS_STATUS_REQUEST_TOO_LARGE     0xAD /**< Client error 0xAD: Request too large */
-#define TS_STATUS_UNSUPPORTED_FORMAT    0xAF /**< Client error 0xAF: Unsupported format */
+#define TS_STATUS_BAD_REQUEST        0xA0 /**< Client error 0xA0: Bad Request */
+#define TS_STATUS_UNAUTHORIZED       0xA1 /**< Client error 0xA1: Authentication required */
+#define TS_STATUS_FORBIDDEN          0xA3 /**< Client error 0xA3: Forbidden to write read-only value */
+#define TS_STATUS_NOT_FOUND          0xA4 /**< Client error 0xA4: Not found */
+#define TS_STATUS_METHOD_NOT_ALLOWED 0xA5 /**< Client error 0xA5: Method not allowed */
+#define TS_STATUS_REQUEST_INCOMPLETE 0xA8 /**< Client error 0xA8: Request incomplete */
+#define TS_STATUS_CONFLICT           0xA9 /**< Client error 0xA9: Conflict */
+#define TS_STATUS_REQUEST_TOO_LARGE  0xAD /**< Client error 0xAD: Request too large */
+#define TS_STATUS_UNSUPPORTED_FORMAT 0xAF /**< Client error 0xAF: Unsupported format */
 
 // server errors
-#define TS_STATUS_INTERNAL_SERVER_ERR   0xC0 /**< Server error 0xC0: Internal server error */
-#define TS_STATUS_NOT_IMPLEMENTED       0xC1 /**< Server error 0xC1: Not implemented */
+#define TS_STATUS_INTERNAL_SERVER_ERR 0xC0 /**< Server error 0xC0: Internal server error */
+#define TS_STATUS_NOT_IMPLEMENTED     0xC1 /**< Server error 0xC1: Not implemented */
 
 // ThingSet specific errors
-#define TS_STATUS_RESPONSE_TOO_LARGE    0xE1 /**< ThingSet error 0xE1: Response too large */
+#define TS_STATUS_RESPONSE_TOO_LARGE 0xE1 /**< ThingSet error 0xE1: Response too large */
 
 /*
  * Reserved data object IDs
  */
-#define TS_ID_ROOT              0x00 /**< Data Object ID for root element */
-#define TS_ID_TIME              0x10 /**< Data Object ID for timestamp (t_s) */
-#define TS_ID_IDS               0x16 /**< Data Object ID to determine IDs from paths (_ids) */
-#define TS_ID_PATHS             0x17 /**< Data Object ID to determine paths from IDs (_paths) */
-#define TS_ID_METADATAURL       0x18 /**< Data Object ID for Metadata URL (cMetadataURL) */
-#define TS_ID_NODEID            0x1D /**< Data Object ID for node ID (cNodeID) */
+#define TS_ID_ROOT        0x00 /**< Data Object ID for root element */
+#define TS_ID_TIME        0x10 /**< Data Object ID for timestamp (t_s) */
+#define TS_ID_IDS         0x16 /**< Data Object ID to determine IDs from paths (_ids) */
+#define TS_ID_PATHS       0x17 /**< Data Object ID to determine paths from IDs (_paths) */
+#define TS_ID_METADATAURL 0x18 /**< Data Object ID for Metadata URL (cMetadataURL) */
+#define TS_ID_NODEID      0x1D /**< Data Object ID for node ID (cNodeID) */
 
 /*
  * ThingSet addressing in 29-bit CAN ID
@@ -112,65 +112,65 @@ extern "C" {
  */
 
 /* source and target addresses */
-#define TS_CAN_SOURCE_POS           (0U)
-#define TS_CAN_SOURCE_MASK          (0xFF << TS_CAN_SOURCE_POS)
-#define TS_CAN_SOURCE_SET(addr)     (((uint32_t)addr << TS_CAN_SOURCE_POS) & TS_CAN_SOURCE_MASK)
-#define TS_CAN_SOURCE_GET(id)       (((uint32_t)id & TS_CAN_SOURCE_MASK) >> TS_CAN_SOURCE_POS)
+#define TS_CAN_SOURCE_POS       (0U)
+#define TS_CAN_SOURCE_MASK      (0xFF << TS_CAN_SOURCE_POS)
+#define TS_CAN_SOURCE_SET(addr) (((uint32_t)addr << TS_CAN_SOURCE_POS) & TS_CAN_SOURCE_MASK)
+#define TS_CAN_SOURCE_GET(id)   (((uint32_t)id & TS_CAN_SOURCE_MASK) >> TS_CAN_SOURCE_POS)
 
-#define TS_CAN_TARGET_POS           (8U)
-#define TS_CAN_TARGET_MASK          (0xFF << TS_CAN_TARGET_POS)
-#define TS_CAN_TARGET_SET(addr)     (((uint32_t)addr << TS_CAN_TARGET_POS) & TS_CAN_TARGET_MASK)
-#define TS_CAN_TARGET_GET(id)       (((uint32_t)id & TS_CAN_TARGET_MASK) >> TS_CAN_TARGET_POS)
+#define TS_CAN_TARGET_POS       (8U)
+#define TS_CAN_TARGET_MASK      (0xFF << TS_CAN_TARGET_POS)
+#define TS_CAN_TARGET_SET(addr) (((uint32_t)addr << TS_CAN_TARGET_POS) & TS_CAN_TARGET_MASK)
+#define TS_CAN_TARGET_GET(id)   (((uint32_t)id & TS_CAN_TARGET_MASK) >> TS_CAN_TARGET_POS)
 
-#define TS_CAN_ADDR_MAX             (0xFD)
-#define TS_CAN_ADDR_ANONYMOUS       (0xFE)
-#define TS_CAN_ADDR_BROADCAST       (0xFF)
+#define TS_CAN_ADDR_MAX       (0xFD)
+#define TS_CAN_ADDR_ANONYMOUS (0xFE)
+#define TS_CAN_ADDR_BROADCAST (0xFF)
 
 /* data IDs for publication messages */
-#define TS_CAN_DATA_ID_POS          (8U)
-#define TS_CAN_DATA_ID_MASK         (0xFFFF << TS_CAN_DATA_ID_POS)
-#define TS_CAN_DATA_ID_SET(id)      (((uint32_t)id << TS_CAN_DATA_ID_POS) & TS_CAN_DATA_ID_MASK)
-#define TS_CAN_DATA_ID_GET(id)      (((uint32_t)id & TS_CAN_DATA_ID_MASK) >> TS_CAN_DATA_ID_POS)
+#define TS_CAN_DATA_ID_POS     (8U)
+#define TS_CAN_DATA_ID_MASK    (0xFFFF << TS_CAN_DATA_ID_POS)
+#define TS_CAN_DATA_ID_SET(id) (((uint32_t)id << TS_CAN_DATA_ID_POS) & TS_CAN_DATA_ID_MASK)
+#define TS_CAN_DATA_ID_GET(id) (((uint32_t)id & TS_CAN_DATA_ID_MASK) >> TS_CAN_DATA_ID_POS)
 
 /* bus ID for request/response messages */
-#define TS_CAN_BUS_ID_POS           (16U)
-#define TS_CAN_BUS_ID_MASK          (0xFF << TS_CAN_BUS_ID_POS)
-#define TS_CAN_BUS_ID_SET(id)       (((uint32_t)id << TS_CAN_BUS_ID_POS) & TS_CAN_BUS_ID_MASK)
-#define TS_CAN_BUS_ID_GET(id)       (((uint32_t)id & TS_CAN_BUS_ID_MASK) >> TS_CAN_BUS_ID_POS)
-#define TS_CAN_BUS_ID_DEFAULT       (0xDA) // 218, N_TAtype = physical
+#define TS_CAN_BUS_ID_POS     (16U)
+#define TS_CAN_BUS_ID_MASK    (0xFF << TS_CAN_BUS_ID_POS)
+#define TS_CAN_BUS_ID_SET(id) (((uint32_t)id << TS_CAN_BUS_ID_POS) & TS_CAN_BUS_ID_MASK)
+#define TS_CAN_BUS_ID_GET(id) (((uint32_t)id & TS_CAN_BUS_ID_MASK) >> TS_CAN_BUS_ID_POS)
+#define TS_CAN_BUS_ID_DEFAULT (0xDA) // 218, N_TAtype = physical
 
 /* random number for address discovery messages */
-#define TS_CAN_RAND_SET             TS_CAN_BUS_ID_SET
-#define TS_CAN_RAND_GET             TS_CAN_BUS_ID_GET
+#define TS_CAN_RAND_SET TS_CAN_BUS_ID_SET
+#define TS_CAN_RAND_GET TS_CAN_BUS_ID_GET
 
 /* message types */
-#define TS_CAN_TYPE_POS             (24U)
-#define TS_CAN_TYPE_MASK            (0x3 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_POS  (24U)
+#define TS_CAN_TYPE_MASK (0x3 << TS_CAN_TYPE_POS)
 
-#define TS_CAN_TYPE_REQRESP         (0x0 << TS_CAN_TYPE_POS)
-#define TS_CAN_TYPE_PUBSUB          (0x2 << TS_CAN_TYPE_POS)
-#define TS_CAN_TYPE_NETWORK         (0x3 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_REQRESP (0x0 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_PUBSUB  (0x2 << TS_CAN_TYPE_POS)
+#define TS_CAN_TYPE_NETWORK (0x3 << TS_CAN_TYPE_POS)
 
 /* message priorities */
-#define TS_CAN_PRIO_POS                 (26U)
-#define TS_CAN_PRIO_MASK                (0x7 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_SET(prio)           ((uint32_t)prio << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_GET(id)             (((uint32_t)id & TS_CAN_PRIO_MASK) >> TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_POS       (26U)
+#define TS_CAN_PRIO_MASK      (0x7 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_SET(prio) ((uint32_t)prio << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_GET(id)   (((uint32_t)id & TS_CAN_PRIO_MASK) >> TS_CAN_PRIO_POS)
 
-#define TS_CAN_PRIO_CONTROL_EMERGENCY   (0x0 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_CONTROL_HIGH        (0x2 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_CONTROL_LOW         (0x3 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_NETWORK_MGMT        (0x4 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_PUBSUB_HIGH         (0x5 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_REQRESP             (0x6 << TS_CAN_PRIO_POS)
-#define TS_CAN_PRIO_PUBSUB_LOW          (0x7 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_CONTROL_EMERGENCY (0x0 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_CONTROL_HIGH      (0x2 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_CONTROL_LOW       (0x3 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_NETWORK_MGMT      (0x4 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_PUBSUB_HIGH       (0x5 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_REQRESP           (0x6 << TS_CAN_PRIO_POS)
+#define TS_CAN_PRIO_PUBSUB_LOW        (0x7 << TS_CAN_PRIO_POS)
 
 /* below macros return true if the CAN ID matches the specified message type */
-#define TS_CAN_CONTROL(id)              (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_CONTROL) && \
-                                        TS_CAN_PRIO_GET(id) < 4)
-#define TS_CAN_PUBSUB(id)               (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_PUBSUB) && \
-                                        TS_CAN_PRIO_GET(id) >= 4)
-#define TS_CAN_REQRESP(id)              ((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_REQRESP)
+#define TS_CAN_CONTROL(id) \
+    (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_CONTROL) && TS_CAN_PRIO_GET(id) < 4)
+#define TS_CAN_PUBSUB(id) \
+    (((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_PUBSUB) && TS_CAN_PRIO_GET(id) >= 4)
+#define TS_CAN_REQRESP(id) ((id & TS_CAN_TYPE_MASK) == TS_CAN_TYPE_REQRESP)
 
 #ifdef CONFIG_THINGSET_IMMUTABLE_OBJECTS
 #define MAYBE_CONST const
@@ -181,45 +181,48 @@ extern "C" {
 /**
  * Internal C data types (used to cast void* pointers)
  */
-enum TsType {
-    TS_T_BOOL,      /**< bool */
-    TS_T_UINT64,    /**< uint64_t */
-    TS_T_INT64,     /**< int64_t */
-    TS_T_UINT32,    /**< uint32_t */
-    TS_T_INT32,     /**< int32_t */
-    TS_T_UINT16,    /**< uint16_t */
-    TS_T_INT16,     /**< int16_t */
-    TS_T_UINT8,     /**< uint8_t */
-    TS_T_INT8,      /**< int8_t */
-    TS_T_FLOAT32,   /**< float */
-    TS_T_STRING,    /**< String buffer (UTF-8 text) */
-    TS_T_BYTES,     /**< Byte buffer (binary data) */
-    TS_T_ARRAY,     /**< Array */
-    TS_T_RECORDS,   /**< Records (array of arbitrary struct object) */
-    TS_T_DECFRAC,   /**< CBOR decimal fraction */
-    TS_T_GROUP,     /**< Internal object to describe data hierarchy */
-    TS_T_SUBSET,    /**< Subset of data items */
-    TS_T_FN_VOID,   /**< Function with void return value */
-    TS_T_FN_INT32,  /**< Function with int32_t return value */
+enum TsType
+{
+    TS_T_BOOL,     /**< bool */
+    TS_T_UINT64,   /**< uint64_t */
+    TS_T_INT64,    /**< int64_t */
+    TS_T_UINT32,   /**< uint32_t */
+    TS_T_INT32,    /**< int32_t */
+    TS_T_UINT16,   /**< uint16_t */
+    TS_T_INT16,    /**< int16_t */
+    TS_T_UINT8,    /**< uint8_t */
+    TS_T_INT8,     /**< int8_t */
+    TS_T_FLOAT32,  /**< float */
+    TS_T_STRING,   /**< String buffer (UTF-8 text) */
+    TS_T_BYTES,    /**< Byte buffer (binary data) */
+    TS_T_ARRAY,    /**< Array */
+    TS_T_RECORDS,  /**< Records (array of arbitrary struct object) */
+    TS_T_DECFRAC,  /**< CBOR decimal fraction */
+    TS_T_GROUP,    /**< Internal object to describe data hierarchy */
+    TS_T_SUBSET,   /**< Subset of data items */
+    TS_T_FN_VOID,  /**< Function with void return value */
+    TS_T_FN_INT32, /**< Function with int32_t return value */
 };
 
 /**
  * Data structure to specify a binary data buffer
  */
-struct ts_bytes_buffer {
-    uint8_t *bytes;             /**< Pointer to the buffer */
-    uint16_t num_bytes;         /**< Actual number of bytes in the buffer */
+struct ts_bytes_buffer
+{
+    uint8_t *bytes;     /**< Pointer to the buffer */
+    uint16_t num_bytes; /**< Actual number of bytes in the buffer */
 };
 
 /**
  * Data structure to specify an array data object
  */
-struct ts_array {
-    void *elements;             /**< Pointer to the first element of the array */
-    uint16_t max_elements;      /**< Maximum number of elements in the array */
-    uint16_t num_elements;      /**< Actual number of elements in the array */
-    uint8_t type;               /**< Type of the array elements */
-    uint8_t type_size;          /**< Size of the array element type in bytes */
+struct ts_array
+{
+    void *elements;        /**< Pointer to the first element of the array */
+    uint16_t max_elements; /**< Maximum number of elements in the array */
+    uint16_t num_elements; /**< Actual number of elements in the array */
+    uint8_t type;          /**< Type of the array elements */
+    uint8_t type_size;     /**< Size of the array element type in bytes */
 };
 
 #define ts_array_info ts_array __attribute__((deprecated))
@@ -227,7 +230,8 @@ struct ts_array {
 /**
  * Data structure to specify a record data object for an arbitrary struct
  */
-struct ts_records {
+struct ts_records
+{
     /** Pointer to the first record */
     const void *data;
 
@@ -240,6 +244,8 @@ struct ts_records {
     /** Actual number of records in the array */
     uint16_t num_records;
 };
+
+/* clang-format off */
 
 /** @cond INTERNAL_HIDDEN */
 /*
@@ -425,6 +431,8 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 #define TS_RECORD_ITEM_BYTES(id, name, struct_type, struct_member, buf_size, parent_id) \
     {id, parent_id, name, (void *)offsetof(struct_type, struct_member), TS_T_BYTES, buf_size}
 
+/* clang-format on */
+
 #ifdef CONFIG_THINGSET_ITERABLE_SECTIONS
 /*
  * Below macros can be used to populate the data objects array from multiple independent files
@@ -449,29 +457,29 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** @cond INTERNAL_HIDDEN */
 #define _TS_ADD_ITERABLE(type, id, ...) \
-        MAYBE_CONST STRUCT_SECTION_ITERABLE(ts_data_object, _CONCAT(obj_, id)) = \
-            _CONCAT(TS_, type) (id, __VA_ARGS__)
+    MAYBE_CONST STRUCT_SECTION_ITERABLE(ts_data_object, _CONCAT(obj_, id)) = \
+        _CONCAT(TS_, type)(id, __VA_ARGS__)
 /** @endcond */
 
-#define TS_ADD_ITEM_BOOL(id, ...)       _TS_ADD_ITERABLE(ITEM_BOOL, id, __VA_ARGS__)
-#define TS_ADD_ITEM_UINT64(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT64, id, __VA_ARGS__)
-#define TS_ADD_ITEM_INT64(id, ...)      _TS_ADD_ITERABLE(ITEM_INT64, id, __VA_ARGS__)
-#define TS_ADD_ITEM_UINT32(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT32, id, __VA_ARGS__)
-#define TS_ADD_ITEM_INT32(id, ...)      _TS_ADD_ITERABLE(ITEM_INT32, id, __VA_ARGS__)
-#define TS_ADD_ITEM_UINT16(id, ...)     _TS_ADD_ITERABLE(ITEM_UINT16, id, __VA_ARGS__)
-#define TS_ADD_ITEM_INT16(id, ...)      _TS_ADD_ITERABLE(ITEM_INT16, id, __VA_ARGS__)
-#define TS_ADD_ITEM_UINT8(id, ...)      _TS_ADD_ITERABLE(ITEM_UINT8, id, __VA_ARGS__)
-#define TS_ADD_ITEM_INT8(id, ...)       _TS_ADD_ITERABLE(ITEM_INT8, id, __VA_ARGS__)
-#define TS_ADD_ITEM_FLOAT(id, ...)      _TS_ADD_ITERABLE(ITEM_FLOAT, id, __VA_ARGS__)
-#define TS_ADD_ITEM_DECFRAC(id, ...)    _TS_ADD_ITERABLE(ITEM_DECFRAC, id, __VA_ARGS__)
-#define TS_ADD_ITEM_STRING(id, ...)     _TS_ADD_ITERABLE(ITEM_STRING, id, __VA_ARGS__)
-#define TS_ADD_ITEM_BYTES(id, ...)      _TS_ADD_ITERABLE(ITEM_BYTES, id, __VA_ARGS__)
-#define TS_ADD_ITEM_ARRAY(id, ...)      _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
-#define TS_ADD_FN_VOID(id, ...)         _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__)
-#define TS_ADD_FN_INT32(id, ...)        _TS_ADD_ITERABLE(FN_INT32, id, __VA_ARGS__)
-#define TS_ADD_SUBSET(id, ...)          _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
-#define TS_ADD_GROUP(id, ...)           _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
-#define TS_ADD_RECORDS(id, ...)         _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)
+#define TS_ADD_ITEM_BOOL(id, ...)           _TS_ADD_ITERABLE(ITEM_BOOL, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT64(id, ...)         _TS_ADD_ITERABLE(ITEM_UINT64, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT64(id, ...)          _TS_ADD_ITERABLE(ITEM_INT64, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT32(id, ...)         _TS_ADD_ITERABLE(ITEM_UINT32, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT32(id, ...)          _TS_ADD_ITERABLE(ITEM_INT32, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT16(id, ...)         _TS_ADD_ITERABLE(ITEM_UINT16, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT16(id, ...)          _TS_ADD_ITERABLE(ITEM_INT16, id, __VA_ARGS__)
+#define TS_ADD_ITEM_UINT8(id, ...)          _TS_ADD_ITERABLE(ITEM_UINT8, id, __VA_ARGS__)
+#define TS_ADD_ITEM_INT8(id, ...)           _TS_ADD_ITERABLE(ITEM_INT8, id, __VA_ARGS__)
+#define TS_ADD_ITEM_FLOAT(id, ...)          _TS_ADD_ITERABLE(ITEM_FLOAT, id, __VA_ARGS__)
+#define TS_ADD_ITEM_DECFRAC(id, ...)        _TS_ADD_ITERABLE(ITEM_DECFRAC, id, __VA_ARGS__)
+#define TS_ADD_ITEM_STRING(id, ...)         _TS_ADD_ITERABLE(ITEM_STRING, id, __VA_ARGS__)
+#define TS_ADD_ITEM_BYTES(id, ...)          _TS_ADD_ITERABLE(ITEM_BYTES, id, __VA_ARGS__)
+#define TS_ADD_ITEM_ARRAY(id, ...)          _TS_ADD_ITERABLE(ITEM_ARRAY, id, __VA_ARGS__)
+#define TS_ADD_FN_VOID(id, ...)             _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__)
+#define TS_ADD_FN_INT32(id, ...)            _TS_ADD_ITERABLE(FN_INT32, id, __VA_ARGS__)
+#define TS_ADD_SUBSET(id, ...)              _TS_ADD_ITERABLE(SUBSET, id, __VA_ARGS__)
+#define TS_ADD_GROUP(id, ...)               _TS_ADD_ITERABLE(GROUP, id, __VA_ARGS__)
+#define TS_ADD_RECORDS(id, ...)             _TS_ADD_ITERABLE(RECORDS, id, __VA_ARGS__)
 #define TS_ADD_RECORD_ITEM_BOOL(id, ...)    _TS_ADD_ITERABLE(RECORD_ITEM_BOOL, id, __VA_ARGS__)
 #define TS_ADD_RECORD_ITEM_UINT64(id, ...)  _TS_ADD_ITERABLE(RECORD_ITEM_UINT64, id, __VA_ARGS__)
 #define TS_ADD_RECORD_ITEM_INT64(id, ...)   _TS_ADD_ITERABLE(RECORD_ITEM_INT64, id, __VA_ARGS__)
@@ -495,80 +503,80 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 #define TS_NODE_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_BOOL(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_BOOL' macro is deprecated, use 'TS_ITEM_BOOL'\"")
+    _Pragma("GCC warning \"'TS_NODE_BOOL' macro is deprecated, use 'TS_ITEM_BOOL'\"")
 
 #define TS_NODE_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_UINT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_UINT64' macro is deprecated, use 'TS_ITEM_UINT64'\"")
+    _Pragma("GCC warning \"'TS_NODE_UINT64' macro is deprecated, use 'TS_ITEM_UINT64'\"")
 
 #define TS_NODE_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_INT64(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_INT64' macro is deprecated, use 'TS_ITEM_INT64'\"")
+    _Pragma("GCC warning \"'TS_NODE_INT64' macro is deprecated, use 'TS_ITEM_INT64'\"")
 
 #define TS_NODE_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_UINT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_UINT32' macro is deprecated, use 'TS_ITEM_UINT32'\"")
+    _Pragma("GCC warning \"'TS_NODE_UINT32' macro is deprecated, use 'TS_ITEM_UINT32'\"")
 
 #define TS_NODE_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_INT32(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_INT32' macro is deprecated, use 'TS_ITEM_INT32'\"")
+    _Pragma("GCC warning \"'TS_NODE_INT32' macro is deprecated, use 'TS_ITEM_INT32'\"")
 
 #define TS_NODE_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_UINT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_UINT16' macro is deprecated, use 'TS_ITEM_UINT16'\"")
+    _Pragma("GCC warning \"'TS_NODE_UINT16' macro is deprecated, use 'TS_ITEM_UINT16'\"")
 
 #define TS_NODE_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
     TS_ITEM_INT16(_id, _name, _data_ptr, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_INT16' macro is deprecated, use 'TS_ITEM_INT16'\"")
+    _Pragma("GCC warning \"'TS_NODE_INT16' macro is deprecated, use 'TS_ITEM_INT16'\"")
 
 #define TS_NODE_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     TS_ITEM_FLOAT(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_FLOAT' macro is deprecated, use 'TS_ITEM_FLOAT'\"")
+    _Pragma("GCC warning \"'TS_NODE_FLOAT' macro is deprecated, use 'TS_ITEM_FLOAT'\"")
 
 #define TS_NODE_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     TS_ITEM_STRING(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_STRING' macro is deprecated, use 'TS_ITEM_STRING'\"")
+    _Pragma("GCC warning \"'TS_NODE_STRING' macro is deprecated, use 'TS_ITEM_STRING'\"")
 
 #define TS_NODE_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
     TS_ITEM_BYTES(_id, _name, _data_ptr, _buf_size, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_BYTES' macro is deprecated, use 'TS_ITEM_BYTES'\"")
+    _Pragma("GCC warning \"'TS_NODE_BYTES' macro is deprecated, use 'TS_ITEM_BYTES'\"")
 
 #define TS_NODE_EXEC(_id, _name, _function_ptr, _parent, _acc) \
     TS_FUNCTION(_id, _name, _function_ptr, _parent, _acc) \
-    _Pragma ("GCC warning \"'TS_NODE_EXEC' macro is deprecated, use 'TS_FN_VOID'\"")
+    _Pragma("GCC warning \"'TS_NODE_EXEC' macro is deprecated, use 'TS_FN_VOID'\"")
 
 #define TS_NODE_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
     TS_ITEM_ARRAY(_id, _name, _data_ptr, _digits, _parent, _acc, _pubsub) \
-    _Pragma ("GCC warning \"'TS_NODE_ARRAY' macro is deprecated, use 'TS_ITEM_ARRAY'\"")
+    _Pragma("GCC warning \"'TS_NODE_ARRAY' macro is deprecated, use 'TS_ITEM_ARRAY'\"")
 
 #define TS_NODE_PUBSUB(_id, _name, _pubsub_channel, _parent, _acc, _pubsub) \
     TS_SUBSET(_id, _name, _pubsub_channel, _parent, _acc) \
-    _Pragma ("GCC warning \"'TS_NODE_PUBSUB' macro is deprecated, use 'TS_SUBSET'\"")
+    _Pragma("GCC warning \"'TS_NODE_PUBSUB' macro is deprecated, use 'TS_SUBSET'\"")
 
 #define TS_NODE_PATH(_id, _name, _parent, _callback) \
     TS_GROUP(_id, _name, _callback, _parent) \
-    _Pragma ("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
+    _Pragma("GCC warning \"'TS_NODE_PATH' macro is deprecated, use 'TS_GROUP'\"")
 
 #define TS_ITEM_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
     TS_RECORDS(id, name, records_ptr, parent_id, access, subsets) \
-    _Pragma ("GCC warning \"'TS_ITEM_RECORDS' macro is deprecated, use 'TS_RECORDS'\"")
+    _Pragma("GCC warning \"'TS_ITEM_RECORDS' macro is deprecated, use 'TS_RECORDS'\"")
 
 /* remove after 11/2023 */
 #define TS_FUNCTION(id, name, void_function_ptr, parent_id, access) \
     TS_FN_VOID(id, name, void_function_ptr, parent_id, access) \
-    _Pragma ("GCC warning \"'TS_FUNCTION' macro is deprecated, use 'TS_FN_VOID'\"")
+    _Pragma("GCC warning \"'TS_FUNCTION' macro is deprecated, use 'TS_FN_VOID'\"")
 
 /* remove after 11/2023 */
 #define TS_ADD_FUNCTION(id, ...) \
     _TS_ADD_ITERABLE(FN_VOID, id, __VA_ARGS__); \
-    _Pragma ("GCC warning \"'TS_ADD_FUNCTION' macro is deprecated, use 'TS_ADD_FN_VOID'\"")
+    _Pragma("GCC warning \"'TS_ADD_FUNCTION' macro is deprecated, use 'TS_ADD_FN_VOID'\"")
 
 /** @endcond */
 
 /*
  * Defines to make data object definitions more explicit
  */
-#define TS_NO_CALLBACK  NULL    /**< No callback assigned to group */
+#define TS_NO_CALLBACK NULL /**< No callback assigned to group */
 
 /*
  * Access right macros for data objects
@@ -576,37 +584,37 @@ static inline void *ts_records_to_void(struct ts_records *ptr) { return (void *)
 
 /** @cond INTERNAL_HIDDEN */
 
-#define TS_ROLE_USR     (1U << 0)       /**< Normal user */
-#define TS_ROLE_EXP     (1U << 1)       /**< Expert user */
-#define TS_ROLE_MKR     (1U << 2)       /**< Maker */
+#define TS_ROLE_USR (1U << 0) /**< Normal user */
+#define TS_ROLE_EXP (1U << 1) /**< Expert user */
+#define TS_ROLE_MKR (1U << 2) /**< Maker */
 
-#define TS_READ_MASK    0x0F          /**< Read flags stored in 4 least-significant bits */
-#define TS_WRITE_MASK   0xF0          /**< Write flags stored in 4 most-significant bits */
+#define TS_READ_MASK  0x0F /**< Read flags stored in 4 least-significant bits */
+#define TS_WRITE_MASK 0xF0 /**< Write flags stored in 4 most-significant bits */
 
-#define TS_USR_MASK     (TS_ROLE_USR << 4 | TS_ROLE_USR) /**< Mask for normal user role */
-#define TS_EXP_MASK     (TS_ROLE_EXP << 4 | TS_ROLE_EXP) /**< Mask for expert user role */
-#define TS_MKR_MASK     (TS_ROLE_MKR << 4 | TS_ROLE_MKR) /**< Mask for maker role */
+#define TS_USR_MASK (TS_ROLE_USR << 4 | TS_ROLE_USR) /**< Mask for normal user role */
+#define TS_EXP_MASK (TS_ROLE_EXP << 4 | TS_ROLE_EXP) /**< Mask for expert user role */
+#define TS_MKR_MASK (TS_ROLE_MKR << 4 | TS_ROLE_MKR) /**< Mask for maker role */
 
-#define TS_READ(roles)          ((roles) & TS_READ_MASK)
-#define TS_WRITE(roles)         (((roles) << 4) & TS_WRITE_MASK)
-#define TS_READ_WRITE(roles)    (TS_READ(roles) | TS_WRITE(roles))
+#define TS_READ(roles)       ((roles)&TS_READ_MASK)
+#define TS_WRITE(roles)      (((roles) << 4) & TS_WRITE_MASK)
+#define TS_READ_WRITE(roles) (TS_READ(roles) | TS_WRITE(roles))
 
 /** @endcond */
 
-#define TS_USR_R        TS_READ(TS_ROLE_USR) /**< Read-only access for normal user */
-#define TS_EXP_R        TS_READ(TS_ROLE_EXP) /**< Read-only access for expert user */
-#define TS_MKR_R        TS_READ(TS_ROLE_MKR) /**< Read-only access for maker */
-#define TS_ANY_R        (TS_USR_R | TS_EXP_R | TS_MKR_R) /**< Read-only access for any user */
+#define TS_USR_R TS_READ(TS_ROLE_USR)             /**< Read-only access for normal user */
+#define TS_EXP_R TS_READ(TS_ROLE_EXP)             /**< Read-only access for expert user */
+#define TS_MKR_R TS_READ(TS_ROLE_MKR)             /**< Read-only access for maker */
+#define TS_ANY_R (TS_USR_R | TS_EXP_R | TS_MKR_R) /**< Read-only access for any user */
 
-#define TS_USR_W        TS_WRITE(TS_ROLE_USR) /**< Write-only access for normal user */
-#define TS_EXP_W        TS_WRITE(TS_ROLE_EXP) /**< Write-only access for expert user */
-#define TS_MKR_W        TS_WRITE(TS_ROLE_MKR) /**< Write-only access for maker */
-#define TS_ANY_W        (TS_USR_W | TS_EXP_W | TS_MKR_W) /**< Write-only access for any user */
+#define TS_USR_W TS_WRITE(TS_ROLE_USR)            /**< Write-only access for normal user */
+#define TS_EXP_W TS_WRITE(TS_ROLE_EXP)            /**< Write-only access for expert user */
+#define TS_MKR_W TS_WRITE(TS_ROLE_MKR)            /**< Write-only access for maker */
+#define TS_ANY_W (TS_USR_W | TS_EXP_W | TS_MKR_W) /**< Write-only access for any user */
 
-#define TS_USR_RW       TS_READ_WRITE(TS_ROLE_USR) /**< Read/write access for normal user */
-#define TS_EXP_RW       TS_READ_WRITE(TS_ROLE_EXP) /**< Read/write access for expert user */
-#define TS_MKR_RW       TS_READ_WRITE(TS_ROLE_MKR) /**< Read/write access for maker */
-#define TS_ANY_RW       (TS_USR_RW | TS_EXP_RW | TS_MKR_RW) /**< Read/write access for any user */
+#define TS_USR_RW TS_READ_WRITE(TS_ROLE_USR)          /**< Read/write access for normal user */
+#define TS_EXP_RW TS_READ_WRITE(TS_ROLE_EXP)          /**< Read/write access for expert user */
+#define TS_MKR_RW TS_READ_WRITE(TS_ROLE_MKR)          /**< Read/write access for maker */
+#define TS_ANY_RW (TS_USR_RW | TS_EXP_RW | TS_MKR_RW) /**< Read/write access for any user */
 
 /** ThingSet data object ID (16-bit) */
 typedef uint16_t ts_object_id_t;
@@ -621,7 +629,8 @@ typedef ts_object_id_t ts_node_id_t __attribute__((deprecated));
 /**
  * ThingSet data object struct.
  */
-struct ts_data_object {
+struct ts_data_object
+{
     /**
      * Data object ID
      */
@@ -672,7 +681,6 @@ struct ts_data_object {
      * Flags to assign data item to different data item subsets (e.g. for publication messages)
      */
     MAYBE_CONST uint32_t subsets : 7;
-
 };
 
 /** @cond INTERNAL_HIDDEN */
@@ -687,7 +695,8 @@ typedef struct ts_data_object ts_data_node __attribute__((deprecated));
  *
  * Stores and handles all data objects exposed to different communication interfaces.
  */
-struct ts_context {
+struct ts_context
+{
     /**
      * Array of objects database provided during initialization
      */
@@ -787,8 +796,8 @@ int ts_init_global(struct ts_context *ts);
  * @returns Actual length of the response written to the buffer or 0 in case of error or if no
  *          response message has been generated (e.g. because a statement was processed)
  */
-int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len,
-               uint8_t *response, size_t response_size);
+int ts_process(struct ts_context *ts, const uint8_t *request, size_t request_len, uint8_t *response,
+               size_t response_size);
 
 /**
  * Print all data objects as a structured JSON text to stdout.
@@ -1000,9 +1009,8 @@ int ts_bin_import(struct ts_context *ts, const uint8_t *data, size_t len, uint8_
  *
  * @returns ThingSet status code
  */
-int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len,
-                         uint8_t auth_flags, uint16_t subsets,
-                         struct ts_data_object *object, int record_index);
+int ts_bin_import_record(struct ts_context *ts, const uint8_t *data, size_t len, uint8_t auth_flags,
+                         uint16_t subsets, struct ts_data_object *object, int record_index);
 
 /**
  * Get data object by ID.
@@ -1069,7 +1077,6 @@ typedef ThingSetDataObject DataNode __attribute__((deprecated));
 class ThingSet
 {
 public:
-
     inline ThingSet(ThingSetDataObject *data, size_t num)
     {
         (void)ts_init(&ts, data, num);
@@ -1174,8 +1181,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    inline int txt_pub(char *buf, size_t size, const uint16_t subset)
-        __attribute__((deprecated))
+    inline int txt_pub(char *buf, size_t size, const uint16_t subset) __attribute__((deprecated))
     {
         buf[0] = '#';
         buf[1] = ' ';
@@ -1192,8 +1198,7 @@ public:
      *
      * @returns Actual length of the message written to the buffer or 0 in case of error
      */
-    inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset)
-        __attribute__((deprecated))
+    inline int bin_pub(uint8_t *buf, size_t size, const uint16_t subset) __attribute__((deprecated))
     {
         buf[0] = TS_STATEMENT;
         int ret = ts_bin_export(&ts, &buf[1], size - 1, subset);
@@ -1217,7 +1222,6 @@ public:
     };
 
 private:
-
     ThingSetContext ts;
 };
 

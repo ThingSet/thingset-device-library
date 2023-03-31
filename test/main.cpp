@@ -10,13 +10,12 @@
 #error "You have to include unity.h. Should be done by test.h->thingset_priv.h"
 #endif
 
-
-void setUp (void)
+void setUp(void)
 {
     (void)ts_init(&ts, &data_objects[0], data_objects_size);
 }
 
-void tearDown (void)
+void tearDown(void)
 {
     // Nothing to do
 }
@@ -90,7 +89,7 @@ void tests_text_mode()
     RUN_TEST(test_txt_export);
 
     // update notification
-    RUN_TEST(test_txt_update_callback),
+    RUN_TEST(test_txt_update_callback);
 
     UNITY_END();
 }
@@ -107,7 +106,7 @@ void tests_binary_mode()
     // PATCH request
     RUN_TEST(test_bin_patch_multiple_objects);
     RUN_TEST(test_bin_patch_float_array);
-    RUN_TEST(test_bin_patch_rounded_float);     // writes an integer to float
+    RUN_TEST(test_bin_patch_rounded_float); // writes an integer to float
 
     // FETCH request
     RUN_TEST(test_bin_fetch_meas_ids);

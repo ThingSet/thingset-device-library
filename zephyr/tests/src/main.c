@@ -10,22 +10,22 @@
 
 #include "../../../test/test.h"
 
-
-void setup(void) {
+void setup(void)
+{
     (void)ts_init(&ts, &data_objects[0], data_objects_size);
 }
 
-void teardown(void) {
-}
+void teardown(void)
+{}
 
 void test_main(void)
 {
     LOG_DBG("Running ThingSet tests for Zepyhr");
 
-    ztest_test_suite(thingset_tests,
+    ztest_test_suite(
+        thingset_tests,
         /* test environment */
-        ztest_unit_test(test_assert),
-        ztest_unit_test(test_ts_init),
+        ztest_unit_test(test_assert), ztest_unit_test(test_ts_init),
         /* data conversion tests */
         ztest_unit_test_setup_teardown(test_txt_patch_bin_fetch, setup, teardown),
         ztest_unit_test_setup_teardown(test_bin_patch_txt_fetch, setup, teardown),
@@ -118,8 +118,7 @@ void test_main(void)
         ztest_unit_test_setup_teardown(test_bin_update_callback, setup, teardown),
         /* Bin mode: request paths by IDs and vice versa */
         ztest_unit_test_setup_teardown(test_bin_fetch_paths, setup, teardown),
-        ztest_unit_test_setup_teardown(test_bin_fetch_ids, setup, teardown)
-    );
+        ztest_unit_test_setup_teardown(test_bin_fetch_ids, setup, teardown));
 
     ztest_run_test_suite(thingset_tests);
 }

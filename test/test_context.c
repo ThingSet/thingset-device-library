@@ -17,7 +17,6 @@ bool update_callback_called;
 bool dummy_called_flag;
 struct ts_array pub_serial_array;
 
-
 void dummy(void)
 {
     dummy_called_flag = true;
@@ -43,13 +42,13 @@ void auth_function()
     const char pass_exp[] = "expert123";
     const char pass_mkr[] = "maker456";
 
-    if (strlen(pass_exp) == strlen(auth_password) &&
-        strncmp(auth_password, pass_exp, strlen(pass_exp)) == 0)
+    if (strlen(pass_exp) == strlen(auth_password)
+        && strncmp(auth_password, pass_exp, strlen(pass_exp)) == 0)
     {
         ts_set_authentication(&ts, TS_EXP_MASK | TS_USR_MASK);
     }
-    else if (strlen(pass_mkr) == strlen(auth_password) &&
-        strncmp(auth_password, pass_mkr, strlen(pass_mkr)) == 0)
+    else if (strlen(pass_mkr) == strlen(auth_password)
+             && strncmp(auth_password, pass_mkr, strlen(pass_mkr)) == 0)
     {
         ts_set_authentication(&ts, TS_MKR_MASK | TS_USR_MASK);
     }
@@ -89,12 +88,12 @@ static int _bin2hex(char *hex, size_t hex_size, const uint8_t *bin, size_t bin_s
         if (hex_idx >= hex_size) {
             return -1;
         }
-        hex[hex_idx++] = (char) (87 + b + (((b - 10) >> 31) & -39));
+        hex[hex_idx++] = (char)(87 + b + (((b - 10) >> 31) & -39));
         b = bin[bin_idx] & 0xf;
         if (hex_idx >= hex_size) {
             return -1;
         }
-        hex[hex_idx++] = (char) (87 + b + (((b - 10) >> 31) & -39));
+        hex[hex_idx++] = (char)(87 + b + (((b - 10) >> 31) & -39));
         if (hex_idx < hex_size) {
             hex[hex_idx++] = ' ';
         }
@@ -120,14 +119,15 @@ void assert_bin_resp(const uint8_t *resp_buf, int resp_len, const char *exp_hex,
     TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(exp_buf, resp_buf, resp_len, msg);
 }
 
-void assert_bin_req(const uint8_t *req_b, int req_len, const char *exp_hex, const char* msg)
+void assert_bin_req(const uint8_t *req_b, int req_len, const char *exp_hex, const char *msg)
 {
     int resp_len = ts_process(&ts, req_b, req_len, resp_buf, TS_RESP_BUFFER_LEN);
 
     assert_bin_resp(resp_buf, resp_len, exp_hex, msg);
 }
 
-void assert_bin_req_exp_bin(const uint8_t *req_b, int req_len, const uint8_t *exp_b, int exp_len, const char* msg)
+void assert_bin_req_exp_bin(const uint8_t *req_b, int req_len, const uint8_t *exp_b, int exp_len,
+                            const char *msg)
 {
     char exp_hex[exp_len * 3 + 1];
     (void)_bin2hex(exp_hex, sizeof(exp_hex), exp_b, exp_len);
@@ -193,16 +193,12 @@ static int _txt_fetch(char const *name, char *value_read, const char *msg)
 // returns length of read value
 static int _bin_fetch(uint16_t id, char *value_read, const char *msg)
 {
-    uint8_t req[] = {
-        TS_FETCH,
-        0x18, ID_CONF,
-        0x19, (uint8_t)(id >> 8), (uint8_t)id
-    };
+    uint8_t req[] = { TS_FETCH, 0x18, ID_CONF, 0x19, (uint8_t)(id >> 8), (uint8_t)id };
     ts_process(&ts, req, sizeof(req), resp_buf, TS_RESP_BUFFER_LEN);
 
     TEST_ASSERT_EQUAL_HEX8_MESSAGE(TS_STATUS_CONTENT, resp_buf[0], msg);
 
-    int value_len = cbor_size((uint8_t*)resp_buf + 1);
+    int value_len = cbor_size((uint8_t *)resp_buf + 1);
     memcpy(value_read, resp_buf + 1, value_len);
     return value_len;
 }
@@ -210,13 +206,8 @@ static int _bin_fetch(uint16_t id, char *value_read, const char *msg)
 // returns length of read value
 static void _bin_patch(uint16_t id, char *value, const char *msg)
 {
-    uint8_t req[100] = {
-        TS_PATCH,
-        0x18, ID_CONF,
-        0xA1,
-        0x19, (uint8_t)(id >> 8), (uint8_t)id
-    };
-    unsigned int len = cbor_size((uint8_t*)value);
+    uint8_t req[100] = { TS_PATCH, 0x18, ID_CONF, 0xA1, 0x19, (uint8_t)(id >> 8), (uint8_t)id };
+    unsigned int len = cbor_size((uint8_t *)value);
     TEST_ASSERT_LESS_THAN_size_t_MESSAGE(sizeof(req) - 7, len, msg);
 
     memcpy(req + 7, value, len);
@@ -225,9 +216,10 @@ static void _bin_patch(uint16_t id, char *value, const char *msg)
     TEST_ASSERT_EQUAL_HEX8_MESSAGE(TS_STATUS_CHANGED, resp_buf[0], msg);
 }
 
-void assert_json2cbor(char const *name, char const *json_value, uint16_t id, const char *const cbor_value_hex, const char *msg)
+void assert_json2cbor(char const *name, char const *json_value, uint16_t id,
+                      const char *const cbor_value_hex, const char *msg)
 {
-    char buf[100];  // temporary data storage (JSON or CBOR)
+    char buf[100]; // temporary data storage (JSON or CBOR)
     uint8_t cbor_value[100];
     int len = _hex2bin(cbor_value, sizeof(cbor_value), (char *)cbor_value_hex);
 
@@ -237,9 +229,10 @@ void assert_json2cbor(char const *name, char const *json_value, uint16_t id, con
     TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(cbor_value, buf, len, msg);
 }
 
-void assert_cbor2json(char const *name, char const *json_value, uint16_t id, char const *cbor_value_hex, const char *msg)
+void assert_cbor2json(char const *name, char const *json_value, uint16_t id,
+                      char const *cbor_value_hex, const char *msg)
 {
-    char buf[100];  // temporary data storage (JSON or CBOR)
+    char buf[100]; // temporary data storage (JSON or CBOR)
     char cbor_value[100];
     _hex2bin((uint8_t *)cbor_value, sizeof(cbor_value), (char *)cbor_value_hex);
 
