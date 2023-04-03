@@ -10,7 +10,7 @@
 
 void test_txt_get_root()
 {
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
     TEST_ASSERT_TXT_REQ(
         "?",
         ":85 Content. "
@@ -128,7 +128,7 @@ void test_txt_patch_whitespaces(void)
     TEST_ASSERT_EQUAL_INT32(50, i32);
 }
 
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
 
 void test_txt_patch_bytes_buffer(void)
 {
@@ -184,7 +184,7 @@ void test_txt_fn_int32(void)
     TEST_ASSERT_TXT_REQ("!RPC/xIntFunction", ":83 Valid. -1");
 }
 
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
 
 void test_txt_statement_subset(void)
 {
@@ -218,7 +218,7 @@ void test_txt_statement_subset(void)
         "#mReport {\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 }
 
-#endif /* TS_NESTED_JSON */
+#endif /* CONFIG_THINGSET_NESTED_JSON */
 
 void test_txt_statement_group(void)
 {
@@ -262,7 +262,7 @@ void test_txt_pub_enable(void)
     TEST_ASSERT_TRUE(pub_report_enable);
 }
 
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
 
 void test_txt_pub_delete_append_object(void)
 {
@@ -300,7 +300,7 @@ void test_txt_pub_delete_append_object(void)
                         ":85 Content. [\"t_s\",\"rBat_V\",\"rBat_A\",\"rAmbient_degC\"]");
 }
 
-#endif /* TS_NESTED_JSON */
+#endif /* CONFIG_THINGSET_NESTED_JSON */
 
 void test_txt_auth_user(void)
 {
@@ -372,7 +372,7 @@ void test_txt_get_endpoint(void)
     TEST_ASSERT_EQUAL_UINT16(0xE1, object->id);
 }
 
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
 
 void test_txt_export(void)
 {
@@ -407,7 +407,7 @@ void test_txt_export(void)
         resp_len, "{\"t_s\":12345678,\"rBat_V\":14.10,\"rBat_A\":5.13,\"rAmbient_degC\":22}");
 }
 
-#endif /* TS_NESTED_JSON */
+#endif /* CONFIG_THINGSET_NESTED_JSON */
 
 void test_txt_update_callback(void)
 {

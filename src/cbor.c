@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len)
 #else
 int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
@@ -51,7 +51,7 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
         // (uint32_t)value, data[0], data[1], data[2], data[3], data[4]);
         return 5;
     }
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     else if (max_len >= 9) {
         data[0] = CBOR_UINT | CBOR_UINT64_FOLLOWS;
         data[1] = (value >> 32) >> 24;
@@ -70,7 +70,7 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len)
     }
 }
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len)
 #else
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len)
@@ -90,7 +90,7 @@ int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len)
     }
 }
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
 int cbor_serialize_decfrac(uint8_t *data, int32_t mantissa, int16_t exponent, size_t max_len)
 {
     if (max_len < (2 + 3 + 5)) {
@@ -168,7 +168,7 @@ int cbor_serialize_string(uint8_t *data, const char *value, size_t max_len)
     }
 }
 
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
 int cbor_serialize_bytes(uint8_t *data, const uint8_t *bytes, size_t num_bytes, size_t max_len)
 {
     if (num_bytes <= CBOR_NUM_MAX && num_bytes + 1 <= max_len) {
@@ -231,7 +231,7 @@ int cbor_serialize_array(uint8_t *data, size_t num_elements, size_t max_len)
     return _serialize_num_elements(data, num_elements, max_len);
 }
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int _cbor_uint_data(const uint8_t *data, uint64_t *bytes)
 #else
 int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
@@ -254,7 +254,7 @@ int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
         *bytes = data[1] << 8 | data[2];
         return 3;
     }
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     else if (info == CBOR_UINT32_FOLLOWS) {
         *(uint64_t *)bytes = ((uint64_t)data[1] << 24) | ((uint64_t)data[2] << 16)
                              | ((uint64_t)data[3] << 8) | ((uint64_t)data[4]);
@@ -278,7 +278,7 @@ int _cbor_uint_data(const uint8_t *data, uint32_t *bytes)
     }
 }
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int cbor_deserialize_uint64(const uint8_t *data, uint64_t *value)
 {
     uint64_t tmp;
@@ -334,7 +334,7 @@ int cbor_deserialize_int64(const uint8_t *data, int64_t *value)
 
 int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value)
 {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     uint64_t tmp;
 #else
     uint32_t tmp;
@@ -358,7 +358,7 @@ int cbor_deserialize_uint32(const uint8_t *data, uint32_t *value)
 
 int cbor_deserialize_int32(const uint8_t *data, int32_t *value)
 {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     uint64_t tmp;
 #else
     uint32_t tmp;
@@ -443,7 +443,7 @@ int cbor_deserialize_int8(const uint8_t *data, int8_t *value)
     return 0;
 }
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
 int cbor_deserialize_decfrac(const uint8_t *data, int32_t *mantissa, const int16_t exponent)
 {
     int pos = 0;
@@ -501,7 +501,7 @@ int cbor_deserialize_float(const uint8_t *data, float *value)
 
     uint8_t type = data[0] & CBOR_TYPE_MASK;
     if (type == CBOR_UINT) {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         uint64_t tmp;
         int len = cbor_deserialize_uint64(data, &tmp);
         *value = (float)tmp;
@@ -514,7 +514,7 @@ int cbor_deserialize_float(const uint8_t *data, float *value)
 #endif
     }
     else if (type == CBOR_NEGINT) {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         int64_t tmp;
         int len = cbor_deserialize_int64(data, &tmp);
         *value = (float)tmp;
@@ -596,7 +596,7 @@ int cbor_deserialize_string_zero_copy(const uint8_t *data, char **str_start, uin
     return 0; // longer string not supported
 }
 
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
 int cbor_deserialize_bytes(const uint8_t *data, uint8_t *bytes, uint16_t buf_size,
                            uint16_t *num_bytes)
 {
@@ -700,7 +700,7 @@ int cbor_size(const uint8_t *data)
                 return 0; // longer string / byte array not supported
         }
     }
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
     else if (type == CBOR_TAG && info == CBOR_DECFRAC_ARRAY_FOLLOWS) {
         int pos = 2;
         pos += cbor_size(&data[pos]); // exponent

@@ -49,7 +49,7 @@ char strbuf[300];
 float f32;
 int32_t decfrac;
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 static uint64_t ui64;
 static int64_t i64;
 #endif
@@ -230,7 +230,7 @@ struct ts_data_object data_objects[] = {
 
     TS_FN_VOID(0x5001, "xDummy", &dummy, ID_RPC, TS_ANY_RW),
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     TS_ITEM_UINT64(0x6001, "ui64", &ui64, ID_CONF, TS_ANY_RW, 0),
     TS_ITEM_INT64(0x6002, "i64", &i64, ID_CONF, TS_ANY_RW, 0),
 #endif
@@ -246,7 +246,7 @@ struct ts_data_object data_objects[] = {
     TS_ITEM_STRING(0x6009, "strbuf", strbuf, sizeof(strbuf), ID_CONF, TS_ANY_RW, 0),
 
     TS_ITEM_FLOAT(0x600A, "f32_rounded", &f32, 0, ID_CONF, TS_ANY_RW, 0),
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
     TS_ITEM_DECFRAC(0x600B, "DecFrac_degC", &decfrac, -2, ID_CONF, TS_ANY_RW, 0),
 #endif
 

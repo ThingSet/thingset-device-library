@@ -132,7 +132,7 @@ void tests_binary_mode()
     RUN_TEST(test_bin_serialize_long_string);
 
     // binary (bytes) data type
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
     RUN_TEST(test_bin_serialize_bytes);
     RUN_TEST(test_bin_deserialize_bytes);
     RUN_TEST(test_bin_patch_fetch_bytes);

@@ -76,7 +76,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("ui32", "65536", 0x6003, "1A 00 01 00 00");
     TEST_ASSERT_JSON2CBOR("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // uint64
     TEST_ASSERT_JSON2CBOR("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("ui64", "4294967296", 0x6001, "1B 00 00 00 01 00 00 00 00");
@@ -108,7 +108,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("i32", "65536", 0x6004, "1A 00 01 00 00");
     TEST_ASSERT_JSON2CBOR("i32", "2147483647", 0x6004, "1A 7F FF FF FF"); // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // int64 (positive values)
     TEST_ASSERT_JSON2CBOR("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
@@ -141,7 +141,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("i32", "-2147483648", 0x6004,
                           "3A 7F FF FF FF"); // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // int64 (negative values)
     TEST_ASSERT_JSON2CBOR("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     TEST_ASSERT_JSON2CBOR("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
@@ -154,7 +154,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("f32", "-12.340", 0x6007, "fa c1 45 70 a4");
     TEST_ASSERT_JSON2CBOR("f32", "12.345", 0x6007, "fa 41 45 85 1f");
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
     // decimal fraction
     TEST_ASSERT_JSON2CBOR("DecFrac_degC", "273.15", 0x600B, "c4 82 21 19 6a b3");
 #endif
@@ -168,7 +168,7 @@ void test_txt_patch_bin_fetch(void)
     TEST_ASSERT_JSON2CBOR("strbuf", "\"Hello World!\"", 0x6009,
                           "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
 
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
     // bytes (base64-encoded)
     TEST_ASSERT_JSON2CBOR("bytesbuf", "\"ABEiM0RVZneImaq7zN3u/w==\"", 0x8000,
                           "50 00 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF");
@@ -211,7 +211,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("ui32", "65536", 0x6003, "1A 00 01 00 00");
     TEST_ASSERT_CBOR2JSON("ui32", "4294967295", 0x6003, "1A FF FF FF FF");
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // uint64
     TEST_ASSERT_CBOR2JSON("ui64", "4294967295", 0x6001, "1A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("ui64", "4294967295", 0x6001,
@@ -249,7 +249,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("i32", "65536", 0x6004, "1A 00 01 00 00");
     TEST_ASSERT_CBOR2JSON("i32", "2147483647", 0x6004, "1A 7F FF FF FF"); // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // int64 (positive values)
     TEST_ASSERT_CBOR2JSON("i64", "4294967295", 0x6002, "1A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("i64", "4294967296", 0x6002, "1B 00 00 00 01 00 00 00 00");
@@ -282,7 +282,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("i32", "-2147483648", 0x6004,
                           "3A 7F FF FF FF"); // maximum value for int32
 
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
     // int64 (negative values)
     TEST_ASSERT_CBOR2JSON("i64", "-4294967296", 0x6002, "3A FF FF FF FF");
     TEST_ASSERT_CBOR2JSON("i64", "-4294967297", 0x6002, "3B 00 00 00 01 00 00 00 00");
@@ -297,7 +297,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("f32", "12.35", 0x6007,
                           "fa 41 45 85 1f"); // 12.345 (should be rounded to 12.35)
 
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
     // decimal fraction
     TEST_ASSERT_CBOR2JSON("DecFrac_degC", "27315e-2", 0x600B,
                           "c4 82 21 19 6a b3"); // decfrac 27315e-2
@@ -318,7 +318,7 @@ void test_bin_patch_txt_fetch(void)
     TEST_ASSERT_CBOR2JSON("strbuf", "\"Hello World!\"", 0x6009,
                           "6c 48 65 6c 6c 6f 20 57 6f 72 6c 64 21");
 
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
     // bytes (base64-encoded)
     TEST_ASSERT_CBOR2JSON("bytesbuf", "\"ABEiM0RVZneImaq7zN3u/w==\"", 0x8000,
                           "50 00 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF");

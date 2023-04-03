@@ -17,7 +17,7 @@
 static int cbor_deserialize_simple_value(const uint8_t *buf, void *data, int type, int detail)
 {
     switch (type) {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             return cbor_deserialize_uint64(buf, (uint64_t *)data);
         case TS_T_INT64:
@@ -37,7 +37,7 @@ static int cbor_deserialize_simple_value(const uint8_t *buf, void *data, int typ
             return cbor_deserialize_int8(buf, (int8_t *)data);
         case TS_T_FLOAT32:
             return cbor_deserialize_float(buf, (float *)data);
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
             return cbor_deserialize_decfrac(buf, (int32_t *)data, detail);
 #endif
@@ -58,7 +58,7 @@ static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_ob
     }
 
     switch (object->type) {
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
         case TS_T_BYTES:
             return cbor_deserialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
                                           object->detail,
@@ -91,7 +91,7 @@ static int cbor_deserialize_data_obj(const uint8_t *buf, const struct ts_data_ob
 static int cbor_serialize_simple_value(uint8_t *buf, size_t size, void *data, int type, int detail)
 {
     switch (type) {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             return cbor_serialize_uint(buf, *((uint64_t *)data), size);
         case TS_T_INT64:
@@ -111,7 +111,7 @@ static int cbor_serialize_simple_value(uint8_t *buf, size_t size, void *data, in
             return cbor_serialize_int(buf, *((int8_t *)data), size);
         case TS_T_FLOAT32:
             if (detail == 0) { // round to 0 digits: use int
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
                 return cbor_serialize_int(buf, llroundf(*((float *)data)), size);
 #else
                 return cbor_serialize_int(buf, lroundf(*((float *)data)), size);
@@ -120,7 +120,7 @@ static int cbor_serialize_simple_value(uint8_t *buf, size_t size, void *data, in
             else {
                 return cbor_serialize_float(buf, *((float *)data), size);
             }
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
             return cbor_serialize_decfrac(buf, *((int32_t *)data), detail, size);
 #endif
@@ -141,7 +141,7 @@ static int cbor_serialize_data_obj(uint8_t *buf, size_t size, const struct ts_da
     }
 
     switch (object->type) {
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
         case TS_T_BYTES:
             return cbor_serialize_bytes(buf, ((struct ts_bytes_buffer *)object->data)->bytes,
                                         ((struct ts_bytes_buffer *)object->data)->num_bytes, size);

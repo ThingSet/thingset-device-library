@@ -26,7 +26,7 @@ int ts_txt_response(struct ts_context *ts, int code)
 {
     int pos = 0;
 
-#if TS_VERBOSE_STATUS_MESSAGES
+#if CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES
     const char *msg;
     switch (code) {
         // success
@@ -101,7 +101,7 @@ int ts_txt_response(struct ts_context *ts, int code)
 static int json_serialize_simple_value(char *buf, size_t size, void *data, int type, int detail)
 {
     switch (type) {
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             return snprintf(buf, size, "%" PRIu64 ",", *((uint64_t *)data));
         case TS_T_INT64:
@@ -129,7 +129,7 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
                 return snprintf(buf, size, "%.*f,", detail, value);
             }
         }
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
             return snprintf(buf, size, "%" PRIi32 "e%" PRIi16 ",", *((uint32_t *)data), detail);
 #endif
@@ -137,7 +137,7 @@ static int json_serialize_simple_value(char *buf, size_t size, void *data, int t
             return snprintf(buf, size, "%s,", (*((bool *)data) == true ? "true" : "false"));
         case TS_T_STRING:
             return snprintf(buf, size, "\"%s\",", (char *)data);
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
         case TS_T_BYTES: {
             struct ts_bytes_buffer *bytes_buf = (struct ts_bytes_buffer *)data;
             size_t strlen;
@@ -182,7 +182,7 @@ int ts_json_serialize_value(struct ts_context *ts, char *buf, size_t size,
             pos = snprintf(buf, size, "[");
             for (unsigned int i = 0; i < ts->num_objects; i++) {
                 if (ts->data_objects[i].subsets & (uint16_t)object->detail) {
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
                     if (ts->data_objects[i].parent == 0) {
                         pos += snprintf(buf + pos, size - pos, "\"%s\",", ts->data_objects[i].name);
                     }
@@ -474,7 +474,7 @@ int ts_txt_fetch(struct ts_context *ts, const struct ts_data_object *endpoint)
 int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmntype_t type,
                               const struct ts_data_object *object)
 {
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
     float tmp;
 #endif
 
@@ -487,7 +487,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
         case TS_T_FLOAT32:
             *((float *)object->data) = strtod(buf, NULL);
             break;
-#if TS_DECFRAC_TYPE_SUPPORT
+#if CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
         case TS_T_DECFRAC:
             tmp = strtod(buf, NULL);
             // positive exponent
@@ -501,7 +501,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             *((int32_t *)object->data) = (int32_t)tmp;
             break;
 #endif
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         case TS_T_UINT64:
             *((uint64_t *)object->data) = strtoull(buf, NULL, 0);
             break;
@@ -548,7 +548,7 @@ int ts_json_deserialize_value(struct ts_context *ts, char *buf, size_t len, jsmn
             }
             break;
         case TS_T_BYTES:
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
             if (type != JSMN_STRING || (unsigned int)object->detail < len / 4 * 3) {
                 return 0;
             }
@@ -641,7 +641,7 @@ int ts_txt_patch(struct ts_context *ts, const struct ts_data_object *endpoint)
             }
         }
         else if (object->type == TS_T_BYTES) {
-#ifdef CONFIG_BASE64
+#ifdef CONFIG_BASE64 /* Zephyr only */
             if (value_len / 4 * 3 <= (size_t)object->detail) {
                 // decoded base64-encoded string fits into data object buffer
                 tok += 1;
@@ -815,10 +815,10 @@ int ts_txt_create(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
-#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS
+#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS /* Zephyr only */
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
             struct ts_data_object *add_object = ts_get_object_by_path(
                 ts, ts->json_str + ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
 #else
@@ -849,10 +849,10 @@ int ts_txt_delete(struct ts_context *ts, const struct ts_data_object *object)
         // Remark: See commit history with implementation for pub/sub ID arrays as inspiration
         return ts_txt_response(ts, TS_STATUS_NOT_IMPLEMENTED);
     }
-#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS
+#ifndef CONFIG_THINGSET_IMMUTABLE_OBJECTS /* Zephyr only */
     else if (object->type == TS_T_SUBSET) {
         if (ts->tokens[0].type == JSMN_STRING) {
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
             struct ts_data_object *del_object = ts_get_object_by_path(
                 ts, ts->json_str + ts->tokens[0].start, ts->tokens[0].end - ts->tokens[0].start);
 #else
@@ -936,7 +936,7 @@ int ts_txt_exec(struct ts_context *ts, const struct ts_data_object *object)
     return len;
 }
 
-#if TS_NESTED_JSON
+#if CONFIG_THINGSET_NESTED_JSON
 
 /* currently only supporting nesting of depth 2 (parent and grandparent != 0) */
 int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t subsets)
@@ -1021,7 +1021,7 @@ int ts_txt_export(struct ts_context *ts, char *buf, size_t buf_size, uint16_t su
     return len;
 }
 
-#endif /* TS_NESTED_JSON */
+#endif /* CONFIG_THINGSET_NESTED_JSON */
 
 static int ts_serialize_statement(struct ts_context *ts, char *buf, size_t buf_size,
                                   struct ts_data_object *object, int record_index)

@@ -63,7 +63,7 @@ extern "C" {
  *
  * @returns Number of bytes added to buffer or 0 in case of error
  */
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int cbor_serialize_uint(uint8_t *data, uint64_t value, size_t max_len);
 #else
 int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
@@ -78,7 +78,7 @@ int cbor_serialize_uint(uint8_t *data, uint32_t value, size_t max_len);
  *
  * @returns Number of bytes added to buffer or 0 in case of error
  */
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
 int cbor_serialize_int(uint8_t *data, int64_t value, size_t max_len);
 #else
 int cbor_serialize_int(uint8_t *data, int32_t value, size_t max_len);

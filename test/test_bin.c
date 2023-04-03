@@ -73,7 +73,7 @@ void test_bin_patch_multiple_objects(void)
 {
     const char req_hex[] =
         "07 06 "
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         "A9 "          // write map with 9 elements
         "19 60 01 01 " // value 1
         "19 60 02 02 "
@@ -98,7 +98,7 @@ void test_bin_fetch_multiple_objects(void)
 
     char req_hex[] =
         "05 06 "
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         "89 " // read array with 9 elements
         "19 60 01 "
         "19 60 02 "
@@ -113,7 +113,7 @@ void test_bin_fetch_multiple_objects(void)
         "19 60 08 "
         "19 60 09 ";
     const char resp_hex[] =
-#if TS_64BIT_TYPES_SUPPORT
+#if CONFIG_THINGSET_64BIT_TYPES_SUPPORT
         "85 89 " // successful response: array with 9 elements
         "01 "    // value 1
         "02 "
@@ -402,7 +402,7 @@ void test_bin_serialize_long_string(void)
     TEST_ASSERT_EQUAL_UINT(0x00, buf[2]); // null-termination is not stored
 }
 
-#if TS_BYTE_STRING_TYPE_SUPPORT
+#if CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
 void test_bin_serialize_bytes(void)
 {
     /* use public buffers for testing - assure sufficient size */
@@ -447,7 +447,7 @@ void test_bin_deserialize_bytes(void)
     TEST_ASSERT_EQUAL_UINT(300, num_bytes);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(&bytes[0], &cbor[3], 300);
 }
-#endif /* TS_BYTE_STRING_TYPE_SUPPORT */
+#endif /* CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT */
 
 void test_bin_patch_fetch_bytes(void)
 {

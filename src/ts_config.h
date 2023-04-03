@@ -9,6 +9,11 @@
 #define TS_CONFIG_H_
 
 /*
+ * Zephyr provides its own Kconfig environment, so this file is ignored.
+ */
+#ifndef __ZEPHYR__
+
+/*
  * Enable legacy C++ interface.
  *
  * This option enables the legacy C++ interface of the
@@ -26,20 +31,16 @@
  * Thingset throws an error if maximum number of tokens is reached in a
  * request or response.
  */
-#if !defined(TS_NUM_JSON_TOKENS) && !defined(CONFIG_THINGSET_NUM_JSON_TOKENS)
-#define TS_NUM_JSON_TOKENS 50
-#elif !defined(TS_NUM_JSON_TOKENS)
-#define TS_NUM_JSON_TOKENS CONFIG_THINGSET_NUM_JSON_TOKENS
+#ifndef CONFIG_THINGSET_NUM_JSON_TOKENS
+#define CONFIG_THINGSET_NUM_JSON_TOKENS 50
 #endif
 
 /*
  * If verbose status messages are switched on, a response in text-based mode
  * contains not only the status code, but also a message.
  */
-#if !defined(TS_VERBOSE_STATUS_MESSAGES) && !defined(CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES)
-#define TS_VERBOSE_STATUS_MESSAGES 1
-#elif !defined(TS_VERBOSE_STATUS_MESSAGES)
-#define TS_VERBOSE_STATUS_MESSAGES CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES
+#ifndef CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES
+#define CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES 1
 #endif
 
 /*
@@ -48,10 +49,8 @@
  * This should be disabled for most 8-bit microcontrollers to increase
  * performance
  */
-#if !defined(TS_64BIT_TYPES_SUPPORT) && !defined(CONFIG_THINGSET_64BIT_TYPES_SUPPORT)
-#define TS_64BIT_TYPES_SUPPORT 0 // default: no support
-#elif !defined(TS_64BIT_TYPES_SUPPORT)
-#define TS_64BIT_TYPES_SUPPORT CONFIG_THINGSET_64BIT_TYPES_SUPPORT
+#ifndef CONFIG_THINGSET_64BIT_TYPES_SUPPORT
+#define CONFIG_THINGSET_64BIT_TYPES_SUPPORT 0
 #endif
 
 /*
@@ -59,20 +58,16 @@
  * and a constant decimal exponent. This allows to use e.g. millivolts internally instead
  * of floating point numbers, while still communicating the SI base unit (volts).
  */
-#if !defined(TS_DECFRAC_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT)
-#define TS_DECFRAC_TYPE_SUPPORT 0 // default: no support
-#elif !defined(TS_DECFRAC_TYPE_SUPPORT)
-#define TS_DECFRAC_TYPE_SUPPORT CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
+#ifndef CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT
+#define CONFIG_THINGSET_DECFRAC_TYPE_SUPPORT 0
 #endif
 
 /*
  * Switch on support for CBOR byte strings, which can store any sort of binary data and
  * can be used e.g. for firmware upgrades. Byte strings are not supported by JSON.
  */
-#if !defined(TS_BYTE_STRING_TYPE_SUPPORT) && !defined(CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT)
-#define TS_BYTE_STRING_TYPE_SUPPORT 0 // default: no support
-#elif !defined(TS_BYTE_STRING_TYPE_SUPPORT)
-#define TS_BYTE_STRING_TYPE_SUPPORT CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
+#ifndef CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT
+#define CONFIG_THINGSET_BYTE_STRING_TYPE_SUPPORT 0
 #endif
 
 /*
@@ -89,10 +84,10 @@
  * This option is introduced to maintain compatibility with legacy firmware and will be
  * enabled by default in the future.
  */
-#if !defined(TS_NESTED_JSON) && !defined(CONFIG_THINGSET_NESTED_JSON)
-#define TS_NESTED_JSON 0 // default: no nested JSON for legacy code
-#elif !defined(TS_NESTED_JSON)
-#define TS_NESTED_JSON CONFIG_THINGSET_NESTED_JSON
+#ifndef CONFIG_THINGSET_NESTED_JSON
+#define CONFIG_THINGSET_NESTED_JSON 0 // default: no nested JSON for legacy code
 #endif
+
+#endif /* __ZEPHYR__ */
 
 #endif /* TS_CONFIG_H_ */

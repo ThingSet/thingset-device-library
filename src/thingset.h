@@ -736,7 +736,7 @@ struct ts_context
     /**
      * JSON tokes in json_str parsed by JSMN
      */
-    jsmntok_t tokens[TS_NUM_JSON_TOKENS];
+    jsmntok_t tokens[CONFIG_THINGSET_NUM_JSON_TOKENS];
 
     /**
      * Number of JSON tokens parsed by JSMN

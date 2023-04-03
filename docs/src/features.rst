@@ -16,8 +16,8 @@ The following ThingSet functions are fully implemented:
 - Setup of publication channels (enable/disable, configure data objects to be published, change
   interval)
 
-In order to reduce code size, verbose status messages can be turned off using the
-``TS_VERBOSE_STATUS_MESSAGES = 0`` in ``ts_config.h``.
+In order to reduce code size, verbose status messages can be turned off with
+``CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES = 0`` in ``ts_config.h`` or Kconfig (if using Zephyr).
 
 Binary mode
 -----------
@@ -43,4 +43,4 @@ Currently, the following data type is still missing in the implementation.
 - Float 64 (double)
 
 It is possible to enable or disable 64 bit data types to decrease code size using the
-``TS_64BIT_TYPES_SUPPORT`` flag in ``ts_config.h``.
+``CONFIG_THINGSET_64BIT_TYPES_SUPPORT`` flag in ``ts_config.h`` or Kconfig (if using Zephyr).
