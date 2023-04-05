@@ -85,7 +85,7 @@ config THINGSET_CPP_LEGACY
 
 config THINGSET_NESTED_JSON
         bool "Use nested JSON for statements"
-        default n
+        default y
         help
           The ThingSet specification v0.5 introduces a different data layout compared to previous
           versions where the data is grouped by entities of the device (like battery, actuator)
@@ -97,8 +97,7 @@ config THINGSET_NESTED_JSON
           With nested JSON enabled, requesting names for IDs will also return the entire path (as
           a JSON pointer) instead of just the data item name.
 
-          This option is introduced to maintain compatibility with legacy firmware and will be
-          enabled by default in the future.
+          This option is introduced to maintain compatibility with legacy firmware.
 
 module = THINGSET
 module-str = thingset

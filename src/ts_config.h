@@ -81,11 +81,10 @@
  * With nested JSON enabled, requesting names for IDs will also return the entire path (as
  * a JSON pointer) instead of just the data item name.
  *
- * This option is introduced to maintain compatibility with legacy firmware and will be
- * enabled by default in the future.
+ * This option is introduced to maintain compatibility with legacy firmware.
  */
 #ifndef CONFIG_THINGSET_NESTED_JSON
-#define CONFIG_THINGSET_NESTED_JSON 0 // default: no nested JSON for legacy code
+#define CONFIG_THINGSET_NESTED_JSON 1
 #endif
 
 #endif /* __ZEPHYR__ */
