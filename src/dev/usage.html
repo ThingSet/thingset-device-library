@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library Usage &mdash; ThingSet C/C++ Library  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Unit Tests" href="unit_tests.html" />
+    <link rel="prev" title="Features" href="../features.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #52595d" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ThingSet C/C++ Library
+              <img src="../../_static/thingset_logo_white.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v0.5
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#text-mode">Text mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#binary-mode">Binary mode</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example-programs">Example Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-c-code-snippet">Basic C++ code snippet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unit_tests.html">Unit Tests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#platformio">PlatformIO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#zephyr-rtos">Zephyr RTOS</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/library.html">Library API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/internal.html">Internal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/internal.html#json-jsmn">JSON (JSMN)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/internal.html#cbor">CBOR</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #52595d" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ThingSet C/C++ Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Library Usage</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ThingSet/thingset-device-library/blob/main/docs/src/dev/usage.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="library-usage">
+<h1>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this heading"></a></h1>
+<section id="example-programs">
+<h2>Example Programs<a class="headerlink" href="#example-programs" title="Permalink to this heading"></a></h2>
+<p>Example programs can be found in the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory.</p>
+<p>The basic example shows a very simple setup to get started with ThingSet.</p>
+<p>It provides a shell to access the data from <code class="docutils literal notranslate"><span class="pre">test/test_data.c</span></code> via ThingSet protocol.</p>
+<p>Build instructions for the examples (requires CMake and a GCC):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>examples/basic<span class="w">       </span><span class="c1"># or examples/interactive</span>
+mkdir<span class="w"> </span>build
+<span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>..
+cmake<span class="w"> </span>--build<span class="w"> </span>.
+./sample
+</pre></div>
+</div>
+</section>
+<section id="basic-c-code-snippet">
+<h2>Basic C++ code snippet<a class="headerlink" href="#basic-c-code-snippet" title="Permalink to this heading"></a></h2>
+<p>Assuming the data is stored in a static array <code class="docutils literal notranslate"><span class="pre">data_objects</span></code> as in the example, a ThingSet object
+is created by:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">ThingSet</span><span class="w"> </span><span class="n">ts</span><span class="p">(</span><span class="n">data_objects</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">data_objects</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="n">ThingSetDataObject</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>Afterwards, it can be used with any communication interface using the <code class="docutils literal notranslate"><span class="pre">process</span></code> function:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">req_buf</span><span class="p">[</span><span class="mi">500</span><span class="p">];</span><span class="w">        </span><span class="c1">// buffer to store incoming data</span>
+<span class="kt">uint8_t</span><span class="w"> </span><span class="n">resp_buf</span><span class="p">[</span><span class="mi">500</span><span class="p">];</span><span class="w">       </span><span class="c1">// buffer to store ThingSet response</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * Listen to a communication interface (e.g. UART) and store</span>
+<span class="cm"> * incoming data in the request buffer.</span>
+<span class="cm"> *</span>
+<span class="cm"> * After receiving a new-line character, process the request.</span>
+<span class="cm"> */</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">req_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">((</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">req_buf</span><span class="p">);</span><span class="w">  </span><span class="c1">// only works for text mode</span>
+
+<span class="n">ts</span><span class="p">.</span><span class="n">process</span><span class="p">(</span><span class="n">req_buf</span><span class="p">,</span><span class="w"> </span><span class="n">req_len</span><span class="p">,</span><span class="w"> </span><span class="n">resp_buf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">resp_buf</span><span class="p">));</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * The response including the requested data is now in the response buffer</span>
+<span class="cm"> * and can be sent back to the communication interface.</span>
+<span class="cm"> */</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../features.html" class="btn btn-neutral float-left" title="Features" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="unit_tests.html" class="btn btn-neutral float-right" title="Unit Tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 The ThingSet Project Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

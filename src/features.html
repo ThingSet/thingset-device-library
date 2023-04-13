@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features &mdash; ThingSet C/C++ Library  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Library Usage" href="dev/usage.html" />
+    <link rel="prev" title="ThingSet C/C++ Library Documentation" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #52595d" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ThingSet C/C++ Library
+              <img src="../_static/thingset_logo_white.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v0.5
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#text-mode">Text mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#binary-mode">Binary mode</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dev/usage.html">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev/usage.html#example-programs">Example Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev/usage.html#basic-c-code-snippet">Basic C++ code snippet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev/unit_tests.html">Unit Tests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev/unit_tests.html#platformio">PlatformIO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev/unit_tests.html#zephyr-rtos">Zephyr RTOS</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/library.html">Library API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/internal.html">Internal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/internal.html#json-jsmn">JSON (JSMN)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/internal.html#cbor">CBOR</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #52595d" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ThingSet C/C++ Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Features</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ThingSet/thingset-device-library/blob/main/docs/src/features.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="features">
+<h1>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h1>
+<section id="text-mode">
+<h2>Text mode<a class="headerlink" href="#text-mode" title="Permalink to this heading"></a></h2>
+<p>The following ThingSet functions are fully implemented:</p>
+<ul class="simple">
+<li><p>GET and FETCH requests (first byte <code class="docutils literal notranslate"><span class="pre">?</span></code>)</p></li>
+<li><p>PATCH request (first byte <code class="docutils literal notranslate"><span class="pre">=</span></code>)</p></li>
+<li><p>POST request (first byte <code class="docutils literal notranslate"><span class="pre">!</span></code> or <code class="docutils literal notranslate"><span class="pre">+</span></code>)</p></li>
+<li><p>DELETE request (first byte <code class="docutils literal notranslate"><span class="pre">-</span></code>)</p></li>
+<li><p>Execution of functions via callbacks to certain paths or via executable objects</p></li>
+<li><p>Authentication via callback to <code class="docutils literal notranslate"><span class="pre">auth</span></code> object</p></li>
+<li><p>Sending of publication messages (<code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">{...}</span></code>)</p></li>
+<li><p>Setup of publication channels (enable/disable, configure data objects to be published, change
+interval)</p></li>
+</ul>
+<p>In order to reduce code size, verbose status messages can be turned off with
+<code class="docutils literal notranslate"><span class="pre">CONFIG_THINGSET_VERBOSE_STATUS_MESSAGES</span> <span class="pre">=</span> <span class="pre">0</span></code> in <code class="docutils literal notranslate"><span class="pre">ts_config.h</span></code> or Kconfig (if using Zephyr).</p>
+</section>
+<section id="binary-mode">
+<h2>Binary mode<a class="headerlink" href="#binary-mode" title="Permalink to this heading"></a></h2>
+<p>The following functions are fully implemented:</p>
+<ul class="simple">
+<li><p>GET and FETCH requests (function codes <code class="docutils literal notranslate"><span class="pre">0x01</span></code> and <code class="docutils literal notranslate"><span class="pre">0x05</span></code>)</p></li>
+<li><p>PATCH request (function code <code class="docutils literal notranslate"><span class="pre">0x07</span></code>)</p></li>
+<li><p>Publication of statements (function code <code class="docutils literal notranslate"><span class="pre">0x1F</span></code>)</p></li>
+</ul>
+<p>For an efficient implementation, only the most important CBOR data types are supported:</p>
+<ul class="simple">
+<li><p>Unsigned int up to 64 bit</p></li>
+<li><p>Negative int up to 64 bit</p></li>
+<li><p>UTF8 strings of up to 2^16-1 bytes</p></li>
+<li><p>Binary data of up to 2^16-1 bytes</p></li>
+<li><p>Float 32 bit</p></li>
+<li><p>Simple values true and false</p></li>
+<li><p>Arrays of above types</p></li>
+</ul>
+<p>Currently, the following data type is still missing in the implementation.</p>
+<ul class="simple">
+<li><p>Float 64 (double)</p></li>
+</ul>
+<p>It is possible to enable or disable 64 bit data types to decrease code size using the
+<code class="docutils literal notranslate"><span class="pre">CONFIG_THINGSET_64BIT_TYPES_SUPPORT</span></code> flag in <code class="docutils literal notranslate"><span class="pre">ts_config.h</span></code> or Kconfig (if using Zephyr).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="ThingSet C/C++ Library Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dev/usage.html" class="btn btn-neutral float-right" title="Library Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 The ThingSet Project Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

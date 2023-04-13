@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library API &mdash; ThingSet C/C++ Library  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Internal" href="internal.html" />
+    <link rel="prev" title="Unit Tests" href="../dev/unit_tests.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #52595d" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ThingSet C/C++ Library
+              <img src="../../_static/thingset_logo_white.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v0.5
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#text-mode">Text mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#binary-mode">Binary mode</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/usage.html">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/usage.html#example-programs">Example Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/usage.html#basic-c-code-snippet">Basic C++ code snippet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/unit_tests.html">Unit Tests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/unit_tests.html#platformio">PlatformIO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/unit_tests.html#zephyr-rtos">Zephyr RTOS</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="internal.html">Internal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="internal.html#json-jsmn">JSON (JSMN)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internal.html#cbor">CBOR</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #52595d" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ThingSet C/C++ Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Library API</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ThingSet/thingset-device-library/blob/main/docs/src/api/library.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="library-api">
+<h1>Library API<a class="headerlink" href="#library-api" title="Permalink to this heading"></a></h1>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.JSMN_HEADER">
+<span class="target" id="thingset_8h_1aeef9c3539ffb9ed912a2976b67b43d68"></span><span class="sig-name descname"><span class="n"><span class="pre">JSMN_HEADER</span></span></span><a class="headerlink" href="#c.JSMN_HEADER" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_GET">
+<span class="target" id="thingset_8h_1a54730d1d6f32ff5f3b3bc501ae24f52c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_GET</span></span></span><a class="headerlink" href="#c.TS_GET" title="Permalink to this definition"></a><br /></dt>
+<dd><p>GET request </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_POST">
+<span class="target" id="thingset_8h_1a2577d216b29e3a19746e9a5f56ff175e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_POST</span></span></span><a class="headerlink" href="#c.TS_POST" title="Permalink to this definition"></a><br /></dt>
+<dd><p>POST request </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_DELETE">
+<span class="target" id="thingset_8h_1ac791d8f04b3476a25f335010e66ebb48"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_DELETE</span></span></span><a class="headerlink" href="#c.TS_DELETE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>DELETE request </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_FETCH">
+<span class="target" id="thingset_8h_1a93395cd70fffafebce4c4d13b76b8942"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_FETCH</span></span></span><a class="headerlink" href="#c.TS_FETCH" title="Permalink to this definition"></a><br /></dt>
+<dd><p>FETCH request </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_PATCH">
+<span class="target" id="thingset_8h_1abe611f00abe95af7b54ff378199d3928"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_PATCH</span></span></span><a class="headerlink" href="#c.TS_PATCH" title="Permalink to this definition"></a><br /></dt>
+<dd><p>PATCH request (actually iPATCH equivalent in CBOR) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATEMENT">
+<span class="target" id="thingset_8h_1a71a85f79db2463a0ea8b2a36e3520de4"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATEMENT</span></span></span><a class="headerlink" href="#c.TS_STATEMENT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>STATEMENT message </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_CREATED">
+<span class="target" id="thingset_8h_1afc5642b3882b8bfc839bd3ec8e31867f"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_CREATED</span></span></span><a class="headerlink" href="#c.TS_STATUS_CREATED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Success status 0x81: Created </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_DELETED">
+<span class="target" id="thingset_8h_1a5c86af5540f316ce486bf7d961051aaf"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_DELETED</span></span></span><a class="headerlink" href="#c.TS_STATUS_DELETED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Success status 0x82: Deleted </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_VALID">
+<span class="target" id="thingset_8h_1afb54b01eb21146b1cb4b2a1e2faca53e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_VALID</span></span></span><a class="headerlink" href="#c.TS_STATUS_VALID" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Success status 0x83: Valid </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_CHANGED">
+<span class="target" id="thingset_8h_1a2ed1f075e7ce2c61066748905caa9dbf"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_CHANGED</span></span></span><a class="headerlink" href="#c.TS_STATUS_CHANGED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Success status 0x84: Changed </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_CONTENT">
+<span class="target" id="thingset_8h_1abc53c2f29a09356298cae7a27a9bfe6c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_CONTENT</span></span></span><a class="headerlink" href="#c.TS_STATUS_CONTENT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Success status 0x85: Content </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_BAD_REQUEST">
+<span class="target" id="thingset_8h_1aa0c2c0104f1393ba0c6f4964a071cde2"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_BAD_REQUEST</span></span></span><a class="headerlink" href="#c.TS_STATUS_BAD_REQUEST" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA0: Bad Request </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_UNAUTHORIZED">
+<span class="target" id="thingset_8h_1a2d555f0535f2853c66ddc89a663685a7"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_UNAUTHORIZED</span></span></span><a class="headerlink" href="#c.TS_STATUS_UNAUTHORIZED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA1: Authentication required </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_FORBIDDEN">
+<span class="target" id="thingset_8h_1a9adc1c69b5f14e47306a354d56653862"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_FORBIDDEN</span></span></span><a class="headerlink" href="#c.TS_STATUS_FORBIDDEN" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA3: Forbidden to write read-only value </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_NOT_FOUND">
+<span class="target" id="thingset_8h_1a1c668a70951c731bdb209cb3d373b49e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_NOT_FOUND</span></span></span><a class="headerlink" href="#c.TS_STATUS_NOT_FOUND" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA4: Not found </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_METHOD_NOT_ALLOWED">
+<span class="target" id="thingset_8h_1a5827f19942ed8d1bfda3e90d64a69164"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_METHOD_NOT_ALLOWED</span></span></span><a class="headerlink" href="#c.TS_STATUS_METHOD_NOT_ALLOWED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA5: Method not allowed </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_REQUEST_INCOMPLETE">
+<span class="target" id="thingset_8h_1add97128e6033ddc938b0596cdf25efd9"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_REQUEST_INCOMPLETE</span></span></span><a class="headerlink" href="#c.TS_STATUS_REQUEST_INCOMPLETE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA8: Request incomplete </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_CONFLICT">
+<span class="target" id="thingset_8h_1a776a3ada32be8d663b2a3d7b7e1eb9c2"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_CONFLICT</span></span></span><a class="headerlink" href="#c.TS_STATUS_CONFLICT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xA9: Conflict </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_REQUEST_TOO_LARGE">
+<span class="target" id="thingset_8h_1a94d621ba970b18aba6f4b485de337481"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_REQUEST_TOO_LARGE</span></span></span><a class="headerlink" href="#c.TS_STATUS_REQUEST_TOO_LARGE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xAD: Request too large </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_UNSUPPORTED_FORMAT">
+<span class="target" id="thingset_8h_1ae0df7844f51cc7d467dbd40e9c0c382e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_UNSUPPORTED_FORMAT</span></span></span><a class="headerlink" href="#c.TS_STATUS_UNSUPPORTED_FORMAT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Client error 0xAF: Unsupported format </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_INTERNAL_SERVER_ERR">
+<span class="target" id="thingset_8h_1a913391f8fd08b677486a7bc959257419"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_INTERNAL_SERVER_ERR</span></span></span><a class="headerlink" href="#c.TS_STATUS_INTERNAL_SERVER_ERR" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Server error 0xC0: Internal server error </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_NOT_IMPLEMENTED">
+<span class="target" id="thingset_8h_1ae68255c1bcae7135b32cd12f51d92f8e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_NOT_IMPLEMENTED</span></span></span><a class="headerlink" href="#c.TS_STATUS_NOT_IMPLEMENTED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Server error 0xC1: Not implemented </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_STATUS_RESPONSE_TOO_LARGE">
+<span class="target" id="thingset_8h_1aa6dd9e5db8ee007e3c34c2b6251db131"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_STATUS_RESPONSE_TOO_LARGE</span></span></span><a class="headerlink" href="#c.TS_STATUS_RESPONSE_TOO_LARGE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>ThingSet error 0xE1: Response too large </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_ROOT">
+<span class="target" id="thingset_8h_1a355b87cfd56af41057160943caa851bb"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_ROOT</span></span></span><a class="headerlink" href="#c.TS_ID_ROOT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID for root element </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_TIME">
+<span class="target" id="thingset_8h_1a963aad604f7441bb580ec8e7e9c04229"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_TIME</span></span></span><a class="headerlink" href="#c.TS_ID_TIME" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID for timestamp (t_s) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_IDS">
+<span class="target" id="thingset_8h_1ade6cc66e5df4df0aaac23961810650ee"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_IDS</span></span></span><a class="headerlink" href="#c.TS_ID_IDS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID to determine IDs from paths (_ids) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_PATHS">
+<span class="target" id="thingset_8h_1a9fb995115a0f5d0917bb01b921adfaae"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_PATHS</span></span></span><a class="headerlink" href="#c.TS_ID_PATHS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID to determine paths from IDs (_paths) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_METADATAURL">
+<span class="target" id="thingset_8h_1a0376bcf96bac2fcdb89c5ad5520667be"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_METADATAURL</span></span></span><a class="headerlink" href="#c.TS_ID_METADATAURL" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID for Metadata URL (cMetadataURL) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ID_NODEID">
+<span class="target" id="thingset_8h_1a32dee07b7d27b5554f9381dbf4ca10ef"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ID_NODEID</span></span></span><a class="headerlink" href="#c.TS_ID_NODEID" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data Object ID for node ID (cNodeID) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_SOURCE_POS">
+<span class="target" id="thingset_8h_1aa7bf102eecdab193f5a44177ccc2ecce"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_SOURCE_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_SOURCE_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_SOURCE_MASK">
+<span class="target" id="thingset_8h_1adbd3f0fbb649b9b20094749b1d0a7071"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_SOURCE_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_SOURCE_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_SOURCE_SET">
+<span class="target" id="thingset_8h_1a4ad704dbe7e66361e3f0b0dc42ec9aec"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_SOURCE_SET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_SOURCE_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_SOURCE_GET">
+<span class="target" id="thingset_8h_1a719f32b83971a137dcec39ba6279cd1c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_SOURCE_GET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_SOURCE_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TARGET_POS">
+<span class="target" id="thingset_8h_1ac3587284a785bdedb83bb170ce2c99d5"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TARGET_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_TARGET_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TARGET_MASK">
+<span class="target" id="thingset_8h_1a7d31ff1cddeb9e2adff8fa741f1d5a60"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TARGET_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_TARGET_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TARGET_SET">
+<span class="target" id="thingset_8h_1a79a3572a2f4495bfd5e284d14aabbc07"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TARGET_SET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_TARGET_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TARGET_GET">
+<span class="target" id="thingset_8h_1a92508e50ce1e386a8fbe6d90f677c293"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TARGET_GET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_TARGET_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_ADDR_MAX">
+<span class="target" id="thingset_8h_1a15163fc22a8cd50285bfb58712efa6f3"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_ADDR_MAX</span></span></span><a class="headerlink" href="#c.TS_CAN_ADDR_MAX" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_ADDR_ANONYMOUS">
+<span class="target" id="thingset_8h_1a973abedd2ff5679c3ea3d95ca9b8a778"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_ADDR_ANONYMOUS</span></span></span><a class="headerlink" href="#c.TS_CAN_ADDR_ANONYMOUS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_ADDR_BROADCAST">
+<span class="target" id="thingset_8h_1a64c9e5f3c5627500706ac467b80c621e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_ADDR_BROADCAST</span></span></span><a class="headerlink" href="#c.TS_CAN_ADDR_BROADCAST" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_DATA_ID_POS">
+<span class="target" id="thingset_8h_1abb2f958d85410f88c7ce6b0c1a9dba5d"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_DATA_ID_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_DATA_ID_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_DATA_ID_MASK">
+<span class="target" id="thingset_8h_1a026c9daa620f460f0a5df22a9e2a88a8"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_DATA_ID_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_DATA_ID_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_DATA_ID_SET">
+<span class="target" id="thingset_8h_1ae13436591290632405e95a5a689b4132"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_DATA_ID_SET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_DATA_ID_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_DATA_ID_GET">
+<span class="target" id="thingset_8h_1ae6254dbde38099e1c315012a2a4213d3"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_DATA_ID_GET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_DATA_ID_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_BUS_ID_POS">
+<span class="target" id="thingset_8h_1aa4b96d33f78f1e345ddacc5580aa97f8"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_BUS_ID_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_BUS_ID_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_BUS_ID_MASK">
+<span class="target" id="thingset_8h_1aee0b8243a0290226ab3db0aa14211eb3"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_BUS_ID_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_BUS_ID_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_BUS_ID_SET">
+<span class="target" id="thingset_8h_1a8b8b82e165285db184265d4a163ed283"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_BUS_ID_SET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_BUS_ID_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_BUS_ID_GET">
+<span class="target" id="thingset_8h_1a1beb76ad5cd93da03ba6a60de63baa52"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_BUS_ID_GET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_BUS_ID_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_BUS_ID_DEFAULT">
+<span class="target" id="thingset_8h_1a432af815401a4a0fab588c0c1e61eeb6"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_BUS_ID_DEFAULT</span></span></span><a class="headerlink" href="#c.TS_CAN_BUS_ID_DEFAULT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_RAND_SET">
+<span class="target" id="thingset_8h_1aeddb534656a86eb3394c43ae5ff23fcd"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_RAND_SET</span></span></span><a class="headerlink" href="#c.TS_CAN_RAND_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_RAND_GET">
+<span class="target" id="thingset_8h_1ae60007acea4be97c5e3cdd4a0ff6e4b9"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_RAND_GET</span></span></span><a class="headerlink" href="#c.TS_CAN_RAND_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TYPE_POS">
+<span class="target" id="thingset_8h_1ac098f17eb25846c60b64e78cf5ab54ec"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TYPE_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_TYPE_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TYPE_MASK">
+<span class="target" id="thingset_8h_1a65a5cb085f74bc5f1f0f4c93aebf440d"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TYPE_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_TYPE_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TYPE_REQRESP">
+<span class="target" id="thingset_8h_1ae1069f036b027c3ce8a9c411c366e019"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TYPE_REQRESP</span></span></span><a class="headerlink" href="#c.TS_CAN_TYPE_REQRESP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TYPE_PUBSUB">
+<span class="target" id="thingset_8h_1aae8071466f43d409c1f664ed487b6dce"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TYPE_PUBSUB</span></span></span><a class="headerlink" href="#c.TS_CAN_TYPE_PUBSUB" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_TYPE_NETWORK">
+<span class="target" id="thingset_8h_1a80852abc07d3f1657dd13e559f3717c2"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_TYPE_NETWORK</span></span></span><a class="headerlink" href="#c.TS_CAN_TYPE_NETWORK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_POS">
+<span class="target" id="thingset_8h_1a04ae3a51c7563822624df07953e02c0d"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_POS</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_POS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_MASK">
+<span class="target" id="thingset_8h_1a2f33a8329cba4635fa4d1e8752132808"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_MASK</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_SET">
+<span class="target" id="thingset_8h_1a343a33268307fd565d599fb118dca6cc"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_SET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">prio</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_PRIO_SET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_GET">
+<span class="target" id="thingset_8h_1a87111d979a1c157a1c9ad14b0689e639"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_GET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_PRIO_GET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_CONTROL_EMERGENCY">
+<span class="target" id="thingset_8h_1a5bc368464522f144a56cf1f846f9c750"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_CONTROL_EMERGENCY</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_CONTROL_EMERGENCY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_CONTROL_HIGH">
+<span class="target" id="thingset_8h_1af607caa412872f869e73f9e1cd8d4b9a"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_CONTROL_HIGH</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_CONTROL_HIGH" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_CONTROL_LOW">
+<span class="target" id="thingset_8h_1aecbf64bbcf798f9db7288f38be471b77"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_CONTROL_LOW</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_CONTROL_LOW" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_NETWORK_MGMT">
+<span class="target" id="thingset_8h_1a082feb9eb442f5d92c174654826c5ecf"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_NETWORK_MGMT</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_NETWORK_MGMT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_PUBSUB_HIGH">
+<span class="target" id="thingset_8h_1ab88c0aafb7fb0bc93b8ddba72dfed7dc"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_PUBSUB_HIGH</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_PUBSUB_HIGH" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_REQRESP">
+<span class="target" id="thingset_8h_1a190ad14989d458df235825fd0d9cbd4c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_REQRESP</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_REQRESP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PRIO_PUBSUB_LOW">
+<span class="target" id="thingset_8h_1a59b0cf7e3248cac76b81e04cde71cc7a"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PRIO_PUBSUB_LOW</span></span></span><a class="headerlink" href="#c.TS_CAN_PRIO_PUBSUB_LOW" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_CONTROL">
+<span class="target" id="thingset_8h_1aa6d28307a8012dd1c2d8706bce698fe7"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_CONTROL</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_CONTROL" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_PUBSUB">
+<span class="target" id="thingset_8h_1a333d64c6a8f53f880815c2234558c549"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_PUBSUB</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_PUBSUB" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_CAN_REQRESP">
+<span class="target" id="thingset_8h_1aba7d425a4a169b469c05d2651c645d2f"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_CAN_REQRESP</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_CAN_REQRESP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.MAYBE_CONST">
+<span class="target" id="thingset_8h_1ae49bf1a83cfcbb653d77bdd0f25cdbe0"></span><span class="sig-name descname"><span class="n"><span class="pre">MAYBE_CONST</span></span></span><a class="headerlink" href="#c.MAYBE_CONST" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.ts_array_info">
+<span class="target" id="thingset_8h_1aa1f32600b21c836c39fc5d3b724234ab"></span><span class="sig-name descname"><span class="n"><span class="pre">ts_array_info</span></span></span><a class="headerlink" href="#c.ts_array_info" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_BOOL">
+<span class="target" id="thingset_8h_1ae4a17dc15cb4122b509aed5408ad617e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_BOOL</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">bool_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_BOOL" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for bool variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_UINT64">
+<span class="target" id="thingset_8h_1a4f7fc38511965a97e11788403347f59b"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_UINT64</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">uint64_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_UINT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint64_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_INT64">
+<span class="target" id="thingset_8h_1a54c42383aca7f0681503013939f282b0"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_INT64</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">int64_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_INT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int64_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_UINT32">
+<span class="target" id="thingset_8h_1ac93fce90afbc9eb3970b56715a3ec1d8"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_UINT32</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">uint32_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_UINT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint32_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_INT32">
+<span class="target" id="thingset_8h_1a9306eb5ec6e98e713f45e17a5d984934"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_INT32</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">int32_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_INT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int32_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_UINT16">
+<span class="target" id="thingset_8h_1ac4283835ce954aa273bd03d5c9858bd2"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_UINT16</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">uint16_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_UINT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint16_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_INT16">
+<span class="target" id="thingset_8h_1a99e77c18cd9a609dbdf20702093845a2"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_INT16</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">int16_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_INT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int16_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_UINT8">
+<span class="target" id="thingset_8h_1a8052ee7fc646aeb47a2746c5aab5ce42"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_UINT8</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">uint8_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_UINT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint8_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_INT8">
+<span class="target" id="thingset_8h_1a2172e326637707f9fba584daed30d192"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_INT8</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">int8_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_INT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int8_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_FLOAT">
+<span class="target" id="thingset_8h_1aeb1814a345b35ee4411bf84ffd797fb1"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_FLOAT</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">float_ptr</span></span>, <span class="n"><span class="pre">digits</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_FLOAT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for float variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_DECFRAC">
+<span class="target" id="thingset_8h_1a14e0eb2230cf23a4a4f922ef9baa71b3"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_DECFRAC</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">mantissa_ptr</span></span>, <span class="n"><span class="pre">exponent</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_DECFRAC" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for decimal fraction variable. The mantissa is internally stored as int32_t. The value is converted into a float (JSON) or decimal fraction type (CBOR) for the protocol, based on the specified (fixed) exponent. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_STRING">
+<span class="target" id="thingset_8h_1a8f3ed6fd1caa7d01cf5268855bf3ab26"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_STRING</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">char_ptr</span></span>, <span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_STRING" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for a string buffer. The string must be null-terminated and buf_size contains the maximum length of the buffer including the null-termination character. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_BYTES">
+<span class="target" id="thingset_8h_1a3caf7592eb9043636aa5f8263bd3b15e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_BYTES</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">bytes_buffer_ptr</span></span>, <span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_BYTES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for a byte buffer containing arbitrary binary data. In contrast to string buffers, no null-termination is used. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_FN_VOID">
+<span class="target" id="thingset_8h_1a7590ac004aad5de10d6c17fdc01b2eda"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_FN_VOID</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">void_function_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_FN_VOID" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create an executable data object (function) with void return value. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_FN_INT32">
+<span class="target" id="thingset_8h_1aaa2b7d165ccbdb1b692d20eb6046c482"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_FN_INT32</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">int32_function_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_FN_INT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create an executable data object (function) with int32_t return value. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ITEM_ARRAY">
+<span class="target" id="thingset_8h_1a542f4e0a957e7ad56084514922a09eaa"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ITEM_ARRAY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">array_info_ptr</span></span>, <span class="n"><span class="pre">digits</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_ITEM_ARRAY" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create a data object pointing to a struct <a class="reference internal" href="#structts__array"><span class="std std-ref">ts_array</span></a>. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORDS">
+<span class="target" id="thingset_8h_1a935da4209612b4325a30e11ab753badd"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORDS</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">records_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span>, <span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORDS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create a data object pointing to a struct <a class="reference internal" href="#structts__array"><span class="std std-ref">ts_array</span></a>. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_SUBSET">
+<span class="target" id="thingset_8h_1a3dbe036c503d3d5fb55738b8a7190280"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_SUBSET</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">subset</span></span>, <span class="n"><span class="pre">parent_id</span></span>, <span class="n"><span class="pre">access</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_SUBSET" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create a subset data object for the provided subset flag. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_GROUP">
+<span class="target" id="thingset_8h_1a3681283cc64613ec9d62d2116874102b"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_GROUP</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">void_function_cb_ptr</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_GROUP" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create a group for hierarchical structuring of the data. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_BOOL">
+<span class="target" id="thingset_8h_1a5a2bd8b1ab8461794e739206dcd98d78"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_BOOL</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_BOOL" title="Permalink to this definition"></a><br /></dt>
+<dd><p>struct related macros Create data item for bool variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_UINT64">
+<span class="target" id="thingset_8h_1afb1d789e30e59b0835379cefa8e8ed74"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_UINT64</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_UINT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint64_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_INT64">
+<span class="target" id="thingset_8h_1a9d0b9664c1ff291af930450231e237b7"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_INT64</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_INT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int64_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_UINT32">
+<span class="target" id="thingset_8h_1a8dd8cef0cfce82ff28c9fa56e99b26ee"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_UINT32</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_UINT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint32_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_INT32">
+<span class="target" id="thingset_8h_1ad25c012a2e36c9f4656052d131a5e53d"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_INT32</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_INT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int32_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_UINT16">
+<span class="target" id="thingset_8h_1a9a8f86ca069650772031799df11c4f60"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_UINT16</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_UINT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint16_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_INT16">
+<span class="target" id="thingset_8h_1ae47b20bdff891bd9ebe00cd9afc3289e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_INT16</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_INT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int16_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_UINT8">
+<span class="target" id="thingset_8h_1a10e6e84e7cad1aba2ffc9042e14e58fa"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_UINT8</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_UINT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for uint8_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_INT8">
+<span class="target" id="thingset_8h_1a864a0470aa7acd450ae0261f5af8ce87"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_INT8</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_INT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for int8_t variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_FLOAT">
+<span class="target" id="thingset_8h_1aa61d8471cae7f446e88d7052456acaea"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_FLOAT</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">digits</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_FLOAT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for float variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_DECFRAC">
+<span class="target" id="thingset_8h_1ab9ead6cd758c0be400317afd6d333893"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_DECFRAC</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">exponent</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_DECFRAC" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for decimal fraction variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_STRING">
+<span class="target" id="thingset_8h_1a953433fc12d5c4e916c8a23f7b3a86db"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_STRING</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_STRING" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for string variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RECORD_ITEM_BYTES">
+<span class="target" id="thingset_8h_1a32c4c0550be22ad08c7d8afbd951748b"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RECORD_ITEM_BYTES</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">id</span></span>, <span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">struct_type</span></span>, <span class="n"><span class="pre">struct_member</span></span>, <span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">parent_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TS_RECORD_ITEM_BYTES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Create data item for bytes variable. </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_NO_CALLBACK">
+<span class="target" id="thingset_8h_1a790a28fc7cd0c2d2b8b0e31bdca492fc"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_NO_CALLBACK</span></span></span><a class="headerlink" href="#c.TS_NO_CALLBACK" title="Permalink to this definition"></a><br /></dt>
+<dd><p>No callback assigned to group </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_USR_R">
+<span class="target" id="thingset_8h_1add13a0813ed67f7e93fb4db312c2f74e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_USR_R</span></span></span><a class="headerlink" href="#c.TS_USR_R" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read-only access for normal user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_EXP_R">
+<span class="target" id="thingset_8h_1af62f7d60052d258fd3506f5fc8e74740"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_EXP_R</span></span></span><a class="headerlink" href="#c.TS_EXP_R" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read-only access for expert user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_MKR_R">
+<span class="target" id="thingset_8h_1a41df0fd13a8ca1befcf129b6f334730c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_MKR_R</span></span></span><a class="headerlink" href="#c.TS_MKR_R" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read-only access for maker </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ANY_R">
+<span class="target" id="thingset_8h_1a9bde1f197039b1ac271d5cccf778034e"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ANY_R</span></span></span><a class="headerlink" href="#c.TS_ANY_R" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read-only access for any user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_USR_W">
+<span class="target" id="thingset_8h_1aefee430dbedd159917ccdf9d329b9158"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_USR_W</span></span></span><a class="headerlink" href="#c.TS_USR_W" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write-only access for normal user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_EXP_W">
+<span class="target" id="thingset_8h_1a18914d1b9397facc804ea9b770ea429c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_EXP_W</span></span></span><a class="headerlink" href="#c.TS_EXP_W" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write-only access for expert user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_MKR_W">
+<span class="target" id="thingset_8h_1a13676dae64facb865b9e2b7f20de8aae"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_MKR_W</span></span></span><a class="headerlink" href="#c.TS_MKR_W" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write-only access for maker </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ANY_W">
+<span class="target" id="thingset_8h_1ac7a9729517911748fa5adaa771c014fa"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ANY_W</span></span></span><a class="headerlink" href="#c.TS_ANY_W" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write-only access for any user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_USR_RW">
+<span class="target" id="thingset_8h_1abc02c036486967330abc5b6266f41998"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_USR_RW</span></span></span><a class="headerlink" href="#c.TS_USR_RW" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read/write access for normal user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_EXP_RW">
+<span class="target" id="thingset_8h_1a7f9b3a0de9d1e011593d6fefc5fb28ff"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_EXP_RW</span></span></span><a class="headerlink" href="#c.TS_EXP_RW" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read/write access for expert user </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_MKR_RW">
+<span class="target" id="thingset_8h_1a698a1b944d9adc88de33c94a19d140a6"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_MKR_RW</span></span></span><a class="headerlink" href="#c.TS_MKR_RW" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read/write access for maker </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_ANY_RW">
+<span class="target" id="thingset_8h_1ab3f6f43e7783f90a73601cfe733e94e9"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_ANY_RW</span></span></span><a class="headerlink" href="#c.TS_ANY_RW" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read/write access for any user </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
+<dl class="c type">
+<dt class="sig sig-object c" id="c.ts_object_id_t">
+<span class="target" id="thingset_8h_1a0c893f5aeb3206ab91009c38f7b72b75"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_object_id_t</span></span></span><a class="headerlink" href="#c.ts_object_id_t" title="Permalink to this definition"></a><br /></dt>
+<dd><p>ThingSet data object ID (16-bit) </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-enums">Enums</p>
+<dl class="c enum">
+<dt class="sig sig-object c" id="c.TsType">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4eda"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TsType</span></span></span><a class="headerlink" href="#c.TsType" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Internal C data types (used to cast void* pointers) </p>
+<p><em>Values:</em></p>
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_BOOL">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa950a648b9f7dd0cec329619ddc63871f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_BOOL</span></span></span><a class="headerlink" href="#c.TsType.TS_T_BOOL" title="Permalink to this definition"></a><br /></dt>
+<dd><p>bool </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_UINT64">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaad8463cf1bbbc06466957fab379f1e3da"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_UINT64</span></span></span><a class="headerlink" href="#c.TsType.TS_T_UINT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>uint64_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_INT64">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaae8793480ffe73189c2f870de84d3760c"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_INT64</span></span></span><a class="headerlink" href="#c.TsType.TS_T_INT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>int64_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_UINT32">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaabfb00175f7de57c3581d5303841c4c78"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_UINT32</span></span></span><a class="headerlink" href="#c.TsType.TS_T_UINT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>uint32_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_INT32">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa33b9f502629deaea19e0a32ec65d0e32"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_INT32</span></span></span><a class="headerlink" href="#c.TsType.TS_T_INT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>int32_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_UINT16">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa639ca2f7d3d8ffe11a46208772e99eb7"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_UINT16</span></span></span><a class="headerlink" href="#c.TsType.TS_T_UINT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>uint16_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_INT16">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaac892638f06dae6a1845d033e1ad13f88"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_INT16</span></span></span><a class="headerlink" href="#c.TsType.TS_T_INT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>int16_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_UINT8">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaadc748c41263da4d3a58399e26643bb98"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_UINT8</span></span></span><a class="headerlink" href="#c.TsType.TS_T_UINT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>uint8_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_INT8">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa2cc9debb4af376f4b8b1848277e8ca06"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_INT8</span></span></span><a class="headerlink" href="#c.TsType.TS_T_INT8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>int8_t </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_FLOAT32">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaab76b1893d099e65975bf4f61e0c9120c"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_FLOAT32</span></span></span><a class="headerlink" href="#c.TsType.TS_T_FLOAT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>float </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_STRING">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa4cfcafccd75062559c41fc842f1a59f9"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_STRING</span></span></span><a class="headerlink" href="#c.TsType.TS_T_STRING" title="Permalink to this definition"></a><br /></dt>
+<dd><p>String buffer (UTF-8 text) </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_BYTES">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa86eb76ac7486c50a9d40dd13d7ce6d58"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_BYTES</span></span></span><a class="headerlink" href="#c.TsType.TS_T_BYTES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Byte buffer (binary data) </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_ARRAY">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa1fe24db702582f3be19d46653416669b"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_ARRAY</span></span></span><a class="headerlink" href="#c.TsType.TS_T_ARRAY" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Array </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_RECORDS">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa5d33a2d7e844b58e0f1eb43f392d7980"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_RECORDS</span></span></span><a class="headerlink" href="#c.TsType.TS_T_RECORDS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Records (array of arbitrary struct object) </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_DECFRAC">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa6043896e2463106abc265fd2e4265feb"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_DECFRAC</span></span></span><a class="headerlink" href="#c.TsType.TS_T_DECFRAC" title="Permalink to this definition"></a><br /></dt>
+<dd><p>CBOR decimal fraction </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_GROUP">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaaec4ff0005d1bd572de748df991fd10fe"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_GROUP</span></span></span><a class="headerlink" href="#c.TsType.TS_T_GROUP" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Internal object to describe data hierarchy </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_SUBSET">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa4dc66f724d930ea60bb731e4e589646a"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_SUBSET</span></span></span><a class="headerlink" href="#c.TsType.TS_T_SUBSET" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Subset of data items </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_FN_VOID">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaae324189a391326a8caa9183a86728fe5"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_FN_VOID</span></span></span><a class="headerlink" href="#c.TsType.TS_T_FN_VOID" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Function with void return value </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.TsType.TS_T_FN_INT32">
+<span class="target" id="thingset_8h_1a1a7f6ca1462293fe053b5ae74a6c4edaa3f77148376e43456e984af0e20f6996c"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TS_T_FN_INT32</span></span></span><a class="headerlink" href="#c.TsType.TS_T_FN_INT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Function with int32_t return value </p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_init">
+<span class="target" id="thingset_8h_1a9d2a4e0dba0e88d2d46b37732e6a651d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_init</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">num</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_init" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Initialize a ThingSet context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>data</strong> – Pointer to array of ThingSetDataObject type containing the entire object database </p></li>
+<li><p><strong>num</strong> – Number of elements in that array </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_process">
+<span class="target" id="thingset_8h_1aa790e13ac6c7e94faeb51505c796b13c"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_process</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">request</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">request_len</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">response</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">response_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_process" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Process ThingSet request.</p>
+<p>This function also detects if JSON or CBOR format is used</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>request</strong> – Pointer to the ThingSet request buffer </p></li>
+<li><p><strong>request_len</strong> – Length of the data in the request buffer </p></li>
+<li><p><strong>response</strong> – Pointer to the buffer where the ThingSet response should be stored </p></li>
+<li><p><strong>response_size</strong> – Size of the response buffer, i.e. maximum allowed length of the response</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the response written to the buffer or 0 in case of error or if no response message has been generated (e.g. because a statement was processed) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_dump_json">
+<span class="target" id="thingset_8h_1a8f6017cb89e0697e42acb37bb1e293e2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_dump_json</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">obj_id</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">level</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_dump_json" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Print all data objects as a structured JSON text to stdout.</p>
+<p>WARNING: This is a recursive function and might cause stack overflows if run in constrained devices with large data object tree. Use with care and for testing only!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>obj_id</strong> – Root object ID where to start with printing </p></li>
+<li><p><strong>level</strong> – Indentation level (=depth inside the data object tree) </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_set_authentication">
+<span class="target" id="thingset_8h_1ac2d7cb00affe1862651c2c80d3f05afb"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_set_authentication</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">flags</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_set_authentication" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Sets current authentication level.</p>
+<p>The authentication flags must match with access flags specified in ThingSetDataObject to allow read/write access to a data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>flags</strong> – Flags to define authentication level (1 = access allowed) </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_set_update_callback">
+<span class="target" id="thingset_8h_1ab27bd4f653b2890324a455e1e5655e57"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_set_update_callback</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">update_cb</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">)</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_set_update_callback" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Configures a callback for notification if data belonging to specified subset(s) was updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>subsets</strong> – Flags to select which subset(s) of data items should be considered </p></li>
+<li><p><strong>update_cb</strong> – Callback to be called after an update. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_export">
+<span class="target" id="thingset_8h_1a599ab409b909dd4b103200adc7c48675"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_export</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_export" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Retrieve data in JSON format for given subset(s).</p>
+<p>This function does not return a complete ThingSet message, but only the payload data as a name/value map. It can be used e.g. to store data in the EEPROM or other non-volatile memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the data should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the buffer, i.e. maximum allowed length of the data </p></li>
+<li><p><strong>subsets</strong> – Flags to select which subset(s) of data items should be exported</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the data written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_statement">
+<span class="target" id="thingset_8h_1a12208344343878926dc19eb870679e3e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_statement</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_statement" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in JSON format based on pointer to group or subset.</p>
+<p>This is the fastest method to generate a statement as it does not require to search through the entire data objects array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>object</strong> – Group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_statement_by_path">
+<span class="target" id="thingset_8h_1a2134e6fc369843e5c363e357f5c45a74"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_statement_by_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_statement_by_path" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in JSON format based on path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>path</strong> – Path to group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_statement_by_id">
+<span class="target" id="thingset_8h_1a87994acaa81def8a09ef1c9071033e51"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_statement_by_id</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_statement_by_id" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in JSON format based on data object ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>id</strong> – ID of group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_statement_record">
+<span class="target" id="thingset_8h_1add494ae75d7478a29fe9592fe0b9c766"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_statement_record</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">record_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_statement_record" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in JSON format based on pointer to group or subset.</p>
+<p>This is the fastest method to generate a statement as it does not require to search through the entire data objects array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>object</strong> – Records object with the data to be published </p></li>
+<li><p><strong>record_index</strong> – Element number extracted from path (only used for records).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_export">
+<span class="target" id="thingset_8h_1aa4d9f12241123762c3c0376a6b3eec2d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_export</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_export" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Retrieve data in CBOR format for given subset(s).</p>
+<p>This function does not return a complete ThingSet message, but only the payload data as an ID/value map. It can be used e.g. to store data in the EEPROM or other non-volatile memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the data should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the buffer, i.e. maximum allowed length of the data </p></li>
+<li><p><strong>subsets</strong> – Flags to select which subset(s) of data items should be exported</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the data written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_statement">
+<span class="target" id="thingset_8h_1ac5dced78f73e4f28c18d308e41e552d0"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_statement</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_statement" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in CBOR format based on pointer to group or subset.</p>
+<p>This is the fastest method to generate a statement as it avoids searching through the entire data objects array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>object</strong> – Group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_statement_by_path">
+<span class="target" id="thingset_8h_1a9974a4b5761ecddc089e9273415311c5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_statement_by_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_statement_by_path" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in CBOR format based on path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>path</strong> – Path to group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_statement_by_id">
+<span class="target" id="thingset_8h_1a481a5f055ab12bd385469a7ba71cdf59"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_statement_by_id</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_statement_by_id" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Generate statement message in CBOR format based on data object ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the publication message should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the message buffer, i.e. maximum allowed length of the message </p></li>
+<li><p><strong>id</strong> – ID of group or subset object specifying the items to be published</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message written to the buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_pub_can">
+<span class="target" id="thingset_8h_1a8bc64c8ca627445dea3d43a8b299522f"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_pub_can</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">start_pos</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subset</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">can_dev_id</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">msg_id</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">msg_data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_pub_can" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Encode a publication message in CAN message format for supplied data object.</p>
+<p>The data may only be 8 bytes long. If the actual length of a object exceeds the available length, the object is silently ignored and the function continues with the next one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>start_pos</strong> – Position in data_objects array to start searching This value is updated with the next object found to allow iterating over all objects for this channel. It should be set to 0 to start from the beginning. </p></li>
+<li><p><strong>subset</strong> – Flag to select which subset of data items should be published </p></li>
+<li><p><strong>can_dev_id</strong> – Device ID on the CAN bus </p></li>
+<li><p><strong>msg_id</strong> – reference to can message id storage </p></li>
+<li><p><strong>msg_data</strong> – reference to the buffer where the publication message should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual length of the message_data or -1 if not encodable / in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_import">
+<span class="target" id="thingset_8h_1a6d968bc96521be9f85f180b76fb0c839"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_import</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">auth_flags</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_import" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Import data in CBOR format into data objects.</p>
+<p>This function can be used to initialize data objects from previously exported data (using ts_bin_export function) and stored in the EEPROM or other non-volatile memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>data</strong> – Buffer containing ID/value map that should be written to the data objects </p></li>
+<li><p><strong>len</strong> – Length of the data in the buffer </p></li>
+<li><p><strong>auth_flags</strong> – Authentication flags to be used in this function (to override _auth_flags) </p></li>
+<li><p><strong>subsets</strong> – Flags to select which subset(s) of data items should be imported</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ThingSet status code </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_import_record">
+<span class="target" id="thingset_8h_1a73671d37a2671db7144dd060cad4c2ab"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_import_record</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">auth_flags</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">record_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_import_record" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Import data in CBOR format as a record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>data</strong> – Buffer containing ID/value map that should be written to the record </p></li>
+<li><p><strong>len</strong> – Length of the data in the buffer </p></li>
+<li><p><strong>auth_flags</strong> – Authentication flags to be used in this function (to override _auth_flags) </p></li>
+<li><p><strong>subsets</strong> – Flags to select which subset(s) of data items should be imported </p></li>
+<li><p><strong>object</strong> – Records object with the data to be published </p></li>
+<li><p><strong>record_index</strong> – Index of the record to which the data should be written.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ThingSet status code </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_get_object_by_id">
+<span class="target" id="thingset_8h_1a078816b1a6b7131a1a3b1df1b51ec72b"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ts_get_object_by_id</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_get_object_by_id" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Get data object by ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>id</strong> – Data object ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pointer to data object or NULL if object is not found </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_get_object_by_name">
+<span class="target" id="thingset_8h_1ad539cabf7351d000b4b251d0ac1655f0"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ts_get_object_by_name</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">name</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n"><span class="pre">parent</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_get_object_by_name" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Get data object by name.</p>
+<p>As the names are not necessarily unique in the entire data tree, the parent is needed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>name</strong> – Data object name </p></li>
+<li><p><strong>len</strong> – Length of the object name </p></li>
+<li><p><strong>parent</strong> – Data object ID of the parent or -1 for global search</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pointer to data object or NULL if object is not found </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_get_object_by_path">
+<span class="target" id="thingset_8h_1a08d6ec4f276a874ab11319716a187596"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ts_get_object_by_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_get_object_by_path" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Get data object by path.</p>
+<p>Get the endpoint object of a provided path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>path</strong> – Path with multiple object names separated by forward slash. </p></li>
+<li><p><strong>len</strong> – Length of the entire path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pointer to data object or NULL if object is not found </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.ts_bytes_buffer">
+<span class="target" id="structts__bytes__buffer"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bytes_buffer</span></span></span><a class="headerlink" href="#c.ts_bytes_buffer" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;thingset.h&gt;</em></div>
+<p>Data structure to specify a binary data buffer </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_bytes_buffer.bytes">
+<span class="target" id="structts__bytes__buffer_1a2af481d7561328ac8751bb295d0216d5"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">bytes</span></span></span><a class="headerlink" href="#c.ts_bytes_buffer.bytes" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to the buffer </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_bytes_buffer.num_bytes">
+<span class="target" id="structts__bytes__buffer_1a58f9bd30f9069f54ca5825f2db93fd92"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_bytes</span></span></span><a class="headerlink" href="#c.ts_bytes_buffer.num_bytes" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Actual number of bytes in the buffer </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.ts_array">
+<span class="target" id="structts__array"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_array</span></span></span><a class="headerlink" href="#c.ts_array" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;thingset.h&gt;</em></div>
+<p>Data structure to specify an array data object </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_array.elements">
+<span class="target" id="structts__array_1a9a27028bc4b1665691b5f28f818e9682"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">elements</span></span></span><a class="headerlink" href="#c.ts_array.elements" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to the first element of the array </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_array.max_elements">
+<span class="target" id="structts__array_1a2646b97f66349837e8097ae9b7d2f0f5"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">max_elements</span></span></span><a class="headerlink" href="#c.ts_array.max_elements" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Maximum number of elements in the array </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_array.num_elements">
+<span class="target" id="structts__array_1a10c8f0d836296e3af2bf979e16e97044"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_elements</span></span></span><a class="headerlink" href="#c.ts_array.num_elements" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Actual number of elements in the array </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_array.type">
+<span class="target" id="structts__array_1a21eec9561f68e732b1e9313e8f55ede8"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type</span></span></span><a class="headerlink" href="#c.ts_array.type" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Type of the array elements </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_array.type_size">
+<span class="target" id="structts__array_1a08c09721d49709239d92c8d36e89d734"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type_size</span></span></span><a class="headerlink" href="#c.ts_array.type_size" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Size of the array element type in bytes </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.ts_records">
+<span class="target" id="structts__records"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_records</span></span></span><a class="headerlink" href="#c.ts_records" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;thingset.h&gt;</em></div>
+<p>Data structure to specify a record data object for an arbitrary struct </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_records.data">
+<span class="target" id="structts__records_1a6e40ccb1ff3643358b4b54af35d2d740"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.ts_records.data" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to the first record </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_records.record_size">
+<span class="target" id="structts__records_1aed5c80af6d8c11184c8438ff4cbf6774"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">record_size</span></span></span><a class="headerlink" href="#c.ts_records.record_size" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Size of one record in bytes </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_records.max_records">
+<span class="target" id="structts__records_1abd1353188ec234656e4e916aad6df4c4"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">max_records</span></span></span><a class="headerlink" href="#c.ts_records.max_records" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Maximum number of records in the array </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_records.num_records">
+<span class="target" id="structts__records_1a97589a72a432f3b973899c2f31b55093"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_records</span></span></span><a class="headerlink" href="#c.ts_records.num_records" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Actual number of records in the array </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.ts_data_object">
+<span class="target" id="structts__data__object"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_data_object</span></span></span><a class="headerlink" href="#c.ts_data_object" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;thingset.h&gt;</em></div>
+<p>ThingSet data object struct. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.id">
+<span class="target" id="structts__data__object_1a1501c2017c5ae004dd894fd0f161073f"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">id</span></span></span><a class="headerlink" href="#c.ts_data_object.id" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data object ID </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.parent">
+<span class="target" id="structts__data__object_1afbbd1ab86d24788fb21383975a0be1d5"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_object_id_t" title="ts_object_id_t"><span class="n"><span class="pre">ts_object_id_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">parent</span></span></span><a class="headerlink" href="#c.ts_data_object.parent" title="Permalink to this definition"></a><br /></dt>
+<dd><p>ID of parent object </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.name">
+<span class="target" id="structts__data__object_1a6f7b34062d4ee4ebeadc45a97b633c7b"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#c.ts_data_object.name" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Data object name </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.data">
+<span class="target" id="structts__data__object_1a3f15b454d7fdd7305f22d408fbc05bf8"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.ts_data_object.data" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to the variable containing the data. The variable type must match the type as specified.</p>
+<p>For record items, the offset of this item inside the struct is stored (in bytes). </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.type">
+<span class="target" id="structts__data__object_1ac4dfb66460f67a58c9445d083a08b174"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type</span></span></span><a class="headerlink" href="#c.ts_data_object.type" title="Permalink to this definition"></a><br /></dt>
+<dd><p>One of TS_TYPE_INT32, _FLOAT, … </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.detail">
+<span class="target" id="structts__data__object_1a7f8527e9f41edac7fc7281a341283edf"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">detail</span></span></span><a class="headerlink" href="#c.ts_data_object.detail" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Variable storing different detail information depending on the data type</p>
+<p><ul class="simple">
+<li><p>FLOAT32: Decimal digits (precision) to use during serialization to JSON.</p></li>
+<li><p>DECFRAC: Exponent (10^exponent = factor to convert to internal unit). Example: If a voltage measurement is internally stored as an integer in mV, use exponent -3 to convert to the SI base unit V as exposed via ThingSet.</p></li>
+<li><p>STRING or BYTES: Size of the internal buffer in bytes. </p></li>
+</ul>
+</p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_data_object.access">
+<span class="target" id="structts__data__object_1afb1644caaffbde7e9d953875cc779787"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">access</span></span></span><a class="headerlink" href="#c.ts_data_object.access" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Flags to define read/write access </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c">
+<span class="target" id="structts__data__object_1a8439e835331915adf0fb04ee16ba9ea8"></span><span class="sig-name descname"><span class="pre">MAYBE_CONST</span> <span class="pre">uint32_t</span> <span class="pre">subsets</span></span></dt>
+<dd><p>Flags to assign data item to different data item subsets (e.g. for publication messages) </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.ts_context">
+<span class="target" id="structts__context"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_context</span></span></span><a class="headerlink" href="#c.ts_context" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;thingset.h&gt;</em></div>
+<p>ThingSet context.</p>
+<p>Stores and handles all data objects exposed to different communication interfaces. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.data_objects">
+<span class="target" id="structts__context_1a0d9b4551dced6edda54330d4fb5976c9"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data_objects</span></span></span><a class="headerlink" href="#c.ts_context.data_objects" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Array of objects database provided during initialization </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.num_objects">
+<span class="target" id="structts__context_1ab171223c5b36a8e2da1e1b245710757d"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_objects</span></span></span><a class="headerlink" href="#c.ts_context.num_objects" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Number of objects in the data_objects array </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.req">
+<span class="target" id="structts__context_1ac743c110883ba81ca31d703ff4826e45"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">req</span></span></span><a class="headerlink" href="#c.ts_context.req" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to request buffer (provided in process function) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.req_len">
+<span class="target" id="structts__context_1a00da7b4f53d1963419c1a593775c81d8"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">req_len</span></span></span><a class="headerlink" href="#c.ts_context.req_len" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Length of the request </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.resp">
+<span class="target" id="structts__context_1a8928234b361ec5a163491a97ab4d7a49"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">resp</span></span></span><a class="headerlink" href="#c.ts_context.resp" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to response buffer (provided in process function) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.resp_size">
+<span class="target" id="structts__context_1ae470e9b5e61b2124f0472e0405d46141"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">resp_size</span></span></span><a class="headerlink" href="#c.ts_context.resp_size" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Size of response buffer (i.e. maximum length) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.json_str">
+<span class="target" id="structts__context_1a64718e8819372298b0db566883a22b6c"></span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">json_str</span></span></span><a class="headerlink" href="#c.ts_context.json_str" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Pointer to the start of JSON payload in the request </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.tokens">
+<span class="target" id="structts__context_1a6ccd25ec29c2670ccf9a47aa84d3ffc4"></span><span class="n"><span class="pre">jsmntok_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tokens</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">CONFIG_THINGSET_NUM_JSON_TOKENS</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#c.ts_context.tokens" title="Permalink to this definition"></a><br /></dt>
+<dd><p>JSON tokes in json_str parsed by JSMN </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.tok_count">
+<span class="target" id="structts__context_1a77f1a53417f21c5af2bdbe664e540f13"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tok_count</span></span></span><a class="headerlink" href="#c.ts_context.tok_count" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Number of JSON tokens parsed by JSMN </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context._auth_flags">
+<span class="target" id="structts__context_1aec6cc0391bebdec6043377c01cd55258"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_auth_flags</span></span></span><a class="headerlink" href="#c.ts_context._auth_flags" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Stores current authentication status (authentication as “normal” user as default) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context._update_subsets">
+<span class="target" id="structts__context_1a289d4300d5a41266593a5b7439563b99"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_update_subsets</span></span></span><a class="headerlink" href="#c.ts_context._update_subsets" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Stores current authentication status (authentication as “normal” user as default) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.ts_context.update_cb">
+<span class="target" id="structts__context_1a265eaf7e7ce26e74e82e1818df0b3cf1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">update_cb</span></span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#c.ts_context.update_cb" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback to be called from patch function if a value belonging to _update_subsets was changed </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dev/unit_tests.html" class="btn btn-neutral float-left" title="Unit Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="internal.html" class="btn btn-neutral float-right" title="Internal" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 The ThingSet Project Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

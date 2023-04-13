@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internal &mdash; ThingSet C/C++ Library  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Library API" href="library.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #52595d" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ThingSet C/C++ Library
+              <img src="../../_static/thingset_logo_white.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v0.5
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#text-mode">Text mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html#binary-mode">Binary mode</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/usage.html">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/usage.html#example-programs">Example Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/usage.html#basic-c-code-snippet">Basic C++ code snippet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/unit_tests.html">Unit Tests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/unit_tests.html#platformio">PlatformIO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/unit_tests.html#zephyr-rtos">Zephyr RTOS</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Internal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#json-jsmn">JSON (JSMN)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cbor">CBOR</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #52595d" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ThingSet C/C++ Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Internal</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ThingSet/thingset-device-library/blob/main/docs/src/api/internal.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="internal">
+<h1>Internal<a class="headerlink" href="#internal" title="Permalink to this heading"></a></h1>
+<p>Below functions are only used internally by the library.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RET_IDS">
+<span class="target" id="thingset__priv_8h_1a0c5edba69dc6dc33cb8539a896da608f"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RET_IDS</span></span></span><a class="headerlink" href="#c.TS_RET_IDS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Internal return type flags for payload data Return type flag: IDs </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RET_NAMES">
+<span class="target" id="thingset__priv_8h_1aa57555316ede11d905338a35cda8f438"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RET_NAMES</span></span></span><a class="headerlink" href="#c.TS_RET_NAMES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Return type flag: Names </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RET_VALUES">
+<span class="target" id="thingset__priv_8h_1a2f5fa7254ad11c8cf0aeef473e8399e3"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RET_VALUES</span></span></span><a class="headerlink" href="#c.TS_RET_VALUES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Return type flag: Values </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RET_PATHS">
+<span class="target" id="thingset__priv_8h_1ab6002676a2f638e451d555a5a4d8a97c"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RET_PATHS</span></span></span><a class="headerlink" href="#c.TS_RET_PATHS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Return type flag: Paths </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.TS_RET_DISCOVERY">
+<span class="target" id="thingset__priv_8h_1a67bb516bd4829f4ee8dc5b3d410a2429"></span><span class="sig-name descname"><span class="n"><span class="pre">TS_RET_DISCOVERY</span></span></span><a class="headerlink" href="#c.TS_RET_DISCOVERY" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Return type flag: Discovery </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.RECORD_INDEX_NONE">
+<span class="target" id="thingset__priv_8h_1a20df0fa00fa9adceb05f7144531d963a"></span><span class="sig-name descname"><span class="n"><span class="pre">RECORD_INDEX_NONE</span></span></span><a class="headerlink" href="#c.RECORD_INDEX_NONE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Value to use for record index if no index was specified </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_process">
+<span class="target" id="thingset__priv_8h_1aacaf3a2421fa03552f2263a0aa823080"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_process</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_process" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Prepares JSMN parser, performs initial check of payload data and calls get/fetch/patch functions. </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_process">
+<span class="target" id="thingset__priv_8h_1a327c152ae4692a1dd130f6d3034a11b7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_process</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_process" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Performs initial check of payload data and calls get/fetch/patch functions. </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_get">
+<span class="target" id="thingset__priv_8h_1ac6a8d348e3b48ec6dded75e6bf84c35f"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_get</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">ret_type</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">record_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_get" title="Permalink to this definition"></a><br /></dt>
+<dd><p>GET request (text mode).</p>
+<p>List child data objects (function called without content / parameters)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to the endpoint data object. </p></li>
+<li><p><strong>ret_type</strong> – Return type flags (IDs, names and/or values). </p></li>
+<li><p><strong>record_index</strong> – Record index extracted from path (only applicable for TS_T_RECORDS). </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_get">
+<span class="target" id="thingset__priv_8h_1a7d7e3f9166ebd6a9d210c5ef24b31e0b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_get</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">ret_type</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">record_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_get" title="Permalink to this definition"></a><br /></dt>
+<dd><p>GET request (binary mode).</p>
+<p>List child data objects (function called without content)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to the endpoint data object. </p></li>
+<li><p><strong>ret_type</strong> – Return type flags (IDs, names and/or values). </p></li>
+<li><p><strong>record_index</strong> – Record index (only applicable for TS_T_RECORDS). </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_fetch">
+<span class="target" id="thingset__priv_8h_1ad5a2535322186fef9c32eab114379598"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_fetch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_fetch" title="Permalink to this definition"></a><br /></dt>
+<dd><p>FETCH request (text mode).</p>
+<p>Read data object values (function called with an array as argument)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to the endpoint data object. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_fetch">
+<span class="target" id="thingset__priv_8h_1a9431b9b1eb8a4486b5eda6256219aee2"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_fetch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">ret_type</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">pos_payload</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_fetch" title="Permalink to this definition"></a><br /></dt>
+<dd><p>FETCH request (binary mode).</p>
+<p>Read data object values (function called with an array as argument)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to the endpoint data object or NULL for root and special endpoints 0x16 (“_ids”) and 0x17 (“_paths”) as they don’t actually exist in the database. </p></li>
+<li><p><strong>ret_type</strong> – Return type flags (IDs, names and/or values). </p></li>
+<li><p><strong>pos_payload</strong> – Position of payload in req buffer. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_patch">
+<span class="target" id="thingset__priv_8h_1ab0cbcfa4b9e2b2d3371927fd75068915"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_patch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_patch" title="Permalink to this definition"></a><br /></dt>
+<dd><p>PATCH request (text mode).</p>
+<p>Write data object values in text mode (function called with a map as argument)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to the endpoint data object. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_patch">
+<span class="target" id="thingset__priv_8h_1ae04b66837b6760d7a4dd26bcb1454890"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_patch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">pos_payload</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">auth_flags</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">subsets</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">record_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_patch" title="Permalink to this definition"></a><br /></dt>
+<dd><p>PATCH request (binary mode).</p>
+<p>Write data object values in binary mode (function called with a map as payload)</p>
+<p>If subset is specified, objects not found are silently ignored. Otherwise, a NOT_FOUND error is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to endpoint object or NULL to consider any object </p></li>
+<li><p><strong>pos_payload</strong> – Position of payload in req buffer </p></li>
+<li><p><strong>auth_flags</strong> – Bitset to specify authentication status for different roles </p></li>
+<li><p><strong>subsets</strong> – Bitset to specifiy data item subsets to be considered, 0 to ignore </p></li>
+<li><p><strong>record_index</strong> – Record index (only applicable for TS_T_RECORDS). </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_create">
+<span class="target" id="thingset__priv_8h_1ad4fc74a392934464e93817e1d3c32e6e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_create" title="Permalink to this definition"></a><br /></dt>
+<dd><p>POST request to append data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to subset object where a new value shall be created. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_delete">
+<span class="target" id="thingset__priv_8h_1a3dc8ce85df97f22cd920095db67ed6c7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_delete</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_delete" title="Permalink to this definition"></a><br /></dt>
+<dd><p>DELETE request to delete data from object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to subset object from which a value shall be deleted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of response message in buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_exec">
+<span class="target" id="thingset__priv_8h_1a826cf7593371c36541af0b55ecb03f61"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_exec</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_exec" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Execute command in text mode.</p>
+<p>Function called with a single data object name as argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to executable object which shall be called.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of response message in buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_exec">
+<span class="target" id="thingset__priv_8h_1a7851f74034f8237d41160a23d34effd8"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_exec</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">endpoint</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">pos_payload</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_exec" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Execute command in binary mode (function called with a single data object name/id as argument).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>endpoint</strong> – Pointer to executable object which shall be called. </p></li>
+<li><p><strong>pos_payload</strong> – Position of payload in req buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of response message in buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_txt_response">
+<span class="target" id="thingset__priv_8h_1a2ba029b90bc3ffba039ce647e2b7fe8a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_txt_response</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n"><span class="pre">code</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_txt_response" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Fill the resp buffer with a JSON response status message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>code</strong> – Numeric status code.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of status message in buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_bin_response">
+<span class="target" id="thingset__priv_8h_1ae522bad83f37e678547c03a68eb5fd87"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_bin_response</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="n"><span class="pre">code</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_bin_response" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Fill the resp buffer with a CBOR response status message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>code</strong> – Numeric status code.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of status message in buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_json_serialize_value">
+<span class="target" id="thingset__priv_8h_1a9ec38798904d675f2c540339b0e21f2d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_json_serialize_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">size</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_json_serialize_value" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize a object value into a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the JSON value should be stored. </p></li>
+<li><p><strong>size</strong> – Size of the buffer, i.e. maximum allowed length of the value. </p></li>
+<li><p><strong>object</strong> – Pointer to object which should be serialized.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of data written to buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_json_serialize_name_value">
+<span class="target" id="thingset__priv_8h_1a64ca0154641b3933a13f5d4e1c1eb71e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_json_serialize_name_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">size</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_json_serialize_name_value" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize object name and value as JSON object.</p>
+<p>Same as ts_json_serialize_value, just that the object name is also serialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the JSON value should be stored. </p></li>
+<li><p><strong>size</strong> – Size of the buffer, i.e. maximum allowed length of the value. </p></li>
+<li><p><strong>object</strong> – Pointer to object which should be serialized.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of data written to buffer or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_json_deserialize_value">
+<span class="target" id="thingset__priv_8h_1a2151470c61cecfbb912104134d98814b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_json_deserialize_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span>, <span class="n"><span class="pre">jsmntype_t</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_json_deserialize_value" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize a object value from a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the position of the value in a buffer. </p></li>
+<li><p><strong>len</strong> – Length of value in the buffer. </p></li>
+<li><p><strong>type</strong> – Type of the JSMN token as identified by the parser. </p></li>
+<li><p><strong>object</strong> – Pointer to object where the deserialized value should be stored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of tokens processed (always 1) or 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_get_path">
+<span class="target" id="thingset__priv_8h_1a01da51b34d455808b1c3964e5d333482"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts_get_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">buf</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">size</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">object</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_get_path" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write the path of an object into a buffer.</p>
+<p>This function supports a maximum depth of 2 only (e.g. Meas/rBat_V).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>buf</strong> – Pointer to the buffer where the path should be stored. </p></li>
+<li><p><strong>size</strong> – Size of the buffer, i.e. maximum allowed length of the value. </p></li>
+<li><p><strong>object</strong> – Pointer to object which should be serialized.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of the string written to the buffer or value &lt;= 0 in case of error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.ts_get_endpoint_by_path">
+<span class="target" id="thingset__priv_8h_1a2916805ab1cf9782cf4ec5aa84db0b87"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_data_object" title="ts_data_object"><span class="n"><span class="pre">ts_data_object</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ts_get_endpoint_by_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="library.html#c.ts_context" title="ts_context"><span class="n"><span class="pre">ts_context</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ts</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ts_get_endpoint_by_path" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Get the endpoint object of a provided path.</p>
+<p>Similar to ts_get_object_by_path, but considers the number at the end if requesting a record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – Pointer to ThingSet context. </p></li>
+<li><p><strong>path</strong> – Path with multiple object names separated by forward slash. </p></li>
+<li><p><strong>len</strong> – Length of the entire path </p></li>
+<li><p><strong>index</strong> – Pointer to a variable used to store the index of a record.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pointer to data object or NULL if object is not found </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<section id="json-jsmn">
+<h2>JSON (JSMN)<a class="headerlink" href="#json-jsmn" title="Permalink to this heading"></a></h2>
+<p>The JSON parser is using the <a class="reference external" href="https://github.com/zserge/jsmn">JSMN library</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfile: Cannot find file “jsmn.h </p>
+</div>
+</section>
+<section id="cbor">
+<h2>CBOR<a class="headerlink" href="#cbor" title="Permalink to this heading"></a></h2>
+<p>The internal CBOR parser is very light-weight and contains only the features required for the
+ThingSet library.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_TYPE_MASK">
+<span class="target" id="cbor_8h_1ab449fe798f10ea904951670c4dae856f"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_TYPE_MASK</span></span></span><a class="headerlink" href="#c.CBOR_TYPE_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd><p>most-significant 3 bits </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_INFO_MASK">
+<span class="target" id="cbor_8h_1ad1405f34d8643b454a143f54bc7f7a56"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_INFO_MASK</span></span></span><a class="headerlink" href="#c.CBOR_INFO_MASK" title="Permalink to this definition"></a><br /></dt>
+<dd><p>least-significant 5 bits </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UINT">
+<span class="target" id="cbor_8h_1a1329b300f7d69a66b0159f6bb85772b4"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UINT</span></span></span><a class="headerlink" href="#c.CBOR_UINT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 0: Unsigned integers </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_NEGINT">
+<span class="target" id="cbor_8h_1a22fc92207b231b6211d8eaa1fea6f739"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_NEGINT</span></span></span><a class="headerlink" href="#c.CBOR_NEGINT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 1: Negative integers </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_BYTES">
+<span class="target" id="cbor_8h_1adfabcf93a1e2b028a69f3aca56273106"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_BYTES</span></span></span><a class="headerlink" href="#c.CBOR_BYTES" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 2: Bytes (binary) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_TEXT">
+<span class="target" id="cbor_8h_1af2dff33a70b8a2ef07e8a8aed2e134c5"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_TEXT</span></span></span><a class="headerlink" href="#c.CBOR_TEXT" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 3: Text (UTF-8) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_ARRAY">
+<span class="target" id="cbor_8h_1ade43edafc1444c550b70a8b6c15bd08e"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_ARRAY</span></span></span><a class="headerlink" href="#c.CBOR_ARRAY" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 4: Array </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_MAP">
+<span class="target" id="cbor_8h_1ad8fe0dac16a3ea67bdf182d76700b8da"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_MAP</span></span></span><a class="headerlink" href="#c.CBOR_MAP" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 5: Map / Object </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_TAG">
+<span class="target" id="cbor_8h_1a3604a91ca0649e25534bac18dd386c2e"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_TAG</span></span></span><a class="headerlink" href="#c.CBOR_TAG" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 6: Tag (for extension) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_MISC">
+<span class="target" id="cbor_8h_1a64969e1ddeadc619447b835e25c168ee"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_MISC</span></span></span><a class="headerlink" href="#c.CBOR_MISC" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Major type 7: Simple values and float </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_NUM_MAX">
+<span class="target" id="cbor_8h_1a7c50aa1983281acde0889d060123f64b"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_NUM_MAX</span></span></span><a class="headerlink" href="#c.CBOR_NUM_MAX" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Maximum number that can be directly encoded </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UINT8_FOLLOWS">
+<span class="target" id="cbor_8h_1a0ea8d76faeedaea4951c282f15a1e272"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UINT8_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_UINT8_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Length specifier uint8 (0x18) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UINT16_FOLLOWS">
+<span class="target" id="cbor_8h_1a94272649f73c3d9940b03bdffdcdfd05"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UINT16_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_UINT16_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Length specifier uint16 (0x19) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UINT32_FOLLOWS">
+<span class="target" id="cbor_8h_1a4d9e639ba3d228c82f408606fc8c145d"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UINT32_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_UINT32_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Length specifier uint32 (0x1a) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UINT64_FOLLOWS">
+<span class="target" id="cbor_8h_1ae94a4d82f7a89ec7a54f1368a4cae717"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UINT64_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_UINT64_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Length specifier uint64 (0x1b) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_VAR_FOLLOWS">
+<span class="target" id="cbor_8h_1a94a66858f5e232a0a3513d8f1da38963"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_VAR_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_VAR_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Indefinite length specifier (0x1f) </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_DATETIME_STRING_FOLLOWS">
+<span class="target" id="cbor_8h_1a640c6217b7fb738bd7ad779e14eedcea"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_DATETIME_STRING_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_DATETIME_STRING_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Datetime string </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_DATETIME_EPOCH_FOLLOWS">
+<span class="target" id="cbor_8h_1aec5072263b269a016912a4a5d1bcce93"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_DATETIME_EPOCH_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_DATETIME_EPOCH_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Datetime epoch </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_DECFRAC_ARRAY_FOLLOWS">
+<span class="target" id="cbor_8h_1afa003902cee9f1b55efc8b6256f7a20a"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_DECFRAC_ARRAY_FOLLOWS</span></span></span><a class="headerlink" href="#c.CBOR_DECFRAC_ARRAY_FOLLOWS" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Decimal fraction </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_FALSE">
+<span class="target" id="cbor_8h_1a5565e529bd5a2108ddb5ebded701185e"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_FALSE</span></span></span><a class="headerlink" href="#c.CBOR_FALSE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: false </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_TRUE">
+<span class="target" id="cbor_8h_1adc6e61dc9f0dde62b49009c2b4da6710"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_TRUE</span></span></span><a class="headerlink" href="#c.CBOR_TRUE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: true </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_NULL">
+<span class="target" id="cbor_8h_1a3b094f225629d7976d364cebf6f10e46"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_NULL</span></span></span><a class="headerlink" href="#c.CBOR_NULL" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: null </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_UNDEFINED">
+<span class="target" id="cbor_8h_1a126a8f41a69b47de4c5e737f7b88bc80"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_UNDEFINED</span></span></span><a class="headerlink" href="#c.CBOR_UNDEFINED" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: undefined </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_SIMPLE">
+<span class="target" id="cbor_8h_1a3de5fff4cf487687915e939442205b81"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_SIMPLE</span></span></span><a class="headerlink" href="#c.CBOR_SIMPLE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: uint8 follows </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_FLOAT16">
+<span class="target" id="cbor_8h_1af80de27990808301f9dd647c4ac8f1d2"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_FLOAT16</span></span></span><a class="headerlink" href="#c.CBOR_FLOAT16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Half-precision float follows </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_FLOAT32">
+<span class="target" id="cbor_8h_1acadea2a15a6720be5f8c2a2f2b4a2585"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_FLOAT32</span></span></span><a class="headerlink" href="#c.CBOR_FLOAT32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Single-precision float follows </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_FLOAT64">
+<span class="target" id="cbor_8h_1a988877cbdcf5c0617c731d2469b00430"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_FLOAT64</span></span></span><a class="headerlink" href="#c.CBOR_FLOAT64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Double-precision float follows </p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.CBOR_BREAK">
+<span class="target" id="cbor_8h_1aea66596008bc6b5f9e73c19ed98f64f7"></span><span class="sig-name descname"><span class="n"><span class="pre">CBOR_BREAK</span></span></span><a class="headerlink" href="#c.CBOR_BREAK" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Simple value: break </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_uint">
+<span class="target" id="cbor_8h_1a0077e50e79ebb96eda6405ad723411b8"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_uint</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_uint" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize unsigned integer value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>value</strong> – Variable containing value to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_int">
+<span class="target" id="cbor_8h_1af386557dd95bde3bbd348ed82997f18c"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_int</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_int" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize signed integer value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>value</strong> – Variable containing value to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_decfrac">
+<span class="target" id="cbor_8h_1a6d15ec55b8365568ea35274b29298ba1"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_decfrac</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n"><span class="pre">mantissa</span></span>, <span class="n"><span class="pre">int16_t</span></span><span class="w"> </span><span class="n"><span class="pre">exponent</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_decfrac" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize decimal fraction (e.g. 1234 * 10^3)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>mantissa</strong> – Mantissa of the value to be serialized </p></li>
+<li><p><strong>exponent</strong> – Exponent of the value to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_float">
+<span class="target" id="cbor_8h_1a0d771ab3e41bd253ef7ef25f81fcd4ca"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_float</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_float" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize 32-bit float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>value</strong> – Variable containing value to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_bool">
+<span class="target" id="cbor_8h_1a96898b414cd61577cf8e4ae768b45d6b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_bool</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_bool" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize boolean</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>value</strong> – Variable containing value to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_string">
+<span class="target" id="cbor_8h_1af63ca6bec9558e227a80ba31d282ddad"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_string</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_string" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>value</strong> – Pointer to string that should be be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_bytes">
+<span class="target" id="cbor_8h_1a242f83c3e3b9276ad1a770b901296eb8"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_bytes</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">bytes</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">num_bytes</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_bytes" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize bytes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>bytes</strong> – Pointer to string that should be be serialized </p></li>
+<li><p><strong>num_bytes</strong> – Number of bytes from the buffer to be serialized </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_array">
+<span class="target" id="cbor_8h_1aa6fe2802883fcdb4bdf1df08c0d533bb"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_array</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">num_elements</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_array" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize the header (length field) of an array</p>
+<p>Actual elements of the array have to be serialized afterwards</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>num_elements</strong> – Number of elements in the array </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_serialize_map">
+<span class="target" id="cbor_8h_1a3ebee428c4b625393512e13ffe1ad5b7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_serialize_map</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">num_elements</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">max_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_serialize_map" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Serialize the header (length field) of a map (equivalent to JSON object)</p>
+<p>Actual elements of the map have to be serialized afterwards</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer where CBOR data shall be stored </p></li>
+<li><p><strong>num_elements</strong> – Number of elements in the array </p></li>
+<li><p><strong>max_len</strong> – Maximum remaining space in buffer (i.e. max length of serialized data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>number of bytes added to buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_uint64">
+<span class="target" id="cbor_8h_1a3de17345476a9c5ea11fd801688807c4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_uint64</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_uint64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialization (CBOR data to C values) Deserialize 64-bit unsigned integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_int64">
+<span class="target" id="cbor_8h_1ac861b68c1a1b1a8c02079b5a70953274"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_int64</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int64_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_int64" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 64-bit signed integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_uint32">
+<span class="target" id="cbor_8h_1ab21de8aa85ab7658ba5a088de5154be7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_uint32</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_uint32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 32-bit unsigned integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_int32">
+<span class="target" id="cbor_8h_1a86ce93070268e2df780aff18bd697c41"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_int32</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_int32" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 32-bit signed integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_uint16">
+<span class="target" id="cbor_8h_1ad11c592c4c3fd49c4df70e0ce8298772"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_uint16</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_uint16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 16-bit unsigned integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_int16">
+<span class="target" id="cbor_8h_1adf84ec81f93f4375ccae4ea260324510"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_int16</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int16_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_int16" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 16-bit signed integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_uint8">
+<span class="target" id="cbor_8h_1afa253ad4b73366c22c091093ad223c0f"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_uint8</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_uint8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 8-bit unsigned integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_int8">
+<span class="target" id="cbor_8h_1a446cdf172510cea8cfec2cf9a2f7a7a6"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_int8</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_int8" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 8-bit signed integer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_decfrac">
+<span class="target" id="cbor_8h_1a210bbf2e1b3fa4895257ef7b687cf6b2"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_decfrac</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">mantissa</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">int16_t</span></span><span class="w"> </span><span class="n"><span class="pre">exponent</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_decfrac" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize decimal fraction type</p>
+<p>The exponent is fixed, so the mantissa is multiplied to match the exponent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>mantissa</strong> – Pointer to the variable where the mantissa should be stored </p></li>
+<li><p><strong>exponent</strong> – Exponent of internally used variable in C</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_float">
+<span class="target" id="cbor_8h_1a521d7903ce3faf5d12adc214eec523a9"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_float</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_float" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize 32-bit float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_bool">
+<span class="target" id="cbor_8h_1a79576c5eaca75a919a203d0388f205e2"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_bool</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_bool" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize bool</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>value</strong> – Pointer to the variable where the value should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_string">
+<span class="target" id="cbor_8h_1a2f95eaf9d3ddd5844574ecb641b7ab57"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_string</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">str</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_string" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>str</strong> – Pointer to the buffer where the string should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the string buffer including null-termination</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from data buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_string_zero_copy">
+<span class="target" id="cbor_8h_1a31ef947ff08ad4a9220485dab4ab4e4d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_string_zero_copy</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">str_start</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">str_len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_string_zero_copy" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize string with zero-copy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>str_start</strong> – Pointer to store start of string </p></li>
+<li><p><strong>str_len</strong> – Pointer to store length of string in the buffer EXCLUDING null-termination</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from data buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_deserialize_bytes">
+<span class="target" id="cbor_8h_1aba51ad79b25345374ff2108f828879cb"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_deserialize_bytes</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">bytes</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">buf_size</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">num_bytes</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_deserialize_bytes" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Deserialize bytes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>bytes</strong> – Pointer to the buffer where the data should be stored </p></li>
+<li><p><strong>buf_size</strong> – Size of the buffer </p></li>
+<li><p><strong>num_bytes</strong> – Pointer to a variable to store the actual number of bytes written to buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from data buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_num_elements">
+<span class="target" id="cbor_8h_1a3e93f2022636c6305f7bbcbb57eff401"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_num_elements</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">num_elements</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_num_elements" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Determine the number of elements in a map or an array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Buffer containing CBOR data with matching type </p></li>
+<li><p><strong>num_elements</strong> – Pointer to the variable where the result should be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of bytes read from buffer or 0 in case of error </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.cbor_size">
+<span class="target" id="cbor_8h_1af3ce956c344c0d6ec3e25aae5ce69929"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbor_size</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cbor_size" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Determine the size of the cbor data item</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Pointer for starting point of data item</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Size in bytes </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="library.html" class="btn btn-neutral float-left" title="Library API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 The ThingSet Project Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
